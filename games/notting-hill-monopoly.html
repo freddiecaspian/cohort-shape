@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notting Hill Monopoly</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a0f;
+    --card: #12121a;
+    --card-border: #1e1e2e;
+    --accent: #d4a843;
+    --accent-dim: #b08930;
+    --accent-glow: rgba(212, 168, 67, 0.2);
+    --green: #4caf50;
+    --red: #e05545;
+    --blue: #5b9bd5;
+    --purple: #9b59b6;
+    --teal: #1abc9c;
+    --text: #eee8d5;
+    --text-dim: #8a8070;
+    --brown: #8d6e63;
+    --t1: #8d6e63;
+    --t2: #42a5f5;
+    --t3: #66bb6a;
+    --t4: #ab47bc;
+    --dorian-gold: #d4a843;
+    --chance: #ef6c00;
+    --chest: #00897b;
+  }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  .container { max-width: 700px; margin: 0 auto; padding: 16px; min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* SETUP SCREEN */
+  .setup-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; gap: 20px; }
+  .setup-screen h1 { font-family: 'Space Grotesk', sans-serif; font-size: 2.4rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), #f0d78c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .setup-screen .subtitle { font-size: 0.95rem; color: var(--text-dim); max-width: 440px; line-height: 1.6; }
+  .player-count { display: flex; gap: 8px; }
+  .pc-btn { background: var(--card); border: 2px solid var(--card-border); border-radius: 10px; padding: 12px 24px; font-size: 1.1rem; font-weight: 700; color: var(--text); cursor: pointer; font-family: 'Space Grotesk', sans-serif; transition: all 0.2s; }
+  .pc-btn.active { border-color: var(--accent); color: var(--accent); }
+  .pc-btn:hover { border-color: var(--accent); }
+  .player-inputs { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 340px; }
+  .player-input { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 8px 12px; }
+  .player-input .dot { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; }
+  .player-input input { background: transparent; border: none; color: var(--text); font-size: 0.9rem; font-family: 'Inter', sans-serif; flex: 1; outline: none; }
+  .btn-play { background: linear-gradient(135deg, var(--accent-dim), var(--accent)); color: #0a0a0f; border: none; padding: 14px 44px; font-size: 1.1rem; font-weight: 700; border-radius: 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; box-shadow: 0 4px 20px var(--accent-glow); transition: transform 0.2s; }
+  .btn-play:hover { transform: translateY(-2px); }
+
+  /* GAME SCREEN */
+  .game-screen { display: none; flex-direction: column; gap: 10px; padding-top: 8px; }
+
+  /* PLAYER BAR */
+  .player-bar { display: flex; justify-content: space-between; align-items: center; background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 8px 14px; }
+  .pb-current { display: flex; align-items: center; gap: 8px; }
+  .pb-dot { width: 14px; height: 14px; border-radius: 50%; }
+  .pb-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.9rem; }
+  .pb-cash { font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: var(--accent); font-size: 0.95rem; }
+  .pb-round { font-size: 0.7rem; color: var(--text-dim); }
+
+  /* BOARD MINIMAP */
+  .board-minimap { display: flex; flex-direction: column; gap: 2px; overflow-x: auto; padding: 4px 0; }
+  .board-row { display: flex; gap: 2px; }
+  .board-tile { width: 28px; height: 28px; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; position: relative; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: all 0.2s; }
+  .board-tile.current { border: 2px solid white; box-shadow: 0 0 8px rgba(255,255,255,0.3); z-index: 2; }
+  .board-tile .tile-tokens { position: absolute; bottom: -1px; display: flex; gap: 1px; }
+  .board-tile .token-dot { width: 5px; height: 5px; border-radius: 50%; border: 0.5px solid rgba(0,0,0,0.3); }
+
+  /* ACTIVE SPACE CARD */
+  .space-card { background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 18px; min-height: 100px; }
+  .sc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .sc-type { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+  .sc-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 1rem; }
+  .sc-body { font-size: 0.85rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 12px; }
+  .sc-price { font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: var(--accent); }
+  .sc-rent { font-size: 0.8rem; color: var(--text-dim); }
+  .sc-special { font-size: 0.78rem; color: var(--teal); font-style: italic; margin-top: 6px; }
+  .sc-owner { font-size: 0.78rem; margin-top: 6px; }
+
+  /* ACTION BUTTONS */
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .act-btn { flex: 1; min-width: 100px; background: var(--card); border: 2px solid var(--card-border); border-radius: 10px; padding: 12px 8px; font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all 0.2s; text-align: center; }
+  .act-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .act-btn.primary { border-color: var(--accent); color: var(--accent); }
+  .act-btn.danger { border-color: var(--red); color: var(--red); }
+  .act-btn:disabled { opacity: 0.3; pointer-events: none; }
+
+  /* DICE */
+  .dice-area { display: flex; justify-content: center; align-items: center; gap: 16px; padding: 10px 0; }
+  .die { width: 48px; height: 48px; background: var(--card); border: 2px solid var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; color: var(--accent); transition: transform 0.3s; }
+  .die.rolling { animation: diceRoll 0.1s linear infinite; }
+  @keyframes diceRoll { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  /* CARD MODAL */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,10,15,0.9); z-index: 50; justify-content: center; align-items: center; padding: 20px; }
+  .modal-card { background: var(--card); border: 2px solid var(--card-border); border-radius: 16px; padding: 28px 24px; max-width: 380px; width: 100%; text-align: center; animation: slideUp 0.3s ease; }
+  .modal-type { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 12px; }
+  .modal-text { font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 500; line-height: 1.5; margin-bottom: 8px; }
+  .modal-effect { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 16px; }
+  .modal-btn { background: var(--accent); color: #0a0a0f; border: none; padding: 10px 30px; font-size: 0.9rem; font-weight: 700; border-radius: 8px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
+
+  /* HANDOFF */
+  .handoff-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10,10,15,0.95); z-index: 60; justify-content: center; align-items: center; flex-direction: column; gap: 16px; }
+  .handoff-text { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700; }
+  .handoff-sub { font-size: 0.85rem; color: var(--text-dim); }
+  .handoff-btn { background: var(--accent); color: #0a0a0f; border: none; padding: 12px 36px; font-size: 1rem; font-weight: 700; border-radius: 10px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; }
+
+  /* SCOREBOARD */
+  .scoreboard { background: var(--card); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 14px; }
+  .sb-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+  .sb-row .sb-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .sb-row .sb-name { flex: 1; font-size: 0.8rem; font-weight: 500; }
+  .sb-row .sb-cash { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 0.8rem; color: var(--accent); }
+  .sb-row .sb-props { font-size: 0.7rem; color: var(--text-dim); }
+  .sb-row.bankrupt { opacity: 0.3; text-decoration: line-through; }
+
+  /* RESULTS SCREEN */
+  .results-screen { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; gap: 20px; padding: 40px 20px; }
+  .results-screen h2 { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: var(--accent); }
+  .winner-name { font-size: 2.5rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+  .final-standings { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 6px; }
+  .standing-row { display: flex; align-items: center; gap: 10px; background: var(--card); border-radius: 10px; padding: 10px 14px; }
+  .standing-row .rank { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.1rem; width: 30px; }
+  .standing-row .s-dot { width: 14px; height: 14px; border-radius: 50%; }
+  .standing-row .s-name { flex: 1; font-weight: 500; font-size: 0.9rem; }
+  .standing-row .s-worth { font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: var(--accent); }
+  .btn-restart { background: transparent; color: var(--accent); border: 2px solid var(--accent); padding: 14px 36px; font-size: 1rem; font-weight: 600; border-radius: 10px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; transition: all 0.2s; }
+  .btn-restart:hover { background: var(--accent); color: #0a0a0f; }
+
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes confettiDrop { 0% { transform: translateY(-10px) rotate(0deg); opacity: 1; } 100% { transform: translateY(80px) rotate(360deg); opacity: 0; } }
+  .confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; overflow: hidden; }
+  .confetti-piece { position: absolute; width: 10px; height: 10px; animation: confettiDrop 1.5s ease-out forwards; }
+
+  @media (max-width: 500px) {
+    .setup-screen h1 { font-size: 1.8rem; }
+    .board-tile { width: 24px; height: 24px; font-size: 0.4rem; }
+    .die { width: 40px; height: 40px; font-size: 1.1rem; }
+    .sc-name { font-size: 0.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- SETUP SCREEN -->
+  <div class="setup-screen" id="setupScreen">
+    <h1>Notting Hill Monopoly</h1>
+    <p class="subtitle">Build Chris D'Silva's restaurant empire. Buy the Fish Shop, snag Dorian, dodge the Health Inspector. Last player standing wins.</p>
+    <div class="player-count" id="playerCount"></div>
+    <div class="player-inputs" id="playerInputs"></div>
+    <button class="btn-play" onclick="startGame()">Play</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="game-screen" id="gameScreen">
+    <div class="player-bar" id="playerBar"></div>
+    <div class="board-minimap" id="boardMinimap"></div>
+    <div class="dice-area" id="diceArea">
+      <div class="die" id="die1">?</div>
+      <div class="die" id="die2">?</div>
+    </div>
+    <div class="space-card" id="spaceCard"></div>
+    <div class="actions" id="actions"></div>
+    <div class="scoreboard" id="scoreboard"></div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div class="results-screen" id="resultsScreen">
+    <h2>Game Over</h2>
+    <div class="winner-name" id="winnerName"></div>
+    <p style="color:var(--text-dim);font-size:0.9rem" id="winnerQuote"></p>
+    <div class="final-standings" id="finalStandings"></div>
+    <button class="btn-restart" onclick="location.reload()">Play Again</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card" id="modalCard"></div>
+</div>
+
+<div class="handoff-overlay" id="handoffOverlay">
+  <div class="handoff-text" id="handoffText"></div>
+  <div class="handoff-sub" id="handoffSub"></div>
+  <button class="handoff-btn" onclick="closeHandoff()">I'm Ready</button>
+</div>
+
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+const COLORS = ['#e05545','#42a5f5','#66bb6a','#ab47bc'];
+const TIER_COLORS = { t1: '#8d6e63', t2: '#42a5f5', t3: '#66bb6a', t4: '#ab47bc', dorian: '#d4a843', chance: '#ef6c00', chest: '#00897b', special: '#37474f' };
+
+const BOARD = [
+  { id: 0, name: 'Notting Hill Gate', type: 'go', color: TIER_COLORS.dorian, emoji: '🚉' },
+  { id: 1, name: 'Golborne Road', type: 'property', tier: 't1', price: 60, rent: 8, upgraded: 20, color: TIER_COLORS.t1 },
+  { id: 2, name: 'Chance', type: 'chance', color: TIER_COLORS.chance, emoji: '❓' },
+  { id: 3, name: 'All Saints Road', type: 'property', tier: 't1', price: 60, rent: 8, upgraded: 20, color: TIER_COLORS.t1 },
+  { id: 4, name: "Robin's Ramen", type: 'dorian', price: 80, rent: 15, upgraded: 30, color: TIER_COLORS.dorian, emoji: '💀', special: 'Wild rent: roll a die. 1-2: YOU pay tenant 10. 3-6: tenant pays rent.' },
+  { id: 5, name: 'Holland Park Ave', type: 'property', tier: 't2', price: 100, rent: 14, upgraded: 35, color: TIER_COLORS.t2 },
+  { id: 6, name: 'Community Chest', type: 'chest', color: TIER_COLORS.chest, emoji: '💬' },
+  { id: 7, name: 'Fish + Meat', type: 'dorian', price: 120, rent: 15, upgraded: 35, color: TIER_COLORS.dorian, emoji: '🐟', special: 'Supply Chain: buy other Dorian properties 20 cheaper.' },
+  { id: 8, name: 'Westbourne Grove', type: 'property', tier: 't2', price: 100, rent: 14, upgraded: 35, color: TIER_COLORS.t2 },
+  { id: 9, name: 'Health Inspector', type: 'jail', color: TIER_COLORS.special, emoji: '🔍' },
+  { id: 10, name: 'Kensington Park Rd', type: 'property', tier: 't2', price: 140, rent: 20, upgraded: 45, color: TIER_COLORS.t2 },
+  { id: 11, name: 'Chance', type: 'chance', color: TIER_COLORS.chance, emoji: '❓' },
+  { id: 12, name: 'Supermarket of Dreams', type: 'dorian', price: 180, rent: 25, upgraded: 55, color: TIER_COLORS.dorian, emoji: '🛒', special: 'Incubator: all property purchases 20 cheaper for owner.' },
+  { id: 13, name: 'Portobello Market', type: 'free', color: TIER_COLORS.special, emoji: '🎪' },
+  { id: 14, name: 'Ledbury Road', type: 'property', tier: 't3', price: 180, rent: 25, upgraded: 55, color: TIER_COLORS.t3 },
+  { id: 15, name: 'Community Chest', type: 'chest', color: TIER_COLORS.chest, emoji: '💬' },
+  { id: 16, name: 'EEL Sushi Bar', type: 'dorian', price: 200, rent: 30, upgraded: 60, color: TIER_COLORS.dorian, emoji: '🍣', special: 'Replicable: pay 150 to double rent permanently.' },
+  { id: 17, name: 'Clarendon Road', type: 'property', tier: 't3', price: 200, rent: 28, upgraded: 60, color: TIER_COLORS.t3 },
+  { id: 18, name: 'Chance', type: 'chance', color: TIER_COLORS.chance, emoji: '❓' },
+  { id: 19, name: 'Urchin', type: 'dorian', price: 250, rent: 35, upgraded: 70, color: TIER_COLORS.dorian, emoji: '🐙', special: 'Seasonal: rent doubled in rounds 1-6 and 19-24.' },
+  { id: 20, name: 'Talbot Road', type: 'property', tier: 't4', price: 280, rent: 40, upgraded: 80, color: TIER_COLORS.t4 },
+  { id: 21, name: 'Community Chest', type: 'chest', color: TIER_COLORS.chest, emoji: '💬' },
+  { id: 22, name: 'Ladbroke Grove', type: 'property', tier: 't4', price: 300, rent: 45, upgraded: 90, color: TIER_COLORS.t4 },
+  { id: 23, name: 'Dorian', type: 'dorian', price: 350, rent: 50, upgraded: 100, color: TIER_COLORS.dorian, emoji: '⭐', special: 'Flagship: rent triples if owner has 3+ Dorian properties.' }
+];
+
+const CHANCE_CARDS = [
+  { text: 'Michelin inspector visits Dorian!', effect: (g) => { const o = g.ownerOf(23); if (o !== null && o === g.current) { g.addCash(g.current, 100); return 'You own Dorian! Collect 100.'; } return 'You don\'t own Dorian. Nothing happens.'; }},
+  { text: 'NI tax increase hits hospitality!', effect: (g) => { g.players.forEach((p,i) => { if (!p.bankrupt) g.addCash(i, -Math.floor(p.cash * 0.1)); }); return 'All players pay 10% of their cash.'; }},
+  { text: 'Deliveroo partnership offer!', effect: (g) => { const o = g.ownerOf(12); if (o !== null && o === g.current) { g.addCash(g.current, 80); return 'You own SoD! Collect 80.'; } g.addCash(g.current, 20); return 'Collect 20.'; }},
+  { text: 'Star chef poached by Nobu!', effect: (g) => { const props = g.players[g.current].properties.filter(id => g.propertyState[id]?.upgraded); if (props.length > 0) { const p = props[0]; g.propertyState[p].upgraded = false; return `Lost upgrade on ${BOARD[p].name}!`; } g.addCash(g.current, -30); return 'No upgrades to lose. Pay 30.'; }},
+  { text: 'Notting Hill rent escalation!', effect: (g) => { g.rentMultiplier = (g.rentMultiplier || 1) + 0.2; return 'All rents increase by 20% permanently!'; }},
+  { text: 'Consumer spending squeeze.', effect: (g) => { g.rentHalvedRound = g.round; return 'All rents halved this round only.'; }},
+  { text: 'Urchin Greece pop-up is a smash!', effect: (g) => { const o = g.ownerOf(19); if (o !== null && o === g.current) { g.addCash(g.current, 120); return 'You own Urchin! Collect 120.'; } g.addCash(g.current, 30); return 'Collect 30.'; }},
+  { text: 'Ivan Orkin opens nearby!', effect: (g) => { g.eelHalvedUntil = g.round + 2; return 'EEL rent halved for 2 rounds.'; }},
+  { text: 'Health Inspector shuts you down!', effect: (g) => { g.players[g.current].inJail = true; g.players[g.current].position = 9; return 'Go to Health Inspector. Miss next turn.'; }},
+  { text: 'Fish Shop goes viral on TikTok!', effect: (g) => { const o = g.ownerOf(7); if (o !== null && o === g.current) { g.addCash(g.current, 60); return 'You own Fish+Meat! Collect 60.'; } return 'You don\'t own Fish+Meat. Nothing happens.'; }},
+  { text: 'Premium dining boom in West London!', effect: (g) => { const n = g.players[g.current].properties.length; g.addCash(g.current, n * 20); return `Collect 20 per property (${n} x 20 = ${n*20}).`; }},
+  { text: 'Food trends shift to plant-based.', effect: (g) => { g.dorianHalvedRound = g.round; return 'All Dorian Group rents halved this round.'; }},
+  { text: 'Wine programme attracts celebrities!', effect: (g) => { g.addCash(g.current, 50); return 'Collect 50.'; }},
+  { text: 'Cost of living crisis bites.', effect: (g) => { g.addCash(g.current, -40); return 'Pay 40.'; }},
+  { text: 'Competitor copies your concept!', effect: (g) => { const o = g.ownerOf(7); if (o !== null && o === g.current) { g.addCash(g.current, -30); return 'You own Fish+Meat. Pay 30 brand damage.'; } return 'Nothing happens.'; }},
+  { text: 'Zero-waste loop saves the day!', effect: (g) => { const dp = g.players[g.current].properties.filter(id => BOARD[id].type === 'dorian'); if (dp.length >= 2) { g.addCash(g.current, 50); return `${dp.length} Dorian properties! Collect 50.`; } return 'Need 2+ Dorian properties. Nothing happens.'; }}
+];
+
+const CHEST_CARDS = [
+  { text: '"Quality over everything else."', effect: (g) => { const props = g.players[g.current].properties.filter(id => !g.propertyState[id]?.upgraded); if (props.length > 0) { g.propertyState[props[0]].upgraded = true; return `Free upgrade on ${BOARD[props[0]].name}!`; } return 'No properties to upgrade.'; }},
+  { text: '"You need to fail once before you get the next thing right."', effect: (g) => { g.players[g.current].jailFree++; return 'Get Out of Health Inspector free card!'; }},
+  { text: '"No omakase horseshit and ponce."', effect: (g) => { g.addCash(g.current, 50); return 'Collect 50.'; }},
+  { text: '"Every business is a marketing vehicle for another."', effect: (g) => { const n = g.players[g.current].properties.length; if (n >= 2) { g.addCash(g.current, n * 30); return `${n} properties! Collect ${n*30}.`; } return 'Need 2+ properties.'; }},
+  { text: '"Australian immigrant son, no safety net."', effect: (g) => { g.addCash(g.current, 100); return 'Hustle bonus! Collect 100.'; }},
+  { text: '"Brown nosing cunt."', effect: (g) => { const others = g.players.map((p,i) => i).filter(i => i !== g.current && !g.players[i].bankrupt); if (others.length > 0) { const target = others[Math.floor(Math.random() * others.length)]; g.players[target].inJail = true; g.players[target].position = 9; return `${g.players[target].name} sent to Health Inspector!`; } return 'No one to send.'; }},
+  { text: '"It will consume you entirely."', effect: (g) => { g.extraTurn = true; return 'Extra turn!'; }},
+  { text: '"DJ in a fish shop on Saturday."', effect: (g) => { g.players.forEach((p,i) => { if (i !== g.current && !p.bankrupt) g.addCash(i, -40); }); g.addCash(g.current, (g.players.filter((p,i) => i !== g.current && !p.bankrupt).length) * 40); return 'Collect 40 from each player!'; }},
+  { text: '"99% of places are charity shops not interested in making money."', effect: (g) => { g.addCash(g.current, 60); return 'Collect 60.'; }},
+  { text: '"Anti-social media channel."', effect: (g) => { let richest = -1, richIdx = -1; g.players.forEach((p,i) => { if (i !== g.current && !p.bankrupt && p.cash > richest) { richest = p.cash; richIdx = i; } }); if (richIdx >= 0) { g.addCash(richIdx, -30); g.addCash(g.current, 30); return `Stole 30 from ${g.players[richIdx].name}!`; } return 'No one to steal from.'; }},
+  { text: '"I know what schools their kids go to."', effect: (g) => { const n = g.players[g.current].properties.length; g.addCash(g.current, n * 10); return `Customer intimacy! Collect ${n*10}.`; }},
+  { text: '"The money will come if you do something good."', effect: (g) => { g.players[g.current].skipNextRent = true; return 'Skip your next rent payment!'; }},
+  { text: '"Daddy money taco business bores me."', effect: (g) => { g.addCash(g.current, -50); return 'Pay 50.'; }},
+  { text: '"Fine dining wrapped in neighbourhood vibe."', effect: (g) => { const o = g.ownerOf(23); if (o !== null && o === g.current) { g.addCash(g.current, 80); return 'You own Dorian! Collect 80.'; } g.addCash(g.current, 20); return 'Collect 20.'; }},
+  { text: '"180k/week in a 40-cover restaurant."', effect: (g) => { g.addCash(g.current, 80); return 'Collect 80.'; }},
+  { text: '"Sunk 500k into a failed chicken sandwich business."', effect: (g) => { g.addCash(g.current, -60); return 'Pay 60.'; }}
+];
+
+// Game state
+let G = null;
+let numPlayers = 2;
+
+function initSetup() {
+  const pc = document.getElementById('playerCount');
+  pc.innerHTML = [2,3,4].map(n => `<div class="pc-btn ${n===2?'active':''}" onclick="setPlayerCount(${n})">${n} Players</div>`).join('');
+  renderPlayerInputs();
+}
+
+function setPlayerCount(n) {
+  numPlayers = n;
+  document.querySelectorAll('.pc-btn').forEach((b,i) => b.classList.toggle('active', i === n-2));
+  renderPlayerInputs();
+}
+
+function renderPlayerInputs() {
+  const names = ['Chris','Karim','Freddie','Arthur'];
+  document.getElementById('playerInputs').innerHTML = Array.from({length: numPlayers}, (_,i) =>
+    `<div class="player-input"><div class="dot" style="background:${COLORS[i]}"></div><input id="pname${i}" value="${names[i]}" placeholder="Player ${i+1}"></div>`
+  ).join('');
+}
+
+function startGame() {
+  const players = Array.from({length: numPlayers}, (_,i) => ({
+    name: document.getElementById(`pname${i}`).value || `Player ${i+1}`,
+    color: COLORS[i], cash: 800, position: 0, properties: [],
+    inJail: false, jailFree: 0, bankrupt: false, skipNextRent: false, circuits: 0
+  }));
+
+  G = {
+    players,
+    current: 0,
+    round: 1,
+    turnPhase: 'roll',
+    doublesCount: 0,
+    freeParkingPot: 0,
+    rentMultiplier: 1,
+    rentHalvedRound: -1,
+    dorianHalvedRound: -1,
+    eelHalvedUntil: -1,
+    extraTurn: false,
+    propertyState: {},
+    chanceDeck: shuffle(Array.from({length: CHANCE_CARDS.length}, (_,i) => i)),
+    chestDeck: shuffle(Array.from({length: CHEST_CARDS.length}, (_,i) => i)),
+    chanceIdx: 0,
+    chestIdx: 0,
+    ownerOf(spaceId) {
+      for (let i = 0; i < this.players.length; i++) {
+        if (!this.players[i].bankrupt && this.players[i].properties.includes(spaceId)) return i;
+      }
+      return null;
+    },
+    addCash(pIdx, amount) {
+      this.players[pIdx].cash += amount;
+      if (this.players[pIdx].cash < 0) this.players[pIdx].cash = 0;
+    }
+  };
+
+  BOARD.forEach(s => {
+    if (s.type === 'property' || s.type === 'dorian') {
+      G.propertyState[s.id] = { upgraded: false, eelDoubled: false };
+    }
+  });
+
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'flex';
+  showHandoff();
+}
+
+function shuffle(a) { for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+function showHandoff() {
+  const p = G.players[G.current];
+  document.getElementById('handoffText').innerHTML = `<span style="color:${p.color}">${p.name}'s Turn</span>`;
+  document.getElementById('handoffSub').textContent = `Round ${G.round} | Cash: £${p.cash}`;
+  document.getElementById('handoffOverlay').style.display = 'flex';
+}
+
+function closeHandoff() {
+  document.getElementById('handoffOverlay').style.display = 'none';
+  G.turnPhase = 'roll';
+  renderGame();
+}
+
+function renderGame() {
+  renderPlayerBar();
+  renderBoard();
+  renderScoreboard();
+
+  if (G.turnPhase === 'roll') {
+    renderRollPhase();
+  }
+}
+
+function renderPlayerBar() {
+  const p = G.players[G.current];
+  document.getElementById('playerBar').innerHTML = `
+    <div class="pb-current"><div class="pb-dot" style="background:${p.color}"></div><span class="pb-name">${p.name}</span></div>
+    <span class="pb-cash">£${p.cash}</span>
+    <span class="pb-round">Round ${G.round}/20</span>
+  `;
+}
+
+function renderBoard() {
+  const map = document.getElementById('boardMinimap');
+  const row1 = BOARD.slice(0, 12);
+  const row2 = [...BOARD.slice(12)].reverse();
+
+  function tileHTML(s) {
+    const isCurrent = G.players[G.current].position === s.id;
+    const tokens = G.players.filter(p => !p.bankrupt && p.position === s.id).map(p => `<span class="token-dot" style="background:${p.color}"></span>`).join('');
+    return `<div class="board-tile ${isCurrent?'current':''}" style="background:${s.color}22;border-color:${s.color}44" title="${s.name}">${s.emoji||s.name.charAt(0)}<div class="tile-tokens">${tokens}</div></div>`;
+  }
+
+  map.innerHTML = `<div class="board-row">${row1.map(tileHTML).join('')}</div><div class="board-row">${row2.map(tileHTML).join('')}</div>`;
+}
+
+function renderScoreboard() {
+  document.getElementById('scoreboard').innerHTML = G.players.map((p,i) =>
+    `<div class="sb-row ${p.bankrupt?'bankrupt':''}"><div class="sb-dot" style="background:${p.color}"></div><span class="sb-name">${p.name}</span><span class="sb-props">${p.properties.length} props</span><span class="sb-cash">£${p.cash}</span></div>`
+  ).join('');
+}
+
+function renderRollPhase() {
+  document.getElementById('die1').textContent = '?';
+  document.getElementById('die2').textContent = '?';
+  document.getElementById('spaceCard').innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:20px">Roll the dice!</p>';
+  document.getElementById('actions').innerHTML = '<button class="act-btn primary" onclick="rollDice()">Roll Dice</button>';
+}
+
+function rollDice() {
+  const d1El = document.getElementById('die1');
+  const d2El = document.getElementById('die2');
+  d1El.classList.add('rolling');
+  d2El.classList.add('rolling');
+
+  let rolls = 0;
+  const interval = setInterval(() => {
+    d1El.textContent = Math.floor(Math.random()*6)+1;
+    d2El.textContent = Math.floor(Math.random()*6)+1;
+    rolls++;
+    if (rolls > 8) {
+      clearInterval(interval);
+      d1El.classList.remove('rolling');
+      d2El.classList.remove('rolling');
+
+      const d1 = Math.floor(Math.random()*6)+1;
+      const d2 = Math.floor(Math.random()*6)+1;
+      d1El.textContent = d1;
+      d2El.textContent = d2;
+
+      const doubles = d1 === d2;
+      if (doubles) G.doublesCount++;
+      else G.doublesCount = 0;
+
+      if (G.doublesCount >= 3) {
+        G.players[G.current].inJail = true;
+        G.players[G.current].position = 9;
+        G.doublesCount = 0;
+        showModal('Health Inspector!', 'Three doubles in a row! Shut down for inspection.', () => endTurn());
+        return;
+      }
+
+      movePlayer(d1 + d2, doubles);
+    }
+  }, 80);
+}
+
+function movePlayer(steps, doubles) {
+  const p = G.players[G.current];
+  const oldPos = p.position;
+  p.position = (p.position + steps) % 24;
+
+  if (p.position < oldPos) {
+    p.circuits++;
+    const goBonus = Math.max(100, 200 - (p.circuits - 1) * 10);
+    G.addCash(G.current, goBonus);
+  }
+
+  renderBoard();
+  setTimeout(() => handleLanding(doubles), 300);
+}
+
+function handleLanding(doubles) {
+  const p = G.players[G.current];
+  const space = BOARD[p.position];
+
+  if (space.type === 'go') {
+    renderSpaceCard(space, 'Collect your salary as you pass through Notting Hill Gate.');
+    document.getElementById('actions').innerHTML = '<button class="act-btn" onclick="endTurn()">Continue</button>';
+  }
+  else if (space.type === 'property' || space.type === 'dorian') {
+    const owner = G.ownerOf(space.id);
+    if (owner === null) {
+      renderBuyableSpace(space);
+    } else if (owner === G.current) {
+      renderOwnedSpace(space);
+    } else {
+      handleRent(space, owner);
+    }
+  }
+  else if (space.type === 'chance') {
+    drawCard('chance');
+  }
+  else if (space.type === 'chest') {
+    drawCard('chest');
+  }
+  else if (space.type === 'jail') {
+    renderSpaceCard(space, 'Just visiting the Health Inspector. No penalty.');
+    document.getElementById('actions').innerHTML = '<button class="act-btn" onclick="endTurn()">Continue</button>';
+  }
+  else if (space.type === 'free') {
+    const pot = G.freeParkingPot;
+    if (pot > 0) {
+      G.addCash(G.current, pot);
+      G.freeParkingPot = 0;
+      renderSpaceCard(space, `Portobello Market! Collected £${pot} from the pot.`);
+    } else {
+      renderSpaceCard(space, 'Portobello Market. Rest up. Nothing to collect.');
+    }
+    document.getElementById('actions').innerHTML = '<button class="act-btn" onclick="endTurn()">Continue</button>';
+  }
+}
+
+function getEffectivePrice(space) {
+  const p = G.players[G.current];
+  let price = space.price;
+  if (space.type === 'dorian' && p.properties.includes(7)) price -= 20;
+  if (p.properties.some(id => id === 12)) price -= Math.floor(space.price * 0.2);
+  return Math.max(10, price);
+}
+
+function renderBuyableSpace(space) {
+  const price = getEffectivePrice(space);
+  const canAfford = G.players[G.current].cash >= price;
+  let desc = `<div class="sc-price">£${price}</div><div class="sc-rent">Rent: £${space.rent} | Upgraded: £${space.upgraded}</div>`;
+  if (space.special) desc += `<div class="sc-special">${space.special}</div>`;
+  if (price < space.price) desc += `<div class="sc-special" style="color:var(--green)">Discount applied! (was £${space.price})</div>`;
+
+  document.getElementById('spaceCard').innerHTML = `
+    <div class="sc-header"><span class="sc-type" style="background:${space.color}22;color:${space.color}">${space.type === 'dorian' ? 'Dorian Group' : 'Tier ' + space.tier?.slice(1)}</span><span class="sc-name">${space.emoji||''} ${space.name}</span></div>
+    <div class="sc-body">${desc}</div>
+  `;
+  document.getElementById('actions').innerHTML = `
+    <button class="act-btn primary" ${canAfford?'':'disabled'} onclick="buyProperty(${space.id},${price})">Buy £${price}</button>
+    <button class="act-btn" onclick="endTurn()">Pass</button>
+  `;
+}
+
+function renderOwnedSpace(space) {
+  const ps = G.propertyState[space.id];
+  const canUpgrade = !ps.upgraded && G.players[G.current].cash >= Math.floor(space.price / 2);
+  const canReplicate = space.id === 16 && !ps.eelDoubled && G.players[G.current].cash >= 150;
+
+  let btns = '';
+  if (canUpgrade) btns += `<button class="act-btn" onclick="upgradeProperty(${space.id})">Upgrade £${Math.floor(space.price/2)}</button>`;
+  if (canReplicate) btns += `<button class="act-btn" onclick="replicateEEL()">Replicate EEL £150</button>`;
+  btns += '<button class="act-btn" onclick="endTurn()">Continue</button>';
+
+  renderSpaceCard(space, `You own this! ${ps.upgraded ? '(Upgraded)' : ''}`);
+  document.getElementById('actions').innerHTML = btns;
+}
+
+function calculateRent(space, owner) {
+  let rent = G.propertyState[space.id]?.upgraded ? space.upgraded : space.rent;
+
+  // Tier pair bonus
+  if (space.type === 'property' && space.tier) {
+    const tierSpaces = BOARD.filter(b => b.tier === space.tier).map(b => b.id);
+    if (tierSpaces.every(id => G.players[owner].properties.includes(id))) rent *= 2;
+  }
+
+  // Robin's wild rent
+  if (space.id === 4) {
+    const roll = Math.floor(Math.random() * 6) + 1;
+    if (roll <= 2) return -10;
+    rent = roll <= 4 ? 15 : 30;
+    if (G.propertyState[4]?.upgraded) rent = Math.floor(rent * 1.5);
+  }
+
+  // Dorian flagship
+  if (space.id === 23) {
+    const dorianCount = G.players[owner].properties.filter(id => BOARD[id].type === 'dorian').length;
+    if (dorianCount >= 3) rent *= 3;
+  }
+
+  // Urchin seasonal
+  if (space.id === 19 && (G.round <= 6 || G.round >= 19)) rent *= 2;
+
+  // EEL replicated
+  if (space.id === 16 && G.propertyState[16]?.eelDoubled) rent *= 2;
+
+  // EEL halved by Ivan Orkin
+  if (space.id === 16 && G.round <= (G.eelHalvedUntil || -1)) rent = Math.floor(rent / 2);
+
+  // Global multiplier
+  rent = Math.floor(rent * (G.rentMultiplier || 1));
+
+  // Halved rounds
+  if (G.rentHalvedRound === G.round) rent = Math.floor(rent / 2);
+  if (G.dorianHalvedRound === G.round && space.type === 'dorian') rent = Math.floor(rent / 2);
+
+  return rent;
+}
+
+function handleRent(space, owner) {
+  const p = G.players[G.current];
+
+  if (p.skipNextRent) {
+    p.skipNextRent = false;
+    renderSpaceCard(space, `Owned by ${G.players[owner].name}. But you skip rent this time!`);
+    document.getElementById('actions').innerHTML = '<button class="act-btn" onclick="endTurn()">Continue</button>';
+    return;
+  }
+
+  let rent = calculateRent(space, owner);
+
+  if (rent < 0) {
+    G.addCash(owner, Math.abs(rent));
+    renderSpaceCard(space, `Robin's Ramen wild card! ${G.players[owner].name} pays YOU £${Math.abs(rent)}!`);
+    G.addCash(G.current, Math.abs(rent));
+  } else {
+    G.addCash(G.current, -rent);
+    G.addCash(owner, rent);
+    renderSpaceCard(space, `Owned by ${G.players[owner].name}. Pay £${rent} rent.`);
+    checkBankruptcy();
+  }
+  document.getElementById('actions').innerHTML = '<button class="act-btn" onclick="endTurn()">Continue</button>';
+}
+
+function buyProperty(id, price) {
+  G.addCash(G.current, -price);
+  G.players[G.current].properties.push(id);
+  renderSpaceCard(BOARD[id], `Purchased for £${price}!`);
+  document.getElementById('actions').innerHTML = '<button class="act-btn" onclick="endTurn()">Continue</button>';
+  renderScoreboard();
+}
+
+function upgradeProperty(id) {
+  const cost = Math.floor(BOARD[id].price / 2);
+  G.addCash(G.current, -cost);
+  G.propertyState[id].upgraded = true;
+  renderSpaceCard(BOARD[id], `Upgraded for £${cost}!`);
+  document.getElementById('actions').innerHTML = '<button class="act-btn" onclick="endTurn()">Continue</button>';
+}
+
+function replicateEEL() {
+  G.addCash(G.current, -150);
+  G.propertyState[16].eelDoubled = true;
+  renderSpaceCard(BOARD[16], 'EEL replicated! Rent permanently doubled.');
+  document.getElementById('actions').innerHTML = '<button class="act-btn" onclick="endTurn()">Continue</button>';
+}
+
+function drawCard(type) {
+  const deck = type === 'chance' ? CHANCE_CARDS : CHEST_CARDS;
+  const idxArr = type === 'chance' ? G.chanceDeck : G.chestDeck;
+  const idxKey = type === 'chance' ? 'chanceIdx' : 'chestIdx';
+
+  if (G[idxKey] >= idxArr.length) { G[idxKey] = 0; shuffle(idxArr); }
+  const card = deck[idxArr[G[idxKey]++]];
+
+  const result = card.effect(G);
+  const label = type === 'chance' ? 'CHANCE' : 'COMMUNITY CHEST';
+  const color = type === 'chance' ? 'var(--chance)' : 'var(--chest)';
+
+  showModal(label, `<div style="margin-bottom:10px">${card.text}</div><div style="font-size:0.85rem;color:var(--text-dim)">${result}</div>`, () => {
+    checkBankruptcy();
+    renderBoard();
+    renderScoreboard();
+    renderPlayerBar();
+    document.getElementById('actions').innerHTML = '<button class="act-btn" onclick="endTurn()">Continue</button>';
+  }, color);
+}
+
+function renderSpaceCard(space, message) {
+  document.getElementById('spaceCard').innerHTML = `
+    <div class="sc-header"><span class="sc-type" style="background:${space.color}22;color:${space.color}">${space.type}</span><span class="sc-name">${space.emoji||''} ${space.name}</span></div>
+    <div class="sc-body">${message}</div>
+  `;
+}
+
+function showModal(title, body, onClose, color) {
+  const overlay = document.getElementById('modalOverlay');
+  document.getElementById('modalCard').innerHTML = `
+    <div class="modal-type" style="color:${color||'var(--accent)'}">${title}</div>
+    <div class="modal-text">${body}</div>
+    <button class="modal-btn" id="modalClose">OK</button>
+  `;
+  overlay.style.display = 'flex';
+  document.getElementById('modalClose').onclick = () => { overlay.style.display = 'none'; if (onClose) onClose(); };
+}
+
+function checkBankruptcy() {
+  const p = G.players[G.current];
+  if (p.cash <= 0 && !p.bankrupt) {
+    p.bankrupt = true;
+    p.properties.forEach(id => { delete G.propertyState[id]?.owner; });
+    p.properties = [];
+
+    const alive = G.players.filter(p => !p.bankrupt);
+    if (alive.length <= 1) {
+      setTimeout(() => endGame(), 500);
+    }
+  }
+}
+
+function endTurn() {
+  if (G.extraTurn) {
+    G.extraTurn = false;
+    G.turnPhase = 'roll';
+    renderGame();
+    return;
+  }
+
+  // Next player
+  let next = G.current;
+  let attempts = 0;
+  do {
+    next = (next + 1) % G.players.length;
+    attempts++;
+    if (attempts > G.players.length) break;
+  } while (G.players[next].bankrupt);
+
+  if (next <= G.current || next === 0) G.round++;
+
+  // Check round limit
+  if (G.round > 20) { endGame(); return; }
+
+  // Check if only one alive
+  const alive = G.players.filter(p => !p.bankrupt);
+  if (alive.length <= 1) { endGame(); return; }
+
+  G.current = next;
+  const p = G.players[G.current];
+
+  // Handle jail
+  if (p.inJail) {
+    if (p.jailFree > 0) {
+      p.jailFree--;
+      p.inJail = false;
+    } else {
+      p.inJail = false;
+      showHandoff();
+      return;
+    }
+  }
+
+  G.doublesCount = 0;
+  showHandoff();
+}
+
+function endGame() {
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('resultsScreen').style.display = 'flex';
+
+  const standings = G.players.map((p, i) => ({
+    ...p, idx: i,
+    netWorth: p.cash + p.properties.reduce((s, id) => s + BOARD[id].price, 0)
+  })).sort((a, b) => {
+    if (a.bankrupt && !b.bankrupt) return 1;
+    if (!a.bankrupt && b.bankrupt) return -1;
+    return b.netWorth - a.netWorth;
+  });
+
+  const winner = standings[0];
+  document.getElementById('winnerName').innerHTML = `<span style="color:${winner.color}">${winner.name}</span>`;
+  document.getElementById('winnerQuote').textContent = '"Quality over everything else." - Chris D\'Silva';
+
+  document.getElementById('finalStandings').innerHTML = standings.map((p, i) =>
+    `<div class="standing-row"><span class="rank">#${i+1}</span><div class="s-dot" style="background:${p.color}"></div><span class="s-name">${p.name}${p.bankrupt?' (bankrupt)':''}</span><span class="s-worth">£${p.netWorth}</span></div>`
+  ).join('');
+
+  spawnConfetti();
+}
+
+function spawnConfetti() {
+  const c = document.getElementById('confettiContainer');
+  const colors = ['#d4a843','#f0d78c','#e05545','#42a5f5','#66bb6a','#ab47bc','#ef6c00','#00897b'];
+  for (let i=0;i<40;i++){
+    const p=document.createElement('div');p.className='confetti-piece';
+    p.style.left=Math.random()*100+'%';p.style.top=Math.random()*40+'%';
+    p.style.background=colors[Math.floor(Math.random()*colors.length)];
+    p.style.borderRadius=Math.random()>0.5?'50%':'2px';
+    p.style.width=(Math.random()*8+4)+'px';p.style.height=(Math.random()*8+4)+'px';
+    p.style.animationDelay=Math.random()*0.5+'s';p.style.animationDuration=(Math.random()*1+1)+'s';
+    c.appendChild(p);setTimeout(()=>p.remove(),2000);
+  }
+}
+
+initSetup();
+</script>
+
+</body>
+</html>

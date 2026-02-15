@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Dorian Simulator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0808;
+    --card: #161210;
+    --card-border: #2a201a;
+    --accent: #e8a838;
+    --accent-dim: #c4882e;
+    --accent-glow: rgba(232, 168, 56, 0.2);
+    --green: #4caf50;
+    --red: #e05545;
+    --text: #f0ece4;
+    --text-dim: #8a7e70;
+    --quality: #f6c644;
+    --cash: #4caf50;
+    --reputation: #5b9bd5;
+    --sanity: #c77dba;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TITLE SCREEN */
+  .title-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    gap: 24px;
+  }
+
+  .title-screen h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent), #f0d78c, var(--accent-dim));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .title-screen .subtitle {
+    font-size: 1rem;
+    color: var(--text-dim);
+    max-width: 440px;
+    line-height: 1.6;
+  }
+
+  .business-icons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .biz-icon {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    text-align: center;
+    min-width: 80px;
+    transition: transform 0.3s;
+  }
+
+  .biz-icon:hover { transform: translateY(-3px); }
+  .biz-icon .emoji { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+  .biz-icon .label { font-size: 0.6rem; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--accent-dim), var(--accent));
+    color: #0a0808;
+    border: none;
+    padding: 16px 48px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px var(--accent-glow);
+  }
+
+  .btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--accent-glow);
+  }
+
+  /* GAME SCREEN */
+  .game-screen { display: none; flex-direction: column; gap: 16px; padding-top: 12px; }
+
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .top-bar .decision-count {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 0.95rem;
+  }
+
+  /* METERS */
+  .meters-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .meter {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .meter-emoji { font-size: 1.1rem; }
+
+  .meter-bar-outer {
+    width: 100%;
+    height: 8px;
+    background: var(--card);
+    border-radius: 4px;
+    overflow: visible;
+    position: relative;
+    border: 1px solid var(--card-border);
+  }
+
+  .meter-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+  }
+
+  .meter-bar-preview {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-radius: 3px;
+    opacity: 0;
+    transition: opacity 0.2s, width 0.3s;
+  }
+
+  .meter-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .meter-label {
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .meter.danger .meter-bar-outer {
+    animation: meterPulse 1.5s ease-in-out infinite;
+  }
+
+  .meter.critical .meter-bar-outer {
+    animation: meterFlash 0.6s ease-in-out infinite;
+  }
+
+  /* SCENARIO CARD */
+  .category-tag {
+    display: inline-block;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    padding: 3px 10px;
+    border-radius: 16px;
+    font-size: 0.65rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    align-self: flex-start;
+  }
+
+  .scenario-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px 20px;
+    text-align: center;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    animation: cardEnter 0.4s ease;
+  }
+
+  .scenario-card.exit-left {
+    animation: cardExitLeft 0.4s ease forwards;
+  }
+
+  .scenario-card.exit-right {
+    animation: cardExitRight 0.4s ease forwards;
+  }
+
+  .scenario-biz {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .scenario-biz .biz-emoji { font-size: 1.2rem; }
+
+  .scenario-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  /* CHOICES */
+  .choices-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .choice-btn {
+    background: var(--card);
+    border: 2px solid var(--card-border);
+    border-radius: 12px;
+    padding: 14px 10px;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-align: center;
+    color: var(--text);
+  }
+
+  .choice-btn:first-child:hover {
+    border-color: var(--red);
+    transform: translateX(-4px);
+  }
+
+  .choice-btn:last-child:hover {
+    border-color: var(--green);
+    transform: translateX(4px);
+  }
+
+  .choice-btn.disabled { pointer-events: none; opacity: 0.5; }
+
+  .choice-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .choice-effects {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .effect-tag {
+    font-size: 0.6rem;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .effect-tag.positive { color: var(--green); background: rgba(76, 175, 80, 0.12); }
+  .effect-tag.negative { color: var(--red); background: rgba(224, 85, 69, 0.12); }
+
+  /* AFTERMATH */
+  .aftermath-card {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    animation: slideUp 0.4s ease;
+  }
+
+  .aftermath-text {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* RESULTS SCREEN */
+  .results-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    gap: 20px;
+    padding: 40px 20px;
+  }
+
+  .results-screen h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--red);
+  }
+
+  .death-message {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    max-width: 440px;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .survived-count {
+    font-size: 3rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    background: linear-gradient(135deg, var(--accent), #f0d78c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .survived-label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-top: -12px;
+  }
+
+  .final-meters {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
+
+  .final-meter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .final-meter .fm-emoji { font-size: 1.3rem; }
+  .final-meter .fm-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  .final-meter .fm-label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .closing-quote {
+    max-width: 400px;
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    border-left: 3px solid var(--accent);
+    padding-left: 14px;
+    text-align: left;
+    font-style: italic;
+  }
+
+  .closing-author {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    margin-top: 4px;
+    font-style: normal;
+  }
+
+  .btn-restart {
+    background: transparent;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+    padding: 14px 36px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-restart:hover { background: var(--accent); color: #0a0808; }
+
+  /* MILESTONE */
+  .milestone-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 8, 8, 0.85);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 12px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .milestone-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .milestone-sub {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    font-style: italic;
+    max-width: 360px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  /* ANIMATIONS */
+  @keyframes cardEnter {
+    from { opacity: 0; transform: translateY(30px) rotate(0.5deg); }
+    to { opacity: 1; transform: translateY(0) rotate(0deg); }
+  }
+
+  @keyframes cardExitLeft {
+    to { opacity: 0; transform: translateX(-110%) rotate(-6deg); }
+  }
+
+  @keyframes cardExitRight {
+    to { opacity: 0; transform: translateX(110%) rotate(6deg); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes meterPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(224, 85, 69, 0); }
+    50% { box-shadow: 0 0 10px rgba(224, 85, 69, 0.4); }
+  }
+
+  @keyframes meterFlash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @keyframes screenShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-3px); }
+    40% { transform: translateX(3px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
+  }
+
+  @keyframes confettiDrop {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(80px) rotate(360deg); opacity: 0; }
+  }
+
+  .confetti-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 1000; overflow: hidden;
+  }
+
+  .confetti-piece {
+    position: absolute; width: 10px; height: 10px;
+    animation: confettiDrop 1.5s ease-out forwards;
+  }
+
+  .shake { animation: screenShake 0.4s ease; }
+
+  @media (max-width: 500px) {
+    .title-screen h1 { font-size: 2rem; }
+    .scenario-text { font-size: 0.9rem; }
+    .choices-row { gap: 6px; }
+    .choice-btn { padding: 10px 8px; }
+    .choice-label { font-size: 0.78rem; }
+    .biz-icon { min-width: 60px; padding: 8px 10px; }
+    .biz-icon .emoji { font-size: 1.1rem; }
+    .biz-icon .label { font-size: 0.5rem; }
+    .meter-emoji { font-size: 0.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+
+  <!-- TITLE SCREEN -->
+  <div class="title-screen" id="titleScreen">
+    <h1>The Dorian Simulator</h1>
+    <p class="subtitle">Run Chris D'Silva's Notting Hill restaurant empire. Balance quality, cash, reputation, and your sanity. Try not to lose all four.</p>
+    <div class="business-icons">
+      <div class="biz-icon"><span class="emoji">🐟</span><span class="label">Fish+Meat</span></div>
+      <div class="biz-icon"><span class="emoji">🛒</span><span class="label">SoD</span></div>
+      <div class="biz-icon"><span class="emoji">⭐</span><span class="label">Dorian</span></div>
+      <div class="biz-icon"><span class="emoji">🐙</span><span class="label">Urchin</span></div>
+      <div class="biz-icon"><span class="emoji">🍣</span><span class="label">EEL</span></div>
+      <div class="biz-icon"><span class="emoji">💀</span><span class="label">Robin's</span></div>
+    </div>
+    <button class="btn-start" onclick="startGame()">Start Empire</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="game-screen" id="gameScreen">
+    <div class="top-bar">
+      <span class="decision-count" id="decisionLabel">Decision #1</span>
+      <span id="bestLabel" style="font-size:0.75rem"></span>
+    </div>
+
+    <div class="meters-row" id="metersRow"></div>
+
+    <span class="category-tag" id="categoryTag"></span>
+
+    <div class="scenario-card" id="scenarioCard">
+      <div class="scenario-biz" id="scenarioBiz"></div>
+      <p class="scenario-text" id="scenarioText"></p>
+    </div>
+
+    <div class="choices-row" id="choicesRow"></div>
+
+    <div class="aftermath-card" id="aftermathCard">
+      <p class="aftermath-text" id="aftermathText"></p>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div class="results-screen" id="resultsScreen">
+    <h2 id="resultsTitle">Game Over</h2>
+    <p class="death-message" id="deathMessage"></p>
+    <div class="survived-count" id="survivedCount"></div>
+    <p class="survived-label">decisions survived</p>
+    <div class="final-meters" id="finalMeters"></div>
+    <div class="closing-quote" id="closingQuote"></div>
+    <button class="btn-restart" onclick="restartGame()">Run It Again</button>
+  </div>
+
+</div>
+
+<div class="milestone-overlay" id="milestoneOverlay">
+  <div class="milestone-text" id="milestoneText"></div>
+  <div class="milestone-sub" id="milestoneSub"></div>
+</div>
+
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+const BUSINESSES = {
+  fish:     { name: 'Fish + Meat', emoji: '🐟' },
+  sod:      { name: 'Supermarket of Dreams', emoji: '🛒' },
+  dorian:   { name: 'Dorian', emoji: '⭐' },
+  urchin:   { name: 'Urchin', emoji: '🐙' },
+  eel:      { name: 'EEL', emoji: '🍣' },
+  robins:   { name: "Robin's Ramen", emoji: '💀' },
+  empire:   { name: 'The Empire', emoji: '👑' },
+  personal: { name: 'Chris D\'Silva', emoji: '🇦🇺' }
+};
+
+const METERS = [
+  { id: 'quality',    emoji: '⭐', label: 'Quality',    color: 'var(--quality)' },
+  { id: 'cash',       emoji: '💰', label: 'Cash',       color: 'var(--cash)' },
+  { id: 'reputation', emoji: '🏆', label: 'Reputation', color: 'var(--reputation)' },
+  { id: 'sanity',     emoji: '🧠', label: 'Sanity',     color: 'var(--sanity)' }
+];
+
+const DEATH_LOW = {
+  quality: "The food is shit. Michelin revoked the star. Grace Dent wrote a 200-word obituary. Even the regulars stopped coming.",
+  cash: "The bank called. Then the landlord called. Then your mum called to say she told you so. The Dorian Group is bankrupt.",
+  reputation: "Someone filmed you screaming at a customer. It went viral. Jay Rayner mentioned it on a podcast. You are now the most hated restaurateur in London.",
+  sanity: "You haven't slept in 6 days. You just tried to make a reservation at your own restaurant under a fake name. It's time to go home."
+};
+
+const DEATH_HIGH = {
+  quality: "Every dish now takes 47 minutes to plate. You've fired 3 chefs for using the wrong microplane. The food is perfect. Nobody can afford it and the kitchen hates you.",
+  cash: "You're sitting on a cash pile doing nothing with it. A private equity firm noticed. They made an offer you couldn't refuse. You now answer to a board that says 'unit economics' unironically.",
+  reputation: "You've become a celebrity chef. You're on morning TV. You have a line of frozen ready meals. You catch yourself saying 'brand synergy'. You've become Ewan Venters.",
+  sanity: "You're so relaxed you forgot to order fish for Friday. You missed the Michelin inspector because you were at a sound bath. Chris D'Silva has gone full Notting Hill yoga mum."
+};
+
+const QUOTES = [
+  { text: "Quality over everything else. Unless everything else is on fire.", author: "Chris D'Silva" },
+  { text: "No omakase horseshit and ponce. Just good food, good people, and hopefully enough cash to pay rent.", author: "Chris D'Silva" },
+  { text: "A fine dining fucking expensive restaurant wrapped up in a simple neighbourhood vibe. That's the dream. It's also the nightmare.", author: "Chris D'Silva" },
+  { text: "Every business is a marketing vehicle for the others. Including the ones that are losing money.", author: "Chris D'Silva" },
+  { text: "I sank 500k into a chicken sandwich business before this. So whatever you just did, it's not the worst decision I've seen.", author: "Chris D'Silva" },
+  { text: "You need to fail once before you get the next thing right.", author: "Chris D'Silva" },
+  { text: "99% of places on the high street are charity shops who aren't interested in making money.", author: "Chris D'Silva" }
+];
+
+const MILESTONES = {
+  10: { text: "10 Decisions", sub: "\"The money will come if you do something good. It is merely the output of phenomenal work.\"" },
+  20: { text: "20 Decisions", sub: "\"One needs to be prepared to go all in. It will consume you entirely.\"" },
+  30: { text: "30 Decisions", sub: "\"You absolute maniac. Most real restaurateurs don't survive this long either.\"" }
+};
+
+const SCENARIOS = [
+  // STAFF / CHEF DECISIONS
+  {
+    cat: 'STAFF CRISIS', biz: 'dorian',
+    text: "Max Coen has been doing 80-hour weeks at Dorian. He asks for a week off. The Michelin inspection window is in 10 days.",
+    choices: [
+      { label: '"Rest up, king"', effects: { quality: -5, sanity: 10 }, aftermath: "Max comes back refreshed. The inspection has a few rough edges but the team respects you for it." },
+      { label: '"Not now, we\'re so close"', effects: { quality: 10, sanity: -15, reputation: -5 }, aftermath: "The inspection is flawless. Max starts looking at job listings three weeks later." }
+    ]
+  },
+  {
+    cat: 'STAFF CRISIS', biz: 'dorian',
+    text: "Your best sous chef just got offered head chef at a new Mayfair opening. She wants to stay but needs a 40% raise and equity.",
+    choices: [
+      { label: '"Match it. She\'s worth it."', effects: { cash: -15, quality: 10 }, aftermath: "She stays. The other chefs notice and start expecting similar. You've set a precedent." },
+      { label: '"Wish her well."', effects: { quality: -10, reputation: 5 }, aftermath: "She leaves gracefully. You promote from within. It takes 3 months to get back to standard." }
+    ]
+  },
+  {
+    cat: 'STAFF CRISIS', biz: 'eel',
+    text: "Your EEL head chef is brilliant on the pass but you've noticed him drinking during service. Not drunk - but it's a line.",
+    choices: [
+      { label: '"Pull him aside quietly"', effects: { sanity: -5, quality: 5 }, aftermath: "He gets defensive but cuts back. Kitchen tension is palpable for weeks." },
+      { label: '"Ignore it for now"', effects: { quality: -10, sanity: 5 }, aftermath: "It becomes a problem. A customer finds a bandage in their chirashi two weeks later." }
+    ]
+  },
+  {
+    cat: 'STAFF CRISIS', biz: 'dorian',
+    text: "Your Dorian floor manager is sleeping with a line cook. It was fine until the breakup. Now service is frosty and customers notice.",
+    choices: [
+      { label: '"Move one to another site"', effects: { quality: -5, cash: -5, sanity: 5 }, aftermath: "Problem solved but you're now short-staffed at Dorian on Saturday nights." },
+      { label: '"Tell them to be adults"', effects: { sanity: -10, reputation: -5 }, aftermath: "They escalate. She quits mid-service on a Friday. Someone films it." }
+    ]
+  },
+  {
+    cat: 'COSTS', biz: 'empire',
+    text: "The NI increase just hit. Across 6 businesses, staff costs are up 12%. The accountant says cut 8 roles or raise prices 15%.",
+    choices: [
+      { label: '"Cut the roles"', effects: { quality: -10, cash: 10, reputation: -5, sanity: -5 }, aftermath: "Remaining staff are stretched thin. You're back in the kitchen three nights a week." },
+      { label: '"Raise prices"', effects: { cash: -5, quality: 5, reputation: -10 }, aftermath: "A food blogger writes 'Dorian now charges Mayfair prices for Notting Hill vibes'. The comment section agrees." }
+    ]
+  },
+  {
+    cat: 'OPPORTUNITY', biz: 'dorian',
+    text: "A stage from ex-Noma wants to join Dorian for 3 months. Incredible talent but she has strong opinions about plating that might clash with your 'no ponce' philosophy.",
+    choices: [
+      { label: '"Bring her in"', effects: { quality: 10, sanity: -5, cash: -5 }, aftermath: "She elevates two dishes. She also calls your signature dessert 'rustic'. Max overhears and is not amused." },
+      { label: '"We\'re not that kind of restaurant"', effects: { quality: -5, reputation: 5 }, aftermath: "She goes to a Mayfair competitor and they get a lot of press about it." }
+    ]
+  },
+  {
+    cat: 'STRATEGIC', biz: 'empire',
+    text: "Three of your most senior chefs want equity stakes. They've built these kitchens from nothing. But equity in a restaurant group is... complicated.",
+    choices: [
+      { label: '"Phantom equity. Let\'s do it."', effects: { sanity: 10, cash: -10, quality: 10 }, aftermath: "They're invested. Literally and figuratively. Kitchen morale is the highest it's been in a year." },
+      { label: '"Bonuses, not equity."', effects: { cash: -5, quality: -5, sanity: 5 }, aftermath: "They accept but the dream of ownership fades. Two start looking for their own sites." }
+    ]
+  },
+
+  // NEW VENTURES
+  {
+    cat: 'NEW VENTURE', biz: 'eel',
+    text: "A prime site in Soho just came up for a second EEL. The format is scalable - that was always the plan. But you're already stretched across 6 concepts.",
+    choices: [
+      { label: '"Lock it in"', effects: { cash: -15, reputation: 10, sanity: -10 }, aftermath: "You sign the lease. The build-out begins. Your weekends disappear entirely." },
+      { label: '"Not yet. Solidify first."', effects: { cash: 5, sanity: 10, reputation: -5 }, aftermath: "The site goes to a competitor. They open a similar concept. You tell yourself it's fine." }
+    ]
+  },
+  {
+    cat: 'NEW VENTURE', biz: 'sod',
+    text: "The SoD team proposes a curated wine delivery subscription. Monthly box, tied to the restaurant menus. The margins could be incredible.",
+    choices: [
+      { label: '"Launch it"', effects: { cash: -10, reputation: 10, quality: 5 }, aftermath: "The first box sells out in 4 hours. You spend the next month personally calling suppliers for stock you don't have." },
+      { label: '"Focus on the core"', effects: { sanity: 5, cash: 5 }, aftermath: "Three months later a competitor launches exactly this. You read about it in the Evening Standard." }
+    ]
+  },
+  {
+    cat: 'NEW VENTURE', biz: 'empire',
+    text: "A luxury hotel in Mykonos wants Dorian to do a 2-week summer pop-up. Great exposure. But it means you and 6 staff leaving London in peak season.",
+    choices: [
+      { label: '"Greece. Let\'s go."', effects: { reputation: 15, cash: -5, quality: -10, sanity: -10 }, aftermath: "Instagram goes mad. Michelin takes note. The London sites wobble without you. One review mentions 'inconsistency'." },
+      { label: '"London in summer is our moment"', effects: { quality: 5, sanity: 5, reputation: -5 }, aftermath: "You see photos of your competitor's Ibiza pop-up all over Instagram. Your kitchen is tight though." }
+    ]
+  },
+  {
+    cat: 'NEW VENTURE', biz: 'dorian',
+    text: "The space next to Dorian is available. You could add a 14-seat private dining room. Capital cost: 200k. Potential revenue: 30k/month.",
+    choices: [
+      { label: '"Build it"', effects: { cash: -15, quality: 5, reputation: 10 }, aftermath: "The PDR books out for 3 months straight. Cash position is tight but the margins are beautiful." },
+      { label: '"We\'re not a conference venue"', effects: { sanity: 5, quality: 5 }, aftermath: "The space becomes a coffee shop. You watch people drink flat whites where your wine list could have been." }
+    ]
+  },
+  {
+    cat: 'IDENTITY CRISIS', biz: 'urchin',
+    text: "The Urchin team wants to add an omakase counter. High-ticket, on-trend. But you famously said 'no omakase horseshit and ponce'.",
+    choices: [
+      { label: '"It\'s a chef\'s selection. Not omakase."', effects: { quality: 10, cash: 5, reputation: -5, sanity: -5 }, aftermath: "You spend 20 minutes explaining to a journalist why it's definitely not omakase. She doesn't buy it." },
+      { label: '"I said what I said."', effects: { quality: -5, reputation: 10, sanity: 5 }, aftermath: "The team respects the conviction. A food blogger writes about your 'refreshing authenticity'." }
+    ]
+  },
+  {
+    cat: 'NEW VENTURE', biz: 'eel',
+    text: "A Dubai hospitality group wants to franchise EEL for the Middle East. 500k upfront plus 5% revenue. But quality control at distance...",
+    choices: [
+      { label: '"Take the deal"', effects: { cash: 15, reputation: 5, quality: -10, sanity: -5 }, aftermath: "The money lands. Six months later someone sends you a photo of the Dubai EEL serving California rolls. You don't sleep." },
+      { label: '"EEL doesn\'t franchise"', effects: { quality: 5, sanity: 5, cash: -5 }, aftermath: "The Dubai group opens their own sushi concept called 'MORAY'. Your lawyer sighs." }
+    ]
+  },
+
+  // THREATS
+  {
+    cat: 'THREAT', biz: 'dorian',
+    text: "Your Dorian landlord wants to renegotiate. Current rent: 25k/month. New ask: 38k. The lease is up in 6 months. Moving would cost the Michelin star.",
+    choices: [
+      { label: '"Negotiate hard"', effects: { cash: -5, sanity: -10, reputation: 5 }, aftermath: "After weeks of stress you settle at 32k. Your landlord now hates you. Worth it." },
+      { label: '"Pay it. Dorian doesn\'t move."', effects: { cash: -15, sanity: 5 }, aftermath: "Margins at Dorian are now razor thin. Every empty table feels personal." }
+    ]
+  },
+  {
+    cat: 'THREAT', biz: 'dorian',
+    text: "Your floor manager whispers: 'Table 7. Michelin inspector.' The kitchen is having an off night. One chef called in sick.",
+    choices: [
+      { label: '"Jump on the pass myself"', effects: { quality: 10, sanity: -10, cash: 5 }, aftermath: "You nail it. Table 7 leaves happy. You're drenched in sweat and missed your daughter's school play." },
+      { label: '"Trust the team"', effects: { quality: -5, sanity: 5 }, aftermath: "The team delivers a solid 8/10. Not perfection, but real. You wonder if they noticed the wait on course 3." }
+    ]
+  },
+  {
+    cat: 'THREAT', biz: 'empire',
+    text: "Ewan Venters - that 'brown nosing cunt' - is opening a new concept two streets from Dorian. Big budget, big PR. He's poached one of your waiters already.",
+    choices: [
+      { label: '"Ignore him. We don\'t play that game."', effects: { reputation: 5, sanity: 5, quality: 5 }, aftermath: "You stay focused. Venters' opening gets press but your regulars don't flinch. Quality speaks." },
+      { label: '"Out-market him"', effects: { cash: -15, reputation: 10, sanity: -10 }, aftermath: "You throw a legendary counter-launch party. It costs a fortune. Everyone talks about Dorian for a week." }
+    ]
+  },
+  {
+    cat: 'THREAT', biz: 'robins',
+    text: "Robin's Ramen just got a 3-star food hygiene rating. Not terrible, but for a group that trades on quality, it's a PR disaster waiting to happen.",
+    choices: [
+      { label: '"Shut it for a week. Deep clean."', effects: { cash: -10, quality: 10, sanity: -5 }, aftermath: "You lose a week of revenue but get a 5-star re-inspection. Nobody noticed except your accountant." },
+      { label: '"Fix it quietly. Stay open."', effects: { cash: 5, quality: -5, reputation: -10 }, aftermath: "A food blogger does a hygiene score round-up. Robin's: 3 stars, part of the Dorian Group. It's on the internet forever." }
+    ]
+  },
+  {
+    cat: 'THREAT', biz: 'fish',
+    text: "Your main fish supplier just went bust. Fish + Meat is the supply chain engine for the whole group. You need a new supplier by Friday or three restaurants have no fish.",
+    choices: [
+      { label: '"Emergency switch to the premium supplier"', effects: { cash: -10, quality: 5 }, aftermath: "The fish is better than before. Your margins are now thinner than sashimi." },
+      { label: '"Wing it. Call everyone."', effects: { quality: -10, sanity: -10, cash: 5 }, aftermath: "You spend 72 hours on the phone. Fish quality is patchy for two weeks. One batch of sea bass arrives suspicious." }
+    ]
+  },
+  {
+    cat: 'THREAT', biz: 'dorian',
+    text: "An influencer with 500k followers posts a TikTok calling Dorian 'overpriced, pretentious, and tiny portions'. 200k views and climbing.",
+    choices: [
+      { label: '"Respond publicly with grace"', effects: { reputation: 5, sanity: -10 }, aftermath: "Your measured response gets praise. The comments turn into people defending Dorian. You still can't stop refreshing." },
+      { label: '"Never engage. Anti-social media forever."', effects: { reputation: -5, sanity: 5, quality: 5 }, aftermath: "You ignore it. The news cycle moves on in 48 hours. You channel the rage into perfecting the tasting menu." }
+    ]
+  },
+
+  // CUSTOMER MOMENTS
+  {
+    cat: 'CUSTOMER MOMENT', biz: 'sod',
+    text: "A customer at the Supermarket of Dreams is holding a single mango priced at 98 pounds. She's taking a photo. This could go either way.",
+    choices: [
+      { label: '"Walk over and tell the story"', effects: { reputation: 5, cash: 5, quality: 5, sanity: -5 }, aftermath: "You tell the story of the Miyazaki mango. She buys it and posts a rave review. You just spent 15 minutes selling one mango." },
+      { label: '"Let the product speak"', effects: { sanity: 5 }, aftermath: "She puts it back and buys a 4 quid melon. The photo ends up on Reddit with the caption 'London is broken'." }
+    ]
+  },
+  {
+    cat: 'CUSTOMER MOMENT', biz: 'dorian',
+    text: "A regular brings a bottle of DRC La Tache to Dorian. A 3,000 pound bottle. He wants to pair it with the tasting menu. Your corkage is 50 quid.",
+    choices: [
+      { label: '"Waive the corkage. This is a moment."', effects: { cash: -5, reputation: 10, quality: 5 }, aftermath: "He orders 4 more courses. Tips 300. Brings 3 friends the following week. Each with a bottle." },
+      { label: '"Charge corkage. Rules are rules."', effects: { cash: 5, reputation: -5, sanity: 5 }, aftermath: "He pays without complaining but you can tell. He doesn't come back for two months." }
+    ]
+  },
+  {
+    cat: 'VIBE CHECK', biz: 'dorian',
+    text: "A friend suggests putting a DJ in Dorian on Saturday nights. 'People want a vibe, Chris.' The Michelin people would probably not approve.",
+    choices: [
+      { label: '"DJ on Saturdays. Life is short."', effects: { reputation: -5, cash: 10, quality: -5, sanity: 10 }, aftermath: "Dorian Saturdays become legendary. Spend per head up 40%. A Michelin inspector visits Saturday. They look confused." },
+      { label: '"This is a restaurant, not a nightclub."', effects: { quality: 5, reputation: 5, sanity: -5 }, aftermath: "The competitor down the road starts DJ nights. They're packed. You eat dinner at your own restaurant in silence." }
+    ]
+  },
+  {
+    cat: 'CUSTOMER MOMENT', biz: 'dorian',
+    text: "An Oscar-winning actor wants to book all of Dorian for a private dinner. 12 guests. Triple the rate. But it's a Friday - your regulars get turned away.",
+    choices: [
+      { label: '"Take the booking"', effects: { cash: 15, reputation: 10, quality: -5, sanity: -5 }, aftermath: "The dinner is perfect. Photos leak. Three regulars who were turned away haven't come back." },
+      { label: '"We don\'t do buyouts on Fridays"', effects: { reputation: 5, quality: 5, cash: -5 }, aftermath: "He books the competitor. A regular sends you a bottle with a note: 'Thanks for not being that restaurant.'" }
+    ]
+  },
+  {
+    cat: 'CRISIS', biz: 'eel',
+    text: "A customer at EEL is having an allergic reaction. The allergen was declared on the menu but the waiter didn't double-check. The customer is fine but shaken. Her husband is a lawyer.",
+    choices: [
+      { label: '"Full transparency. Comp everything."', effects: { cash: -5, reputation: 5, sanity: -10 }, aftermath: "They appreciate the honesty. No legal action. You overhaul allergen training across all 6 sites. It needed doing." },
+      { label: '"Our menu was clear."', effects: { sanity: 5, reputation: -10 }, aftermath: "Their lawyer sends a letter. It goes nowhere legally but they leave a detailed 1-star Google review mentioning your 'callous response'." }
+    ]
+  },
+
+  // STRATEGIC PIVOTS
+  {
+    cat: 'STRATEGIC', biz: 'robins',
+    text: "Robin's Ramen is losing 8k a month. The positioning is wrong - too expensive for ramen, not special enough for destination dining. You know the truth.",
+    choices: [
+      { label: '"Kill it. Redirect resources."', effects: { cash: 10, quality: 5, sanity: 10, reputation: -5 }, aftermath: "You announce the closure. The team is relieved. A journalist writes 'Even the Dorian Group gets it wrong sometimes.' You frame it." },
+      { label: '"One more rebrand."', effects: { cash: -10, quality: -5, sanity: -10 }, aftermath: "Robin's becomes 'Robin's Izakaya'. The menu changes. The losses slow but don't stop. Three more months sunk." }
+    ]
+  },
+  {
+    cat: 'STRATEGIC', biz: 'empire',
+    text: "A former Hawksmoor ops director wants to join as COO. Brilliant but expensive - 120k plus bonus. You've been doing everything yourself.",
+    choices: [
+      { label: '"Hire her. I can\'t do this alone."', effects: { cash: -15, sanity: 15, quality: 5, reputation: 5 }, aftermath: "Within a month the systems are better, chefs happier, and you slept through the night for the first time in a year." },
+      { label: '"Not yet. I know these businesses."', effects: { sanity: -10, cash: 5 }, aftermath: "You keep grinding. You misread a contract clause because you were exhausted. It costs 15k to fix." }
+    ]
+  },
+  {
+    cat: 'STRATEGIC', biz: 'empire',
+    text: "A hospitality fund wants to invest 2M for 25% of the Dorian Group. The money would fund 2 more EELs and clear all debt. But you'd have a board.",
+    choices: [
+      { label: '"Take the money. Scale properly."', effects: { cash: 15, reputation: 10, quality: -5, sanity: -5 }, aftermath: "The money arrives. So do monthly board meetings. Someone says 'unit economics' and a piece of your soul leaves." },
+      { label: '"I built this myself."', effects: { sanity: 5, reputation: 5, quality: 5, cash: -10 }, aftermath: "You maintain control. The next rent increase hits different when there's no safety net." }
+    ]
+  },
+  {
+    cat: 'STRATEGIC', biz: 'empire',
+    text: "Your marketing person says you need proper social media. Instagram, TikTok, behind-the-scenes. Your anti-social media stance has been part of the brand.",
+    choices: [
+      { label: '"Fine. But keep it authentic."', effects: { reputation: 10, sanity: -10, quality: -5 }, aftermath: "Your first TikTok gets 50k views. You're now expected to post 3 times a week. You catch yourself using the word 'content'." },
+      { label: '"We market through the food."', effects: { quality: 5, sanity: 5, reputation: -10 }, aftermath: "Your competitor's TikTok goes viral. They're mediocre but photogenic. You mutter about substance over style." }
+    ]
+  },
+  {
+    cat: 'STRATEGIC', biz: 'dorian',
+    text: "The Dorian menu has grown to 47 items. The kitchen is struggling with consistency. Your head chef wants to cut to 25 'perfect' dishes.",
+    choices: [
+      { label: '"Cut it. Quality over quantity."', effects: { quality: 15, cash: 5, reputation: 5, sanity: 5 }, aftermath: "The kitchen runs like Swiss clockwork. Three regulars complain their favourite dish is gone. One was the food critic." },
+      { label: '"Keep the range."', effects: { quality: -10, cash: -5, sanity: -5 }, aftermath: "Consistency drops. The same dish tastes different Tuesday vs Saturday. You know that's a problem." }
+    ]
+  },
+  {
+    cat: 'STRATEGIC', biz: 'fish',
+    text: "An opportunity to buy a small fishing boat in Cornwall. Full vertical integration. Capital cost: 80k. Romantic as hell. Operationally... brave.",
+    choices: [
+      { label: '"Buy the boat."', effects: { cash: -15, quality: 10, reputation: 10, sanity: -10 }, aftermath: "You now own a fishing boat. You know nothing about fishing boats. But the story is incredible and the fish is phenomenal." },
+      { label: '"We\'re restaurateurs, not fishermen."', effects: { sanity: 5, cash: 5 }, aftermath: "A competitor buys a farm and gets a Guardian feature. You feel nothing. Almost." }
+    ]
+  },
+
+  // PERSONAL
+  {
+    cat: 'PERSONAL', biz: 'personal',
+    text: "Someone from your old network calls wanting advice about doing an MBA. 'You did so well without one.' It's a 45-minute call and you have service in an hour.",
+    choices: [
+      { label: '"Take the call. Pay it forward."', effects: { sanity: -5, reputation: 5 }, aftermath: "Great conversation. You're 10 minutes late for service. The sous chef gives you a look. You give him a look back." },
+      { label: '"Send a voice note later"', effects: { sanity: 5, reputation: -5 }, aftermath: "You send a thoughtful 3-minute voice note at midnight. They respond 'Thanks!' You're already asleep." }
+    ]
+  },
+  {
+    cat: 'PERSONAL', biz: 'personal',
+    text: "Your family in Australia want you home for Christmas. You haven't been back in 18 months. December is the busiest month for every single one of your restaurants.",
+    choices: [
+      { label: '"Go home. Delegate."', effects: { quality: -10, sanity: 15, cash: -5 }, aftermath: "Your mum cries when she sees you. The restaurants survive without you. That's both a relief and slightly offensive." },
+      { label: '"I\'ll come in March."', effects: { sanity: -10, quality: 5, cash: 5 }, aftermath: "Your mum understands. She doesn't say it but you hear it. You work Christmas Day. The kitchen sings carols. You join in." }
+    ]
+  },
+  {
+    cat: 'PERSONAL', biz: 'urchin',
+    text: "Night before Urchin's permanent site opening. You've been awake 36 hours. Everything is as ready as it'll ever be. Your body is begging for sleep.",
+    choices: [
+      { label: '"One more walkthrough."', effects: { quality: 10, sanity: -15, reputation: 5 }, aftermath: "You find a wobbly table and a misaligned painting. The opening is perfect. You fall asleep standing up at 2am." },
+      { label: '"Go to bed. Trust what you built."', effects: { sanity: 10, quality: -5 }, aftermath: "You wake refreshed. The opening has one small wine list hiccup. Nobody notices except you. You'll remember it forever." }
+    ]
+  },
+  {
+    cat: 'PERSONAL', biz: 'personal',
+    text: "You catch yourself crying in the walk-in fridge. Not about anything specific. Just... everything. The dry-aged wagyu witnesses your breakdown in silence.",
+    choices: [
+      { label: '"Take 3 days off. Actually off."', effects: { sanity: 15, quality: -5, cash: -5 }, aftermath: "You sleep 14 hours on day one. By day three you're texting the kitchen about stock levels. But the crying stopped." },
+      { label: '"Wipe your eyes. Back on the pass."', effects: { sanity: -15, quality: 5 }, aftermath: "You cook the best service of the month. The team can tell something's different. Nobody asks. This is hospitality." }
+    ]
+  },
+  {
+    cat: 'PERSONAL', biz: 'personal',
+    text: "You walk past the old site where your chicken sandwich business used to be. It's a vape shop now. 500k gone. Someone recognises you: 'Didn't you used to...'",
+    choices: [
+      { label: '"Own it. That failure made me."', effects: { sanity: 10, reputation: 5 }, aftermath: "You tell them the whole story. They're fascinated. Good material for a podcast you'll never do." },
+      { label: '"Pretend you didn\'t hear"', effects: { sanity: -5 }, aftermath: "You walk faster. Memories flood in. You get to Dorian and cook with more intensity than usual." }
+    ]
+  }
+];
+
+// State
+let state = {
+  meters: { quality: 50, cash: 50, reputation: 50, sanity: 50 },
+  decisionCount: 0,
+  scenarios: [],
+  currentIndex: 0,
+  gameOver: false,
+  best: 0
+};
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function renderMeters() {
+  const row = document.getElementById('metersRow');
+  row.innerHTML = METERS.map(m => {
+    const val = state.meters[m.id];
+    const danger = val <= 20 || val >= 80;
+    const critical = val <= 10 || val >= 90;
+    return `
+      <div class="meter ${critical ? 'critical' : danger ? 'danger' : ''}" data-meter="${m.id}">
+        <span class="meter-emoji">${m.emoji}</span>
+        <div class="meter-bar-outer">
+          <div class="meter-bar-fill" style="width:${val}%;background:${m.color}"></div>
+          <div class="meter-bar-preview" data-preview="${m.id}" style="background:${m.color}"></div>
+        </div>
+        <span class="meter-value" style="color:${m.color}">${val}</span>
+        <span class="meter-label">${m.label}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function previewEffects(choiceIdx) {
+  if (state.gameOver) return;
+  const s = state.scenarios[state.currentIndex];
+  const effects = s.choices[choiceIdx].effects;
+
+  METERS.forEach(m => {
+    const preview = document.querySelector(`[data-preview="${m.id}"]`);
+    if (!preview) return;
+    const delta = effects[m.id] || 0;
+    if (delta === 0) { preview.style.opacity = '0'; return; }
+
+    const current = state.meters[m.id];
+    const target = clamp(current + delta, 0, 100);
+
+    if (delta > 0) {
+      preview.style.left = current + '%';
+      preview.style.width = (target - current) + '%';
+      preview.style.background = 'var(--green)';
+    } else {
+      preview.style.left = target + '%';
+      preview.style.width = (current - target) + '%';
+      preview.style.background = 'var(--red)';
+    }
+    preview.style.opacity = '0.35';
+  });
+}
+
+function clearPreviews() {
+  document.querySelectorAll('.meter-bar-preview').forEach(p => p.style.opacity = '0');
+}
+
+function effectTags(effects) {
+  const meterEmojis = { quality: '⭐', cash: '💰', reputation: '🏆', sanity: '🧠' };
+  return Object.entries(effects).map(([k, v]) => {
+    if (v === 0) return '';
+    const cls = v > 0 ? 'positive' : 'negative';
+    const sign = v > 0 ? '+' : '';
+    return `<span class="effect-tag ${cls}">${meterEmojis[k]}${sign}${v}</span>`;
+  }).join('');
+}
+
+function drawCard() {
+  if (state.currentIndex >= state.scenarios.length) {
+    state.scenarios = shuffle([...SCENARIOS]);
+    state.currentIndex = 0;
+  }
+
+  const s = state.scenarios[state.currentIndex];
+  const biz = BUSINESSES[s.biz];
+
+  document.getElementById('decisionLabel').textContent = `Decision #${state.decisionCount + 1}`;
+  document.getElementById('categoryTag').textContent = s.cat;
+  document.getElementById('scenarioBiz').innerHTML = `<span class="biz-emoji">${biz.emoji}</span> ${biz.name}`;
+  document.getElementById('scenarioText').textContent = s.text;
+
+  const card = document.getElementById('scenarioCard');
+  card.classList.remove('exit-left', 'exit-right');
+  card.style.display = 'flex';
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'cardEnter 0.4s ease';
+
+  const choicesRow = document.getElementById('choicesRow');
+  choicesRow.innerHTML = s.choices.map((c, i) => `
+    <div class="choice-btn" onmouseenter="previewEffects(${i})" onmouseleave="clearPreviews()" onclick="makeChoice(${i})">
+      <div class="choice-label">${c.label}</div>
+      <div class="choice-effects">${effectTags(c.effects)}</div>
+    </div>
+  `).join('');
+  choicesRow.style.display = 'grid';
+
+  document.getElementById('aftermathCard').style.display = 'none';
+  renderMeters();
+}
+
+function makeChoice(idx) {
+  const s = state.scenarios[state.currentIndex];
+  const choice = s.choices[idx];
+
+  // Disable buttons
+  document.querySelectorAll('.choice-btn').forEach(b => b.classList.add('disabled'));
+  clearPreviews();
+
+  // Apply effects
+  const oldMeters = { ...state.meters };
+  Object.entries(choice.effects).forEach(([k, v]) => {
+    state.meters[k] = clamp(state.meters[k] + v, 0, 100);
+  });
+
+  // Animate card exit
+  const card = document.getElementById('scenarioCard');
+  card.classList.add(idx === 0 ? 'exit-left' : 'exit-right');
+
+  // Animate meters
+  renderMeters();
+
+  // Check danger - shake screen
+  const anyDanger = METERS.some(m => state.meters[m.id] <= 15 || state.meters[m.id] >= 85);
+  if (anyDanger) {
+    document.getElementById('mainContainer').classList.add('shake');
+    setTimeout(() => document.getElementById('mainContainer').classList.remove('shake'), 400);
+  }
+
+  state.decisionCount++;
+  state.currentIndex++;
+
+  // Check game over
+  const death = checkGameOver();
+
+  setTimeout(() => {
+    card.style.display = 'none';
+    document.getElementById('choicesRow').style.display = 'none';
+
+    // Show aftermath
+    document.getElementById('aftermathText').textContent = choice.aftermath;
+    document.getElementById('aftermathCard').style.display = 'block';
+
+    // Check milestone
+    if (!death && MILESTONES[state.decisionCount]) {
+      setTimeout(() => showMilestone(state.decisionCount), 800);
+    }
+
+    setTimeout(() => {
+      if (death) {
+        endGame(death);
+      } else {
+        drawCard();
+      }
+    }, death ? 1500 : 2000);
+  }, 500);
+}
+
+function checkGameOver() {
+  for (const m of METERS) {
+    if (state.meters[m.id] <= 0) return { meter: m.id, direction: 'low' };
+    if (state.meters[m.id] >= 100) return { meter: m.id, direction: 'high' };
+  }
+  return null;
+}
+
+function showMilestone(count) {
+  const ms = MILESTONES[count];
+  if (!ms) return;
+  const overlay = document.getElementById('milestoneOverlay');
+  document.getElementById('milestoneText').textContent = ms.text;
+  document.getElementById('milestoneSub').textContent = ms.sub;
+  overlay.style.display = 'flex';
+  spawnConfetti();
+  setTimeout(() => { overlay.style.display = 'none'; }, 2500);
+}
+
+function endGame(death) {
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('resultsScreen').style.display = 'flex';
+
+  const msg = death.direction === 'low' ? DEATH_LOW[death.meter] : DEATH_HIGH[death.meter];
+  const meterLabel = METERS.find(m => m.id === death.meter).label;
+  const dirLabel = death.direction === 'low' ? 'bottomed out' : 'maxed out';
+
+  document.getElementById('resultsTitle').textContent = `${meterLabel} ${dirLabel}`;
+  document.getElementById('deathMessage').textContent = msg;
+  document.getElementById('survivedCount').textContent = state.decisionCount;
+
+  document.getElementById('finalMeters').innerHTML = METERS.map(m => `
+    <div class="final-meter">
+      <span class="fm-emoji">${m.emoji}</span>
+      <span class="fm-value" style="color:${m.color}">${state.meters[m.id]}</span>
+      <span class="fm-label">${m.label}</span>
+    </div>
+  `).join('');
+
+  const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  document.getElementById('closingQuote').innerHTML = `"${quote.text}"<div class="closing-author">- ${quote.author}</div>`;
+
+  if (state.decisionCount > state.best) state.best = state.decisionCount;
+  document.getElementById('bestLabel').textContent = `Best: ${state.best}`;
+
+  spawnConfetti();
+}
+
+function startGame() {
+  state.meters = { quality: 50, cash: 50, reputation: 50, sanity: 50 };
+  state.decisionCount = 0;
+  state.scenarios = shuffle([...SCENARIOS]);
+  state.currentIndex = 0;
+  state.gameOver = false;
+
+  document.getElementById('titleScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'flex';
+  document.getElementById('resultsScreen').style.display = 'none';
+
+  drawCard();
+}
+
+function restartGame() {
+  document.getElementById('resultsScreen').style.display = 'none';
+  document.getElementById('titleScreen').style.display = 'flex';
+}
+
+function spawnConfetti() {
+  const container = document.getElementById('confettiContainer');
+  const colors = ['#e8a838', '#f6c644', '#4caf50', '#5b9bd5', '#c77dba', '#e05545', '#f0d78c', '#c4882e'];
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = Math.random() * 40 + '%';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    p.style.width = (Math.random() * 8 + 4) + 'px';
+    p.style.height = (Math.random() * 8 + 4) + 'px';
+    p.style.animationDelay = Math.random() * 0.5 + 's';
+    p.style.animationDuration = (Math.random() * 1 + 1) + 's';
+    container.appendChild(p);
+    setTimeout(() => p.remove(), 2000);
+  }
+}
+</script>
+
+</body>
+</html>
