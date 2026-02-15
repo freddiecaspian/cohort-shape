@@ -428,6 +428,50 @@ body {
 .card-stats {
   display: flex; gap: 24px; padding-top: 16px; border-top: 1px solid #1a1a1a;
 }
+
+/* Contribution Log */
+.contrib-log { margin-top: 24px; border-top: 1px solid #1a1a1a; padding-top: 20px; }
+.contrib-log-title {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #444;
+  letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px;
+}
+.contrib-session-pills { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+.contrib-pill {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.04em;
+  padding: 4px 10px; border-radius: 999px; background: #1a1a1a;
+  border: 1px solid #2a2a2a; color: #555; cursor: pointer; transition: all 0.2s;
+}
+.contrib-pill:hover { color: #888; border-color: #444; }
+.contrib-pill.active { color: #d4a843; border-color: #d4a843; background: rgba(212,168,67,0.08); }
+.contrib-entries { display: flex; flex-direction: column; gap: 16px; }
+.contrib-entry {
+  background: rgba(26,26,26,0.5); border: 1px solid #222; border-radius: 6px;
+  padding: 16px; transition: border-color 0.2s;
+}
+.contrib-entry:hover { border-color: #333; }
+.contrib-entry-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.contrib-session-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #d4a843;
+  letter-spacing: 0.06em; text-transform: uppercase;
+}
+.contrib-tag {
+  font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.04em;
+  text-transform: uppercase; color: #666; background: rgba(212,168,67,0.06);
+  border: 1px solid rgba(212,168,67,0.1); padding: 2px 8px; border-radius: 999px;
+  margin-left: auto;
+}
+.contrib-quote {
+  font-size: 13px; color: #ccc; line-height: 1.7; margin-bottom: 10px;
+  padding-left: 12px; border-left: 2px solid rgba(212,168,67,0.3); font-style: italic;
+}
+.contrib-context { font-size: 11px; color: #555; line-height: 1.5; margin-bottom: 8px; }
+.contrib-prof {
+  font-size: 11px; color: #777; line-height: 1.5; font-style: italic;
+}
+.contrib-empty {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #333;
+  text-align: center; padding: 24px; font-style: italic;
+}
 .card-stat { text-align: center; }
 .card-stat-val {
   font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 500; color: #d4a843;
@@ -658,6 +702,19 @@ const SESSION_CONTENT = [
     transcript: `<h2>Session Transcript - AI Processed Summary</h2><p>Final substantive OB1 class. Two extended real-life crisis cases with group discussion, bringing together every prior module.</p><h3>Lebanon Hospital Case Discussion</h3><ul><li>Secret ballot: entire class voted for a "middle path" - triage at the door</li><li>"It's not an emotional choice or a business choice - it's a practical, objective process"</li><li>Students flagged the lack of written documentation as the real toxic element</li></ul><h3>South Africa Factory Case Discussion</h3><ul><li>Students mapped stakeholders - identified that "nobody is on the Company's side"</li><li>Discussion on when to fire local management - "you need them now but cannot keep them"</li><li>Closing the factory emerged as the decisive strategic move</li></ul><blockquote>"A leader is a person who takes responsibility for defining what the problem is." - Prof. Sinaceur</blockquote>`
   }
 ];
+
+// Student contribution logs — keyed by student name, array of {si (session index), quote, context, tag, profResponse}
+const CONTRIBUTIONS = {
+  'Raphael Barata Pasqualetto': [
+    { si: 0, quote: "If you're asking for a discount, you need to understand what the other side values — it's not always price. In the Red Banana case, the buyer cared about delivery reliability more than unit cost.", context: "During debrief of the Red Banana negotiation simulation, professor asked what students learned about identifying counterpart priorities.", tag: "Interest mapping", profResponse: "Professor nodded: \"Exactly — and that's why open-ended questions matter more than your opening offer.\"" },
+    { si: 1, quote: "You have to calculate the probability of having a group of people where each of them don't have a birthday in common... the product of... the first person can pick any day, 365 over 365, the second is 364 over 365, and so on.", context: "Birthday problem exercise. Professor bet 50 euros that two people in the 70-student section share a birthday. Asked who could explain the maths.", tag: "Mathematical proof", profResponse: "Professor: \"Thank you Raphael — that is the correct derivation. The rest of you, notice how your intuition failed you.\"" },
+    { si: 1, quote: "Small differences can add up to large differences. If you win by 0.1% in one state, the whole state goes for you — that's the Electoral College problem.", context: "Discussion of why Nate Silver's 538 model failed to predict the 2024 US election outcome. Class debating whether prediction models are fundamentally flawed.", tag: "Systems thinking", profResponse: "Professor incorporated this into his explanation: \"So the winner-takes-all situation amplifies tiny margins into categorical outcomes.\"" },
+    { si: 2, quote: "The Apollo 13 team succeeded because they had a superordinate goal that transcended individual expertise. The electrical engineer didn't care about being right — he cared about getting the crew home.", context: "Case discussion on Apollo 13 crisis leadership. Professor asked why the ground team collaborated so effectively despite massive time pressure.", tag: "Superordinate goals", profResponse: "Professor: \"Good — and notice the contrast with most corporate teams where individual performance metrics actively undermine this kind of collaboration.\"" },
+    { si: 4, quote: "The Four Drives model explains why financial incentives plateau — once the drive to acquire is satisfied, you need to activate the drive to bond or the drive to learn. That's what Semler understood at Semco.", context: "Discussion of Ricardo Semler's radical management approach at Semco. Professor exploring why removing traditional controls increased productivity.", tag: "Framework application", profResponse: "Professor: \"Precisely. Semler intuited what Lawrence and Nohria later formalised — you cannot motivate with one drive alone.\"" },
+    { si: 5, quote: "The set-up-to-fail syndrome is a self-fulfilling prophecy — the manager perceives underperformance, reduces autonomy, which causes actual underperformance. The data confirms the bias.", context: "Feedback session discussing the Manzoni & Barsoux research on manager-subordinate dynamics. Professor asked for the core mechanism.", tag: "Causal chain analysis", profResponse: "Professor: \"Exactly right. And the tragedy is that both parties believe they are responding rationally to the other's behaviour.\"" },
+    { si: 6, quote: "The statistics say 50% of managers fail — but that doesn't mean they lack technical skill. Hogan's research shows it's the dark side personality traits that emerge under stress. Narcissism, volatility, excessive caution.", context: "Final leadership session. Professor presenting Hogan & Kaiser research on why so many leaders derail.", tag: "Research synthesis", profResponse: "Professor: \"Good synthesis. The dark side isn't about bad people — it's about strengths overplayed under pressure.\"" }
+  ]
+};
 
 // 70 students — [name, row, col, photo, bg, gpa, actualGpa, total, quality, headline, quote, assessment, traits[], scores{c,d,f,p,co,e}, sessions[7]{t,q}]
 const STUDENTS = [
@@ -1208,9 +1265,57 @@ function showCard(name) {
       <div class="card-stat"><div class="card-stat-val">${accuracy}%</div><div class="card-stat-label">Accuracy</div></div>
       <div class="card-stat"><div class="card-stat-val">${s.t}</div><div class="card-stat-label">Total</div></div>
       <div class="card-stat"><div class="card-stat-val">${hitRate(s)}%</div><div class="card-stat-label">Hit Rate</div></div>
-    </div>`;
+    </div>
+    ${renderContribLog(s)}`;
 
   document.getElementById('card-overlay').classList.add('visible');
+
+  // Wire up contribution session pills
+  document.querySelectorAll('.contrib-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const filter = pill.dataset.si;
+      document.querySelectorAll('.contrib-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      document.querySelectorAll('.contrib-entry').forEach(entry => {
+        if (filter === 'all') { entry.style.display = ''; }
+        else { entry.style.display = entry.dataset.si === filter ? '' : 'none'; }
+      });
+    });
+  });
+}
+
+function renderContribLog(s) {
+  const contribs = CONTRIBUTIONS[s.n];
+  if (!contribs || contribs.length === 0) {
+    return `<div class="contrib-log">
+      <div class="contrib-log-title">Contribution Log</div>
+      <div class="contrib-empty">AI processing in progress - contributions will appear here after transcript analysis.</div>
+    </div>`;
+  }
+
+  // Which sessions this student contributed in
+  const sessionIndices = [...new Set(contribs.map(c => c.si))].sort((a,b) => a - b);
+
+  return `<div class="contrib-log">
+    <div class="contrib-log-title">Contribution Log &mdash; ${contribs.length} recorded</div>
+    <div class="contrib-session-pills">
+      <div class="contrib-pill active" data-si="all">All</div>
+      ${sessionIndices.map(si => `<div class="contrib-pill" data-si="${si}">S${SESSIONS[si].num}</div>`).join('')}
+    </div>
+    <div class="contrib-entries">
+      ${contribs.map(c => `
+        <div class="contrib-entry" data-si="${c.si}">
+          <div class="contrib-entry-header">
+            <div class="contrib-session-label">Session ${SESSIONS[c.si].num} &mdash; ${SESSIONS[c.si].title}</div>
+            <div class="contrib-tag">${c.tag}</div>
+          </div>
+          <div class="contrib-quote">"${c.quote}"</div>
+          <div class="contrib-context">${c.context}</div>
+          <div class="contrib-prof">${c.profResponse}</div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
 }
 
 document.getElementById('card-close').addEventListener('click', () => {
