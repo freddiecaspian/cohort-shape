@@ -266,31 +266,68 @@ body {
   font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #886a2a;
   letter-spacing: 0.03em;
 }
-.overview-table { width: 100%; }
-.ov-row {
-  display: flex; align-items: center; padding: 8px; border-radius: 4px;
-  cursor: pointer; transition: background 0.15s;
+.card-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
 }
-.ov-row:hover { background: rgba(212,168,67,0.04); }
-.ov-row.header {
-  cursor: default; border-bottom: 1px solid #1a1a1a; margin-bottom: 4px;
+.student-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 20px; cursor: pointer; transition: all 0.25s ease;
+  position: relative;
 }
-.ov-row.header:hover { background: none; }
-.ov-col {
-  font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #777;
+.student-card:hover {
+  transform: translateY(-3px); border-color: #333;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
 }
-.ov-col.rank { width: 40px; text-align: right; margin-right: 12px; }
-.ov-col.rank.top { color: #d4a843; }
-.ov-col.name { width: 200px; font-family: 'DM Sans', sans-serif; font-size: 13px; color: #999; margin-right: 12px; }
-.ov-row:hover .ov-col.name { color: #d4a843; }
-.ov-col.row-num { width: 50px; color: #444; text-align: center; }
-.ov-col.gpa { width: 50px; text-align: right; margin-right: 16px; }
-.ov-col.gpa.gold { color: #d4a843; }
-.ov-col.total { width: 50px; text-align: right; }
-.ov-col.quality { width: 50px; text-align: right; color: #d4a843; }
-.ov-col.trend { width: 30px; text-align: center; }
-.ov-col.header-label { color: #444; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
-.ov-col.header-label:hover { color: #666; }
+.sc-top { display: flex; gap: 14px; align-items: center; margin-bottom: 10px; }
+.sc-photo {
+  width: 48px; height: 48px; border-radius: 50%; object-fit: cover;
+  border: 2px solid #222; flex-shrink: 0;
+}
+.sc-initials {
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+  background: #1a1a1a; border: 1px solid #2a2a2a;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #555;
+  letter-spacing: 0.04em;
+}
+.sc-info { flex: 1; min-width: 0; }
+.sc-name { font-size: 15px; font-weight: 600; color: #e8e8e8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-bg { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #555; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-rank {
+  position: absolute; top: 12px; right: 14px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #333;
+  letter-spacing: 0.06em;
+}
+.sc-rank.top { color: #d4a843; }
+.sc-headline { font-size: 13px; color: #d4a843; font-style: italic; margin-bottom: 12px; line-height: 1.4; }
+.sc-sparkline { display: flex; gap: 3px; align-items: flex-end; height: 28px; margin-bottom: 12px; }
+.sc-spark {
+  flex: 1; border-radius: 2px 2px 0 0; min-height: 2px;
+  transition: height 0.3s ease;
+}
+.sc-dims { display: flex; gap: 6px; margin-bottom: 12px; }
+.sc-dim-group { display: flex; gap: 2px; }
+.sc-dim-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #1a1a1a; border: 1px solid #2a2a2a;
+}
+.sc-dim-dot.f { background: #d4a843; border-color: #d4a843; }
+.sc-dim-dot.m { background: rgba(212,168,67,0.6); border-color: rgba(212,168,67,0.6); }
+.sc-dim-dot.l { background: rgba(212,168,67,0.3); border-color: rgba(212,168,67,0.4); }
+.sc-footer { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sc-gpa {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500;
+  padding: 2px 8px; border-radius: 999px; background: #1a1a1a; color: #777;
+}
+.sc-gpa.gold { color: #d4a843; background: rgba(212,168,67,0.1); border: 1px solid rgba(212,168,67,0.2); }
+.sc-trait {
+  font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 0.04em;
+  text-transform: uppercase; color: #666; background: rgba(212,168,67,0.06);
+  border: 1px solid rgba(212,168,67,0.1); padding: 2px 8px; border-radius: 999px;
+}
+.sc-trend {
+  margin-left: auto; font-size: 12px;
+}
 
 /* Trends */
 .chart-container { background: #111; border: 1px solid #1a1a1a; border-radius: 6px; padding: 24px; margin-bottom: 24px; }
@@ -397,7 +434,7 @@ body {
   .course-bar { padding: 8px 16px; }
   .tab-content { padding: 16px; }
   .lb-name { width: 140px; }
-  .ov-col.name { width: 150px; }
+  .card-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
   .heatmap-seat { width: 36px; height: 28px; font-size: 7px; }
 }
 @media (max-width: 720px) {
@@ -414,7 +451,7 @@ body {
   .heatmap-row { gap: 2px; }
   .heatmap-row-label { width: 30px; font-size: 7px; }
   .lb-name { width: 100px; font-size: 12px; }
-  .ov-col.name { width: 120px; }
+  .card-grid { grid-template-columns: 1fr; }
   #profile-card { padding: 20px; }
   .card-photo { width: 56px; height: 56px; }
   .card-name { font-size: 17px; }
@@ -491,7 +528,7 @@ body {
 <div class="tab-content" id="tab-section">
   <div class="overview-controls" id="overview-controls"></div>
   <div class="alert-banner" id="alert-banner"></div>
-  <div class="overview-table" id="overview-table"></div>
+  <div class="card-grid" id="card-grid"></div>
 </div>
 
 <!-- Tab 3: Trends -->
@@ -947,31 +984,48 @@ function renderOverview() {
     if (late > early + 1) return '#4a9'; if (late < early - 1) return '#c55'; return '#555';
   }
 
-  const table = document.getElementById('overview-table');
-  table.innerHTML = `
-    <div class="ov-row header">
-      <div class="ov-col rank header-label">#</div>
-      <div class="ov-col name header-label">Student</div>
-      <div class="ov-col row-num header-label">Row</div>
-      <div class="ov-col gpa header-label">GPA</div>
-      <div class="ov-col total header-label">Total</div>
-      <div class="ov-col quality header-label">Quality</div>
-      <div class="ov-col trend header-label">Trend</div>
-    </div>
-    ${sorted.map((s, i) => `
-      <div class="ov-row" data-name="${s.n}">
-        <div class="ov-col rank${i<3?' top':''}">${i+1}</div>
-        <div class="ov-col name">${s.n}</div>
-        <div class="ov-col row-num">${s.r}</div>
-        <div class="ov-col gpa${s.gpa>=3.5?' gold':''}">${s.gpa.toFixed(1)}</div>
-        <div class="ov-col total">${s.t}</div>
-        <div class="ov-col quality" style="color:${qualColor(s)}">${s.q}</div>
-        <div class="ov-col trend" style="color:${trendColor(s)}">${trend(s)}</div>
-      </div>
-    `).join('')}`;
+  const dims = [{k:'c'},{k:'d'},{k:'f'},{k:'p'},{k:'co'},{k:'e'}];
+  const grid = document.getElementById('card-grid');
+  grid.innerHTML = sorted.map((s, i) => {
+    const ph = photoUrl(s);
+    const maxSS = Math.max(...s.ss.map(v => v.t), 1);
+    const rankNum = rankMap[s.n] || i + 1;
+    return `
+      <div class="student-card" data-name="${s.n}">
+        <div class="sc-rank${rankNum<=3?' top':''}">#${rankNum}</div>
+        <div class="sc-top">
+          ${ph
+            ? `<img class="sc-photo" src="${ph}" alt="${s.n}">`
+            : `<div class="sc-initials">${initials(s.n)}</div>`}
+          <div class="sc-info">
+            <div class="sc-name">${s.n}</div>
+            <div class="sc-bg">${s.bg || ''}</div>
+          </div>
+        </div>
+        <div class="sc-headline">${s.hl}</div>
+        <div class="sc-sparkline">
+          ${s.ss.map(ss => `<div class="sc-spark" style="height:${Math.max(2, (ss.t/maxSS)*28)}px;background:${ss.q>0?'rgba(212,168,67,0.5)':'rgba(100,100,100,0.25)'}"></div>`).join('')}
+        </div>
+        <div class="sc-dims">
+          ${dims.map(d => {
+            const val = s.sc[d.k];
+            return `<div class="sc-dim-group">${[1,2,3,4,5].map(n => {
+              let cls = '';
+              if (n <= val) { cls = val >= 4 ? 'f' : val >= 2 ? 'm' : 'l'; }
+              return `<div class="sc-dim-dot ${cls}"></div>`;
+            }).join('')}</div>`;
+          }).join('')}
+        </div>
+        <div class="sc-footer">
+          <div class="sc-gpa${s.gpa>=3.5?' gold':''}">${s.gpa.toFixed(1)}</div>
+          ${s.tr.slice(0,2).map(t => `<span class="sc-trait">${t}</span>`).join('')}
+          <div class="sc-trend" style="color:${trendColor(s)}">${trend(s)}</div>
+        </div>
+      </div>`;
+  }).join('');
 
-  table.querySelectorAll('.ov-row:not(.header)').forEach(row => {
-    row.addEventListener('click', () => showCard(row.dataset.name));
+  grid.querySelectorAll('.student-card').forEach(card => {
+    card.addEventListener('click', () => showCard(card.dataset.name));
   });
 }
 
