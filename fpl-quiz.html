@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FUCK VAR — Who Said It?</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0f0a;
+    --card: #111a14;
+    --card-border: #1a2e1e;
+    --accent: #00ff87;
+    --accent-dim: #00cc6a;
+    --accent-glow: rgba(0, 255, 135, 0.2);
+    --gold: #f6c644;
+    --green: #00b894;
+    --red: #e17055;
+    --text: #e8f0e8;
+    --text-dim: #7a9a80;
+    --julien: #C8102E;
+    --john: #e74c3c;
+    --karim: #27ae60;
+    --nick: #2980b9;
+    --arthur: #607d8b;
+    --max: #8e44ad;
+    --juan: #f1c40f;
+    --tim: #1abc9c;
+    --freddie: #3498db;
+    --mauricio: #e67e22;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TITLE SCREEN */
+  .title-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    gap: 24px;
+  }
+
+  .title-screen h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent), #37ecba, var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .title-screen .subtitle {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    max-width: 440px;
+    line-height: 1.6;
+  }
+
+  .title-avatars {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 500px;
+  }
+
+  .title-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    font-family: 'Space Grotesk', sans-serif;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.15);
+    transition: transform 0.3s;
+    letter-spacing: -0.5px;
+  }
+
+  .title-avatar:hover { transform: scale(1.15); }
+
+  .team-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 500px;
+  }
+
+  .team-tag {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--accent-dim), #37ecba);
+    color: #0a0f0a;
+    border: none;
+    padding: 16px 48px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 0.5px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px var(--accent-glow);
+  }
+
+  .btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--accent-glow);
+  }
+
+  /* GAME SCREEN */
+  .game-screen { display: none; flex-direction: column; gap: 16px; padding-top: 20px; }
+
+  .progress-bar {
+    background: var(--card);
+    border-radius: 8px;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-dim), var(--gold));
+    border-radius: 8px;
+    transition: width 0.5s ease;
+  }
+
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+
+  .score-bar .score { color: var(--gold); font-weight: 600; font-size: 1rem; }
+
+  .category-tag {
+    display: inline-block;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.7rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .scenario-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px 20px;
+    text-align: center;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .scenario-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .choices-grid .choice:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    max-width: 50%;
+    justify-self: center;
+  }
+
+  .choice {
+    background: var(--card);
+    border: 2px solid var(--card-border);
+    border-radius: 12px;
+    padding: 10px 8px;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .choice:hover:not(.disabled) {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+
+  .choice .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.65rem;
+    font-family: 'Space Grotesk', sans-serif;
+    color: white;
+    flex-shrink: 0;
+    letter-spacing: -0.5px;
+  }
+
+  .choice .info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+
+  .choice .name {
+    font-weight: 600;
+    font-size: 0.8rem;
+    font-family: 'Space Grotesk', sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .choice .team {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+  }
+
+  .choice.correct {
+    border-color: var(--green) !important;
+    background: rgba(0, 184, 148, 0.1);
+  }
+
+  .choice.wrong {
+    border-color: var(--red) !important;
+    background: rgba(225, 112, 85, 0.1);
+    opacity: 0.7;
+  }
+
+  .choice.disabled { pointer-events: none; }
+  .choice.faded { opacity: 0.3; }
+
+  .reveal-card {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    animation: slideUp 0.4s ease;
+  }
+
+  .reveal-card .verdict {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .reveal-card .verdict.correct-verdict { color: var(--green); }
+  .reveal-card .verdict.wrong-verdict { color: var(--red); }
+
+  .reveal-card .explanation {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+
+  .reveal-card .quote {
+    font-style: italic;
+    color: var(--text);
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
+    margin: 12px 0;
+    text-align: left;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .btn-next {
+    background: var(--accent-dim);
+    color: #0a0f0a;
+    border: none;
+    padding: 12px 32px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    margin-top: 12px;
+    transition: transform 0.2s;
+  }
+
+  .btn-next:hover { transform: translateY(-2px); }
+
+  /* RESULTS SCREEN */
+  .results-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    gap: 20px;
+    padding: 40px 20px;
+  }
+
+  .results-screen h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+
+  .final-score {
+    font-size: 3.5rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    background: linear-gradient(135deg, var(--gold), #f9ca24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .results-subtitle {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    max-width: 400px;
+    line-height: 1.6;
+  }
+
+  .results-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 8px 14px;
+  }
+
+  .result-row .result-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.55rem;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .result-row .result-name { flex: 1; text-align: left; font-weight: 500; font-size: 0.85rem; }
+  .result-row .result-stat { font-weight: 600; color: var(--gold); font-size: 0.85rem; }
+
+  .btn-restart {
+    background: transparent;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+    padding: 14px 36px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-restart:hover {
+    background: var(--accent);
+    color: #0a0f0a;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes confettiDrop {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(80px) rotate(360deg); opacity: 0; }
+  }
+
+  .confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+    overflow: hidden;
+  }
+
+  .confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    animation: confettiDrop 1.5s ease-out forwards;
+  }
+
+  @media (max-width: 500px) {
+    .title-screen h1 { font-size: 2rem; }
+    .scenario-text { font-size: 0.95rem; }
+    .choices-grid { gap: 6px; }
+    .choice { padding: 8px 6px; }
+    .choice .avatar { width: 34px; height: 34px; font-size: 0.55rem; }
+    .choice .name { font-size: 0.75rem; }
+    .choices-grid .choice:last-child:nth-child(odd) { max-width: 60%; }
+    .title-avatar { width: 42px; height: 42px; font-size: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- TITLE SCREEN -->
+  <div class="title-screen" id="titleScreen">
+    <h1>FUCK VAR</h1>
+    <p class="subtitle">20 real moments from the group chat. Guess who said it. Try not to cry laughing.</p>
+    <div class="title-avatars" id="titleAvatars"></div>
+    <div class="team-tags">
+      <span class="team-tag">Julien: Liverpool</span>
+      <span class="team-tag">John: Arsenal</span>
+      <span class="team-tag">Karim: Arsenal / Egypt</span>
+      <span class="team-tag">Nick: Arsenal / France</span>
+      <span class="team-tag">Arthur: Fulham</span>
+      <span class="team-tag">Max: Liverpool / France</span>
+      <span class="team-tag">Juan: Real Madrid</span>
+      <span class="team-tag">Tim: Everton</span>
+      <span class="team-tag">Freddie: Chelsea</span>
+      <span class="team-tag">Mauricio: Wild Card</span>
+    </div>
+    <button class="btn-start" onclick="startGame()">Who Said It?</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="game-screen" id="gameScreen">
+    <div class="score-bar">
+      <span id="roundLabel">Round 1 / 15</span>
+      <span class="score" id="scoreLabel">0 pts</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div id="categoryTag" class="category-tag"></div>
+
+    <div class="scenario-card">
+      <p class="scenario-text" id="scenarioText"></p>
+    </div>
+
+    <div class="choices-grid" id="choicesGrid"></div>
+
+    <div class="reveal-card" id="revealCard">
+      <div class="verdict" id="verdict"></div>
+      <div class="quote" id="revealQuote"></div>
+      <div class="explanation" id="explanation"></div>
+      <button class="btn-next" id="btnNext" onclick="nextRound()">Next</button>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div class="results-screen" id="resultsScreen">
+    <h2>Full Time</h2>
+    <div class="final-score" id="finalScore"></div>
+    <p class="results-subtitle" id="resultsVerdict"></p>
+    <div class="results-breakdown" id="resultsBreakdown"></div>
+    <button class="btn-restart" onclick="restartGame()">Play Again</button>
+  </div>
+
+</div>
+
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+const MEMBERS = [
+  { id: 'julien',   name: 'Julien',   full: 'Julien Cohen',     team: 'Liverpool',  initials: 'JC',  color: '#C8102E' },
+  { id: 'john',     name: 'John',     full: 'John McCormick',   team: 'Arsenal',    initials: 'JM',  color: '#e74c3c' },
+  { id: 'karim',    name: 'Karim',    full: 'Karim',            team: 'Arsenal / Egypt', initials: 'K', color: '#27ae60' },
+  { id: 'nick',     name: 'Nick',     full: 'Nicholas Von Horn', team: 'Arsenal / France', initials: 'NVH', color: '#2980b9' },
+  { id: 'arthur',   name: 'Arthur',   full: 'Arthur B',         team: 'Fulham',     initials: 'AB',  color: '#607d8b' },
+  { id: 'max',      name: 'Max',      full: 'Maximilien',       team: 'Liverpool / France', initials: 'M', color: '#8e44ad' },
+  { id: 'juan',     name: 'Juan',     full: 'Juan Mejia',       team: 'Real Madrid', initials: 'JMe', color: '#f39c12' },
+  { id: 'tim',      name: 'Tim',      full: 'Tim Ryan',         team: 'Everton',    initials: 'TR',  color: '#16a085' },
+  { id: 'freddie',  name: 'Freddie',  full: 'Freddie Chambers', team: 'Chelsea',    initials: 'FC',  color: '#034694' },
+  { id: 'mauricio', name: 'Mauricio', full: 'Mauricio G',       team: '???',        initials: 'MG',  color: '#e67e22' }
+];
+
+const SCENARIOS = [
+  // TRANSFER DEADLINE CHAOS
+  {
+    cat: 'Transfer Deadline Chaos',
+    q: 'Who captained Raheem Sterling... and lived to regret it?',
+    answer: 'freddie',
+    quote: '"I captained Sterling. I don\'t want to talk about it."',
+    explain: 'Freddie - Chelsea fan captaining a Chelsea player. Sounds logical until you remember it\'s Sterling.'
+  },
+  {
+    cat: 'Transfer Deadline Chaos',
+    q: 'It\'s 1:29am. One minute before deadline. Who almost made 4 transfers, panicked, and hit reset?',
+    answer: 'julien',
+    quote: '"I was about to make 4 transfers at 1:29 and then panicked and clicked reset"',
+    explain: 'Julien - the man who treats FPL deadlines like a bomb defusal scene. Wire cutters in one hand, phone in the other, zero calm.'
+  },
+  {
+    cat: 'Transfer Deadline Chaos',
+    q: 'Who forgot to click the wildcard button and ended up taking a -24 hit?',
+    answer: 'tim',
+    quote: '"I thought I activated my wildcard but I just... didn\'t click the button. -24."',
+    explain: 'Tim Ryan - the man, the myth, the -24. His FPL resolution was to "not wish injury on any player." The wildcard wished injury on him instead.'
+  },
+  {
+    cat: 'Transfer Deadline Chaos',
+    q: 'Who always forgets to make their transfers... and still somehow gets the most points that week?',
+    answer: 'arthur',
+    quote: '"Forgot to make my transfers and still got most points this week"',
+    explain: 'Arthur B - the Fulham fan who went from 14th to 5th starting in March by doing absolutely nothing. The ultimate "I\'ll be back" energy.'
+  },
+  {
+    cat: 'Transfer Deadline Chaos',
+    q: '"Never again will I set up my team sober." Who said it?',
+    answer: 'mauricio',
+    quote: '"Never again set up my team sober"',
+    explain: 'Mauricio - turns out drunk FPL might actually be the meta. His sober decisions were the real problem.'
+  },
+
+  // NATIONAL PRIDE
+  {
+    cat: 'National Pride',
+    q: 'Who said they should be "stripped of Egyptian citizenship" for not captaining Salah?',
+    answer: 'karim',
+    quote: '"I should be stripped of my Egyptian citizenship for not choosing Salah as captain"',
+    explain: 'Karim - torn between Arsenal loyalty and Egyptian national pride. Salah haunts his dreams and his FPL captain choices.'
+  },
+  {
+    cat: 'National Pride',
+    q: '"Salah is up there with Ramses as the pride of our country." Who said this with complete sincerity?',
+    answer: 'karim',
+    quote: '"Salah is up there with Ramses as pride of our country"',
+    explain: 'Karim elevating Mo Salah to pharaoh status. Historically debatable. Emotionally? Absolutely correct.'
+  },
+  {
+    cat: 'National Pride',
+    q: 'Who called the France manager Deschamps "a football terrorist"?',
+    answer: 'nick',
+    quote: '"Deschamps is a terrorist. A football terrorist."',
+    explain: 'Nick (NVH) - French, Arsenal fan, and convinced he could do a better job than the man who won the World Cup. Wants Zidane in immediately.'
+  },
+  {
+    cat: 'National Pride',
+    q: '"I could do Deschamps\'s job better than him." Which Arsenal-supporting Frenchman said this?',
+    answer: 'nick',
+    quote: '"I could do this job better than Deschamps. Put Zidane in."',
+    explain: 'Nick - the man who watches France play like someone watching their house burn down. Every game is a personal attack on his footballing values.'
+  },
+
+  // FPL LEGENDS
+  {
+    cat: 'FPL Legends',
+    q: 'Who constantly reminds the group that they are "your 2x FPL champion"?',
+    answer: 'max',
+    quote: '"Your 2x FPL champion speaking. My enemies are the stats kids."',
+    explain: 'Max - the self-proclaimed FPL GOAT who wins on vibes, not expected goals. Two titles and he will never, ever let you forget it.'
+  },
+  {
+    cat: 'FPL Legends',
+    q: 'Who is the reverse jinx master? They said "Saka is useless" and Saka immediately scored.',
+    answer: 'max',
+    quote: '"Saka is useless" → Saka scores 2 minutes later',
+    explain: 'Max has weaponised the reverse jinx. Call a player useless, watch them score. It\'s not a strategy. It\'s a gift.'
+  },
+  {
+    cat: 'FPL Legends',
+    q: 'Whose team name is "Pay Women"?',
+    answer: 'tim',
+    quote: 'Team name: Pay Women',
+    explain: 'Tim Ryan - Everton fan, social justice warrior, -24 wildcard victim. His team name is doing more work than his actual team.'
+  },
+  {
+    cat: 'FPL Legends',
+    q: 'Who tracks weather patterns in the American Midwest to predict game cancellations?',
+    answer: 'john',
+    quote: '"Checking the weather radar in Milwaukee... game might be called off due to thunderstorms"',
+    explain: 'John McCormick - the data scientist of FUCK VAR. While everyone else picks players on vibes, John is monitoring atmospheric pressure systems.'
+  },
+
+  // DRUNK FPL
+  {
+    cat: 'Drunk FPL',
+    q: 'Who was "drunk af swimming in a pool at 7am" while captaining Jarrod Bowen?',
+    answer: 'nick',
+    quote: '"Drunk af swimming in pool at 7am captaining Jared Bowen"',
+    explain: 'Nick (NVH) - proof that FPL decisions made at dawn in a swimming pool are still somehow valid. Bowen probably returned 2 points.'
+  },
+  {
+    cat: 'Drunk FPL',
+    q: 'Who accidentally leaked the DEFCON scoring changes to the entire league before the deadline?',
+    answer: 'mauricio',
+    quote: '"Wait... did I just send that to the whole league?"',
+    explain: 'Mauricio - the accidental whistleblower. Meant to share DEFCON changes with one person. Shared with everyone. Intelligence agencies would love his OpSec.'
+  },
+
+  // GROUP CHAT GOLD
+  {
+    cat: 'Group Chat Gold',
+    q: '"I\'m tired, Robbie." Who drops this iconic AFTV reference when things go wrong?',
+    answer: 'karim',
+    quote: '"I\'m tired Robbie"',
+    explain: 'Karim channelling his inner Arsenal Fan TV energy. When your FPL team disappoints you, there\'s only one thing to say.'
+  },
+  {
+    cat: 'Group Chat Gold',
+    q: 'Who called the FPL app developers "west coast tech butt plugs"?',
+    answer: 'julien',
+    quote: '"These west coast tech butt plugs can\'t keep the app running"',
+    explain: 'Julien - not holding back on his feelings about Silicon Valley engineering standards when the FPL app crashes on deadline day.'
+  },
+  {
+    cat: 'Group Chat Gold',
+    q: '"I was bottom of the table. Now I\'m 5th. I\'m coming after all of you." Who delivered this villain monologue?',
+    answer: 'julien',
+    quote: '"Bottom of the table, now 5th, coming after all of you"',
+    explain: 'Julien\'s redemption arc. From dead last to top 5. The group chat villain origin story nobody asked for but everyone deserved.'
+  },
+  {
+    cat: 'Group Chat Gold',
+    q: '"Sort by total, you fraud." Who said this when someone was celebrating a weekly win?',
+    answer: 'karim',
+    quote: '"Sort by total you fraud"',
+    explain: 'Karim - the Egyptian enforcer. You can win a gameweek, but the table doesn\'t lie. Sort by total or don\'t talk to him.'
+  },
+  {
+    cat: 'Group Chat Gold',
+    q: 'Who confused DEFCON (the league scoring system) with AFCON (the African Cup of Nations)?',
+    answer: 'julien',
+    quote: '"Wait is DEFCON the same as AFCON?" The group: "..."',
+    explain: 'Julien thought the league\'s custom scoring format was an international football tournament. Continental confusion at its finest.'
+  }
+];
+
+// Game state
+let currentRound = 0;
+let score = 0;
+let roundScenarios = [];
+let memberStats = {};
+const TOTAL_ROUNDS = 15;
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function avatarSvg(member, size) {
+  const s = size || 40;
+  return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${s} ${s}"><rect fill="${member.color}" width="${s}" height="${s}" rx="${s/2}"/><text x="${s/2}" y="${s/2 + 1}" text-anchor="middle" dominant-baseline="central" fill="white" font-size="${s * 0.32}" font-weight="700" font-family="sans-serif">${member.initials}</text></svg>`)}`;
+}
+
+function init() {
+  const avatarsEl = document.getElementById('titleAvatars');
+  avatarsEl.innerHTML = MEMBERS.map(m =>
+    `<div class="title-avatar" style="background:${m.color}" title="${m.full} - ${m.team}">${m.initials}</div>`
+  ).join('');
+}
+
+function startGame() {
+  currentRound = 0;
+  score = 0;
+  memberStats = {};
+  MEMBERS.forEach(m => { memberStats[m.id] = { correct: 0, total: 0 }; });
+
+  roundScenarios = shuffle([...SCENARIOS]).slice(0, TOTAL_ROUNDS);
+
+  document.getElementById('titleScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'flex';
+  document.getElementById('resultsScreen').style.display = 'none';
+
+  loadRound();
+}
+
+function loadRound() {
+  const s = roundScenarios[currentRound];
+  document.getElementById('roundLabel').textContent = `Round ${currentRound + 1} / ${TOTAL_ROUNDS}`;
+  document.getElementById('scoreLabel').textContent = `${score} pts`;
+  document.getElementById('progressFill').style.width = `${((currentRound) / TOTAL_ROUNDS) * 100}%`;
+  document.getElementById('categoryTag').textContent = s.cat;
+  document.getElementById('scenarioText').textContent = s.q;
+
+  const grid = document.getElementById('choicesGrid');
+  const shuffledMembers = shuffle([...MEMBERS]);
+  grid.innerHTML = shuffledMembers.map(m => `
+    <div class="choice" data-id="${m.id}" onclick="makeGuess('${m.id}')">
+      <div class="avatar" style="background:${m.color}">${m.initials}</div>
+      <div class="info">
+        <span class="name">${m.name}</span>
+        <span class="team">${m.team}</span>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('revealCard').style.display = 'none';
+}
+
+function makeGuess(guessId) {
+  const s = roundScenarios[currentRound];
+  const isCorrect = guessId === s.answer;
+
+  memberStats[s.answer].total++;
+  if (isCorrect) {
+    score++;
+    memberStats[s.answer].correct++;
+  }
+
+  document.getElementById('scoreLabel').textContent = `${score} pts`;
+
+  const choices = document.querySelectorAll('.choice');
+  choices.forEach(c => {
+    c.classList.add('disabled');
+    const id = c.dataset.id;
+    if (id === s.answer) {
+      c.classList.add('correct');
+    } else if (id === guessId && !isCorrect) {
+      c.classList.add('wrong');
+    } else {
+      c.classList.add('faded');
+    }
+  });
+
+  const revealCard = document.getElementById('revealCard');
+  const verdict = document.getElementById('verdict');
+  const revealQuote = document.getElementById('revealQuote');
+  const explanation = document.getElementById('explanation');
+
+  if (isCorrect) {
+    verdict.textContent = 'Get in!';
+    verdict.className = 'verdict correct-verdict';
+    spawnConfetti();
+  } else {
+    const correctMember = MEMBERS.find(m => m.id === s.answer);
+    verdict.textContent = `Nope - it was ${correctMember.name}`;
+    verdict.className = 'verdict wrong-verdict';
+  }
+
+  revealQuote.textContent = s.quote;
+  explanation.textContent = s.explain;
+
+  if (currentRound === TOTAL_ROUNDS - 1) {
+    document.getElementById('btnNext').textContent = 'Full Time';
+  } else {
+    document.getElementById('btnNext').textContent = 'Next';
+  }
+
+  revealCard.style.display = 'block';
+}
+
+function nextRound() {
+  currentRound++;
+  if (currentRound >= TOTAL_ROUNDS) {
+    showResults();
+  } else {
+    loadRound();
+  }
+}
+
+function showResults() {
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('resultsScreen').style.display = 'flex';
+
+  document.getElementById('finalScore').textContent = `${score} / ${TOTAL_ROUNDS}`;
+
+  const pct = score / TOTAL_ROUNDS;
+  let verdictText;
+  if (pct === 1) verdictText = "Perfect score. You ARE the group chat. Or you've been screenshotting everything.";
+  else if (pct >= 0.8) verdictText = "You know this group better than they know their own transfer deadlines. Which isn't saying much.";
+  else if (pct >= 0.6) verdictText = "Decent knowledge. You've clearly read the chat instead of just muting it.";
+  else if (pct >= 0.4) verdictText = "Mid-table finish. Like Arthur before March, you have potential but aren't doing much with it.";
+  else verdictText = "Relegation zone. You clearly muted the chat. Like Tim, you forgot to press the button.";
+
+  document.getElementById('resultsVerdict').textContent = verdictText;
+
+  const breakdown = document.getElementById('resultsBreakdown');
+  breakdown.innerHTML = MEMBERS.map(m => {
+    const stat = memberStats[m.id];
+    const pctCorrect = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : '-';
+    return `
+      <div class="result-row">
+        <div class="result-avatar" style="background:${m.color}">${m.initials}</div>
+        <span class="result-name">${m.name}</span>
+        <span class="result-stat">${stat.correct}/${stat.total} ${pctCorrect !== '-' ? `(${pctCorrect}%)` : ''}</span>
+      </div>
+    `;
+  }).join('');
+
+  spawnConfetti();
+}
+
+function restartGame() {
+  document.getElementById('resultsScreen').style.display = 'none';
+  document.getElementById('titleScreen').style.display = 'flex';
+}
+
+function spawnConfetti() {
+  const container = document.getElementById('confettiContainer');
+  const colors = ['#00ff87', '#f6c644', '#C8102E', '#2980b9', '#8e44ad', '#e74c3c', '#27ae60', '#f39c12'];
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.top = Math.random() * 40 + '%';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    piece.style.width = (Math.random() * 8 + 4) + 'px';
+    piece.style.height = (Math.random() * 8 + 4) + 'px';
+    piece.style.animationDelay = Math.random() * 0.5 + 's';
+    piece.style.animationDuration = (Math.random() * 1 + 1) + 's';
+    container.appendChild(piece);
+    setTimeout(() => piece.remove(), 2000);
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>
