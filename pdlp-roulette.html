@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLANK — PDLP Scenario Roulette</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --card: #14141f;
+    --card-border: #1e1e2e;
+    --accent: #6c5ce7;
+    --accent-glow: rgba(108, 92, 231, 0.3);
+    --gold: #f6c644;
+    --green: #00b894;
+    --red: #e17055;
+    --text: #e8e8f0;
+    --text-dim: #8888a0;
+    --freddie: #3498db;
+    --andrew: #e74c3c;
+    --navya: #9b59b6;
+    --karim: #2ecc71;
+    --lais: #f39c12;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* TITLE SCREEN */
+  .title-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    gap: 30px;
+  }
+
+  .title-screen h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent), #a29bfe, var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .title-screen .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    max-width: 400px;
+    line-height: 1.6;
+  }
+
+  .title-avatars {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .title-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--card-border);
+    transition: transform 0.3s, border-color 0.3s;
+  }
+
+  .title-avatar:nth-child(1) { border-color: var(--freddie); }
+  .title-avatar:nth-child(2) { border-color: var(--andrew); }
+  .title-avatar:nth-child(3) { border-color: var(--navya); }
+  .title-avatar:nth-child(4) { border-color: var(--karim); }
+  .title-avatar:nth-child(5) { border-color: var(--lais); }
+
+  .title-avatar:hover { transform: scale(1.15); }
+
+  .animal-tags {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .animal-tag {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--accent), #a29bfe);
+    color: white;
+    border: none;
+    padding: 16px 48px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 0.5px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px var(--accent-glow);
+  }
+
+  .btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--accent-glow);
+  }
+
+  /* GAME SCREEN */
+  .game-screen { display: none; flex-direction: column; gap: 20px; padding-top: 20px; }
+
+  .progress-bar {
+    background: var(--card);
+    border-radius: 8px;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 8px;
+    transition: width 0.5s ease;
+  }
+
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+
+  .score-bar .score { color: var(--gold); font-weight: 600; font-size: 1rem; }
+
+  .category-tag {
+    display: inline-block;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .scenario-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: center;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .scenario-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .choices-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .choices-grid .choice:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    max-width: 50%;
+    justify-self: center;
+  }
+
+  .choice {
+    background: var(--card);
+    border: 2px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px 12px;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .choice:hover:not(.disabled) {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+
+  .choice img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--card-border);
+    transition: border-color 0.3s;
+  }
+
+  .choice .name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .choice .animal {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .choice.correct {
+    border-color: var(--green) !important;
+    background: rgba(0, 184, 148, 0.1);
+  }
+  .choice.correct img { border-color: var(--green); }
+
+  .choice.wrong {
+    border-color: var(--red) !important;
+    background: rgba(225, 112, 85, 0.1);
+    opacity: 0.7;
+  }
+
+  .choice.disabled { pointer-events: none; }
+  .choice.faded { opacity: 0.3; }
+
+  .reveal-card {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    animation: slideUp 0.4s ease;
+  }
+
+  .reveal-card .verdict {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .reveal-card .verdict.correct-verdict { color: var(--green); }
+  .reveal-card .verdict.wrong-verdict { color: var(--red); }
+
+  .reveal-card .explanation {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-top: 8px;
+  }
+
+  .reveal-card .quote {
+    font-style: italic;
+    color: var(--text);
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
+    margin: 12px 0;
+    text-align: left;
+  }
+
+  .btn-next {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 14px 36px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    margin-top: 12px;
+    transition: transform 0.2s;
+  }
+
+  .btn-next:hover { transform: translateY(-2px); }
+
+  /* RESULTS SCREEN */
+  .results-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    gap: 24px;
+    padding: 40px 20px;
+  }
+
+  .results-screen h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+  }
+
+  .final-score {
+    font-size: 4rem;
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    background: linear-gradient(135deg, var(--gold), #f9ca24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .results-subtitle {
+    color: var(--text-dim);
+    font-size: 1rem;
+    max-width: 400px;
+    line-height: 1.6;
+  }
+
+  .results-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 10px 16px;
+  }
+
+  .result-row img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .result-row .result-name { flex: 1; text-align: left; font-weight: 500; font-size: 0.9rem; }
+  .result-row .result-stat { font-weight: 600; color: var(--gold); }
+
+  .btn-restart {
+    background: transparent;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+    padding: 14px 36px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-restart:hover {
+    background: var(--accent);
+    color: white;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes confettiDrop {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(80px) rotate(360deg); opacity: 0; }
+  }
+
+  .confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+    overflow: hidden;
+  }
+
+  .confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    animation: confettiDrop 1.5s ease-out forwards;
+  }
+
+  @media (max-width: 500px) {
+    .title-screen h1 { font-size: 2.2rem; }
+    .scenario-text { font-size: 1.05rem; }
+    .choices-grid { gap: 8px; }
+    .choice { padding: 12px 8px; }
+    .choice img { width: 44px; height: 44px; }
+    .choices-grid .choice:last-child:nth-child(odd) { max-width: 60%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- TITLE SCREEN -->
+  <div class="title-screen" id="titleScreen">
+    <h1>PDLP Scenario Roulette</h1>
+    <p class="subtitle">Real moments from FLANK's PDLP sessions. Guess who said it, did it, or would totally do it.</p>
+    <div class="title-avatars" id="titleAvatars"></div>
+    <div class="animal-tags">
+      <span class="animal-tag">Freddie: Monkey</span>
+      <span class="animal-tag">Andrew: Golden Retriever</span>
+      <span class="animal-tag">Navya: Rabbit</span>
+      <span class="animal-tag">Karim: Shark</span>
+      <span class="animal-tag">Lais: Bird</span>
+    </div>
+    <button class="btn-start" onclick="startGame()">Spin the Roulette</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="game-screen" id="gameScreen">
+    <div class="score-bar">
+      <span id="roundLabel">Round 1 / 15</span>
+      <span class="score" id="scoreLabel">0 pts</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div id="categoryTag" class="category-tag"></div>
+
+    <div class="scenario-card">
+      <p class="scenario-text" id="scenarioText"></p>
+    </div>
+
+    <div class="choices-grid" id="choicesGrid"></div>
+
+    <div class="reveal-card" id="revealCard">
+      <div class="verdict" id="verdict"></div>
+      <div class="quote" id="revealQuote"></div>
+      <div class="explanation" id="explanation"></div>
+      <button class="btn-next" id="btnNext" onclick="nextRound()">Next Scenario</button>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div class="results-screen" id="resultsScreen">
+    <h2>Game Over</h2>
+    <div class="final-score" id="finalScore"></div>
+    <p class="results-subtitle" id="resultsVerdict"></p>
+    <div class="results-breakdown" id="resultsBreakdown"></div>
+    <button class="btn-restart" onclick="restartGame()">Play Again</button>
+  </div>
+
+</div>
+
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+const CDN = 'https://cdn.insead.edu/myinsead/profile-images/';
+
+const MEMBERS = [
+  { id: 'freddie', name: 'Freddie', full: 'Freddie Chambers', animal: 'Monkey', emoji: '\ud83d\udc12', ph: '692b4d9d2df8d155cd94eb06afc6173c', color: '#3498db' },
+  { id: 'andrew',  name: 'Andrew',  full: 'Andrew Bauer',      animal: 'Golden Retriever', emoji: '\ud83d\udc15', ph: 'e530e98a7ee505477716bae2fe71cdef', color: '#e74c3c' },
+  { id: 'navya',   name: 'Navya',   full: 'Navya Pathak',      animal: 'Rabbit', emoji: '\ud83d\udc07', ph: '34528a14a09dfc48e3c02b52297fe9c8', color: '#9b59b6' },
+  { id: 'karim',   name: 'Karim',   full: 'Karim Hafez',       animal: 'Shark', emoji: '\ud83e\udd88', ph: 'beb1831b732457ee9fd87ddeec51097a', color: '#2ecc71' },
+  { id: 'lais',    name: 'La\u00eds',    full: 'La\u00eds Victoria Ometto', animal: 'Bird', emoji: '\ud83d\udc26', ph: '33dba85310a2774e94da70187f8e9365', color: '#f39c12' }
+];
+
+function photoUrl(member) {
+  return CDN + member.ph + '.jpg';
+}
+
+const SCENARIOS = [
+  // SPIRIT ANIMALS
+  {
+    cat: 'Spirit Animals',
+    q: 'The PDLP coach asks everyone to pick a spirit animal. Who said: "Shark. Always swimming. Conquer the space."?',
+    answer: 'karim',
+    quote: '"Shark." "How?" "I like sharks. Energetic. Always swimming. Conquer the space."',
+    explain: 'Karim went full apex predator energy while everyone else picked fluffy mammals.'
+  },
+  {
+    cat: 'Spirit Animals',
+    q: 'Who described themselves as a golden retriever - "motivated like a dog that just won\'t stop"?',
+    answer: 'andrew',
+    quote: '"I feel like I have the motivation of a dog that just won\'t stop." "Any specific type of dog?" "Golden retriever."',
+    explain: 'Andrew, the golden retriever who later found out his personality test said he scores super low in agreeableness. An aggressive golden retriever.'
+  },
+  {
+    cat: 'Spirit Animals',
+    q: 'Who picked "monkey" because they felt playful?',
+    answer: 'freddie',
+    quote: '"I\'ve got monkey. Yeah. I feel like there\'s a lot of interesting stuff. No, I\'m more like playful."',
+    explain: 'Freddie - playful, curious, easily distracted by interesting things. The monkey fits.'
+  },
+  {
+    cat: 'Spirit Animals',
+    q: 'Who said: "I\'m more like a bird. I want to come open-minded, like the wind"?',
+    answer: 'lais',
+    quote: '"I\'m more like a bird, I think. I want to come open minded and be ready to discuss new ideas and change my own opinion sometimes. I want to be like the wind."',
+    explain: 'La\u00eds - the free spirit who wants to soar above the group conflict and change direction when needed.'
+  },
+  {
+    cat: 'Spirit Animals',
+    q: 'Who was the rabbit - "hopping around with excitement"?',
+    answer: 'navya',
+    quote: '"Rabbit. Yeah, I am hopping around with excitement."',
+    explain: 'Navya - excited, energetic, ready to go. Classic rabbit energy for someone who later wanted to attend everyone\'s weddings.'
+  },
+
+  // PERSONALITY & PDLP
+  {
+    cat: 'Personality Crisis',
+    q: 'Who got their OB peer perceptions back and was "devastated"? Super low in open-mindedness, super high in neuroticism.',
+    answer: 'andrew',
+    quote: '"I was like devastated by them... I scored super low in open-mindedness, super low in agreeableness, super high in neuroticism. It shocked me because it\'s not how I see myself at all."',
+    explain: 'Andrew\'s self-image met reality and they didn\'t agree. But then Freddie helped - "when you\'re on the football pitch, you\'re a different person." Andrew realised he brings that intensity to schoolwork.'
+  },
+  {
+    cat: 'Personality Crisis',
+    q: 'Whose PDLP feedback was: "You are amazing at things you enjoy working on. You are less good at the stuff you don\'t find as interesting"?',
+    answer: 'freddie',
+    quote: '"That was my PDLP feedback. You are amazing at things you enjoy working on. You are less good at stuff you don\'t find as interesting."',
+    explain: 'Freddie - the emotionally repressed English guy who admitted PDLP was "annoying and painful, but more useful than I thought."'
+  },
+  {
+    cat: 'Personality Crisis',
+    q: 'Who described themselves as "kind of a truck" when it comes to communication?',
+    answer: 'lais',
+    quote: '"I\'m kind of a truck, and sometimes I just don\'t know how to express myself in a fluffy way."',
+    explain: 'La\u00eds - whose developmental goal was to be assertive but with more kindness. She picked Freddie as her peer coach. Freddie\'s job: teach a truck to be gentle.'
+  },
+  {
+    cat: 'Developmental Goals',
+    q: 'Who chose Karim as their peer coach because "everyone else is chill - it\'s just me"?',
+    answer: 'andrew',
+    quote: '"Initially I put Karim, but then I realised, wait, everyone\'s chill. It\'s just me." Karim: "I can\'t be you, but I\'ll try."',
+    explain: 'Andrew wanted to learn to relax. He looked around the group and realised: the problem is clear and it\'s him. At least he\'s self-aware about not being self-aware.'
+  },
+  {
+    cat: 'Developmental Goals',
+    q: 'Who wanted to "attend at least one life win" for each group member - like a wedding? And who replied: "It would be easier if you guys just come see my baby"?',
+    answer: 'navya',
+    quote: 'Navya: "When I get married, I want to invite you all." Karim: "It would be easier for me if you guys just come see my baby."',
+    explain: 'Navya wanted the group to be a family. Her developmental goal was literally to dial that back - she picked Karim as coach to learn that "my group needs more rules and structure rather than heart-to-heart buddies."'
+  },
+
+  // TEAM CONTRACT MOMENTS
+  {
+    cat: 'Contracting Chaos',
+    q: 'Who said: "It kind of feels like we\'ve said a bunch of words. Do we have an actual resolution? Do we have an actual contract?"',
+    answer: 'andrew',
+    quote: '"I\'m only going to say this because you said don\'t withhold. It kind of feels like we\'ve said a bunch of words. Do we have an actual resolution?"',
+    explain: 'Andrew - the golden retriever who wants tangible outcomes. Freddie immediately pushed back: "I think this is more principles. Like IFRS." Classic FLANK dynamic.'
+  },
+  {
+    cat: 'Contracting Chaos',
+    q: 'Who proposed naming the team FLANK?',
+    answer: 'freddie',
+    quote: '"Are we happy with the name Flank?" Karim: "We are already flanking!"',
+    explain: 'Freddie proposed it, Karim embraced it with immediate enthusiasm. The name stuck. No one has ever asked what it stands for.'
+  },
+  {
+    cat: 'Contracting Chaos',
+    q: 'Who framed the team contract as a Memorandum of Understanding with "recitals" and "clauses"?',
+    answer: 'navya',
+    quote: 'Navya proposed MOU framing with legal precision - "values embedded at the start as the \'why\' - why we\'re entering this MOU."',
+    explain: 'Navya - the corporate lawyer who brought legal document structure to a study group contract. Recitals. Clauses. Signing parties. The OB professor never saw it coming.'
+  },
+  {
+    cat: 'Working Styles',
+    q: 'Who said "Hangovers do not count" as a valid scheduling restriction?',
+    answer: 'freddie',
+    quote: 'Karim: "Respect peers\' restrictions - appointments, etc." Freddie: "Hangovers do not count."',
+    explain: 'The group was being very serious about respecting everyone\'s time constraints. Freddie injected reality.'
+  },
+  {
+    cat: 'Working Styles',
+    q: 'Who said: "I always do things really in advance"? Their weekends are protected because of family.',
+    answer: 'karim',
+    quote: '"I always do things really in advance, usually." Weekends are protected - baby takes priority.',
+    explain: 'Karim - the shark who submits assignments days early and guards his weekends. "I would submit today" was his answer when asked about deadline timing.'
+  },
+  {
+    cat: 'Working Styles',
+    q: 'Who pushed for developing weaknesses, not just leveraging strengths? "I want to learn something different to develop."',
+    answer: 'lais',
+    quote: '"Use everyone\'s strength, but I think we should also focus on using everyone\'s weakness. If I\'m good at something, I want to learn something different to develop."',
+    explain: 'La\u00eds flipped the script. Everyone else was talking about playing to strengths. She wanted to rotate roles for growth, not efficiency. The bird wants to learn to swim.'
+  },
+  {
+    cat: 'Conflict & Dynamics',
+    q: 'When the group discussed "fighting", who corrected everyone: "A disagreement or a difference in opinion is not a fight"?',
+    answer: 'navya',
+    quote: '"I think we don\'t fight. Sometimes people have difficulties with disagreements, but a disagreement or a difference in opinion is not a fight. We just have to chill and figure each other out."',
+    explain: 'Navya - the rabbit with a law degree. She also pointed out that culture shapes what "conflict" means: "for me, the only day we fought was the first day."'
+  },
+  {
+    cat: 'Conflict & Dynamics',
+    q: 'During PDLP, who said: "Take this seriously, but also don\'t take it too seriously. Come with energy, have fun. Enjoy the absurdity of it."',
+    answer: 'freddie',
+    quote: '"To take this seriously, but also to not take it too seriously. Come with energy, have fun. I think it\'s a real privilege to do stuff like this and to enjoy the kind of absurdity of it."',
+    explain: 'The monkey energy came through. Coach Martin loved it: "Enjoy the chaos." Meanwhile Andrew was trying to get a finished contract.'
+  },
+  {
+    cat: 'Conflict & Dynamics',
+    q: 'Who wanted the team contract to be principles-based like IFRS - "not rules-based, not exhaustive prescriptions"?',
+    answer: 'freddie',
+    quote: '"IFRS-style approach - guiding values requiring good-faith interpretation, not exhaustive rules." Freddie pushed for the spirit over the letter.',
+    explain: 'Freddie turned his Financial Accounting knowledge into team governance philosophy. The contract ended up as an IFRS-inspired MOU. Peak MBA energy.'
+  },
+  {
+    cat: 'Conflict & Dynamics',
+    q: 'Who said: "If in doubt, communicate" and argued for ranking over voting in decisions?',
+    answer: 'andrew',
+    quote: '"If in doubt, communicate." Also from lecture: "Voting is not the best way to do it. Ranking or scoring is."',
+    explain: 'Andrew - the theory engine. He grounded every team decision in course material. Followership vs leadership, ranking vs voting, interaction vs coordination. The golden retriever has a textbook in his mouth.'
+  }
+];
+
+// Game state
+let currentRound = 0;
+let score = 0;
+let usedScenarios = [];
+let roundScenarios = [];
+let memberStats = {};
+const TOTAL_ROUNDS = 15;
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function init() {
+  const avatarsEl = document.getElementById('titleAvatars');
+  avatarsEl.innerHTML = MEMBERS.map(m =>
+    `<img class="title-avatar" src="${photoUrl(m)}" alt="${m.name}" title="${m.name} - ${m.animal} ${m.emoji}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22${encodeURIComponent(m.color)}%22 width=%22100%22 height=%22100%22 rx=%2250%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2240%22>${m.emoji}</text></svg>'">`
+  ).join('');
+}
+
+function startGame() {
+  currentRound = 0;
+  score = 0;
+  memberStats = {};
+  MEMBERS.forEach(m => { memberStats[m.id] = { correct: 0, total: 0 }; });
+
+  roundScenarios = shuffle([...SCENARIOS]).slice(0, TOTAL_ROUNDS);
+
+  document.getElementById('titleScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'flex';
+  document.getElementById('resultsScreen').style.display = 'none';
+
+  loadRound();
+}
+
+function loadRound() {
+  const s = roundScenarios[currentRound];
+  document.getElementById('roundLabel').textContent = `Round ${currentRound + 1} / ${TOTAL_ROUNDS}`;
+  document.getElementById('scoreLabel').textContent = `${score} pts`;
+  document.getElementById('progressFill').style.width = `${((currentRound) / TOTAL_ROUNDS) * 100}%`;
+  document.getElementById('categoryTag').textContent = s.cat;
+  document.getElementById('scenarioText').textContent = s.q;
+
+  const grid = document.getElementById('choicesGrid');
+  const shuffledMembers = shuffle([...MEMBERS]);
+  grid.innerHTML = shuffledMembers.map(m => `
+    <div class="choice" data-id="${m.id}" onclick="makeGuess('${m.id}')">
+      <img src="${photoUrl(m)}" alt="${m.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22${encodeURIComponent(m.color)}%22 width=%22100%22 height=%22100%22 rx=%2250%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2240%22>${m.emoji}</text></svg>'">
+      <span class="name">${m.name}</span>
+      <span class="animal">${m.emoji} ${m.animal}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('revealCard').style.display = 'none';
+}
+
+function makeGuess(guessId) {
+  const s = roundScenarios[currentRound];
+  const isCorrect = guessId === s.answer;
+
+  memberStats[s.answer].total++;
+  if (isCorrect) {
+    score++;
+    memberStats[s.answer].correct++;
+  }
+
+  document.getElementById('scoreLabel').textContent = `${score} pts`;
+
+  // Highlight choices
+  const choices = document.querySelectorAll('.choice');
+  choices.forEach(c => {
+    c.classList.add('disabled');
+    const id = c.dataset.id;
+    if (id === s.answer) {
+      c.classList.add('correct');
+    } else if (id === guessId && !isCorrect) {
+      c.classList.add('wrong');
+    } else {
+      c.classList.add('faded');
+    }
+  });
+
+  // Show reveal
+  const revealCard = document.getElementById('revealCard');
+  const verdict = document.getElementById('verdict');
+  const revealQuote = document.getElementById('revealQuote');
+  const explanation = document.getElementById('explanation');
+
+  if (isCorrect) {
+    verdict.textContent = 'Nailed it!';
+    verdict.className = 'verdict correct-verdict';
+    spawnConfetti();
+  } else {
+    const correctMember = MEMBERS.find(m => m.id === s.answer);
+    verdict.textContent = `Nope - it was ${correctMember.name} ${correctMember.emoji}`;
+    verdict.className = 'verdict wrong-verdict';
+  }
+
+  revealQuote.textContent = s.quote;
+  explanation.textContent = s.explain;
+
+  if (currentRound === TOTAL_ROUNDS - 1) {
+    document.getElementById('btnNext').textContent = 'See Results';
+  } else {
+    document.getElementById('btnNext').textContent = 'Next Scenario';
+  }
+
+  revealCard.style.display = 'block';
+}
+
+function nextRound() {
+  currentRound++;
+  if (currentRound >= TOTAL_ROUNDS) {
+    showResults();
+  } else {
+    loadRound();
+  }
+}
+
+function showResults() {
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('resultsScreen').style.display = 'flex';
+
+  document.getElementById('finalScore').textContent = `${score} / ${TOTAL_ROUNDS}`;
+
+  const pct = score / TOTAL_ROUNDS;
+  let verdictText;
+  if (pct === 1) verdictText = "Perfect score. You're either Freddie or you've been secretly recording PDLP sessions.";
+  else if (pct >= 0.8) verdictText = "You know FLANK better than FLANK knows itself. Which is saying something because Andrew only just found out his own personality.";
+  else if (pct >= 0.6) verdictText = "Solid effort. You understand the group dynamics better than most - but there are still some surprises in there.";
+  else if (pct >= 0.4) verdictText = "Not bad. You've got the general vibe but the specific chaos of FLANK still eludes you.";
+  else verdictText = "Were you even in the PDLP sessions? Or were you too busy being a shark / golden retriever / truck?";
+
+  document.getElementById('resultsVerdict').textContent = verdictText;
+
+  const breakdown = document.getElementById('resultsBreakdown');
+  breakdown.innerHTML = MEMBERS.map(m => {
+    const stat = memberStats[m.id];
+    const pctCorrect = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : '-';
+    return `
+      <div class="result-row">
+        <img src="${photoUrl(m)}" alt="${m.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22${encodeURIComponent(m.color)}%22 width=%22100%22 height=%22100%22 rx=%2250%22/><text x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2240%22>${m.emoji}</text></svg>'">
+        <span class="result-name">${m.name} ${m.emoji}</span>
+        <span class="result-stat">${stat.correct}/${stat.total} ${pctCorrect !== '-' ? `(${pctCorrect}%)` : ''}</span>
+      </div>
+    `;
+  }).join('');
+
+  spawnConfetti();
+}
+
+function restartGame() {
+  document.getElementById('resultsScreen').style.display = 'none';
+  document.getElementById('titleScreen').style.display = 'flex';
+}
+
+function spawnConfetti() {
+  const container = document.getElementById('confettiContainer');
+  const colors = ['#6c5ce7', '#f6c644', '#00b894', '#e17055', '#3498db', '#9b59b6', '#f39c12', '#2ecc71'];
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.top = Math.random() * 40 + '%';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    piece.style.width = (Math.random() * 8 + 4) + 'px';
+    piece.style.height = (Math.random() * 8 + 4) + 'px';
+    piece.style.animationDelay = Math.random() * 0.5 + 's';
+    piece.style.animationDuration = (Math.random() * 1 + 1) + 's';
+    container.appendChild(piece);
+    setTimeout(() => piece.remove(), 2000);
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>
