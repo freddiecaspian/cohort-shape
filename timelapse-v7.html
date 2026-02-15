@@ -470,6 +470,31 @@ body {
 }
 #card-close:hover { color: #888; }
 
+#card-header {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+#card-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #222;
+  flex-shrink: 0;
+  display: none;
+}
+
+#card-photo.visible {
+  display: block;
+}
+
+#card-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
 #card-rank {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
@@ -491,7 +516,6 @@ body {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   color: #666;
-  margin-bottom: 16px;
 }
 
 #card-headline {
@@ -672,9 +696,14 @@ body {
 <div id="card-overlay">
   <div id="profile-card">
     <button id="card-close">&times;</button>
-    <div id="card-rank"></div>
-    <div id="card-name"></div>
-    <div id="card-bg"></div>
+    <div id="card-header">
+      <img id="card-photo" src="" alt="">
+      <div id="card-header-text">
+        <div id="card-rank"></div>
+        <div id="card-name"></div>
+        <div id="card-bg"></div>
+      </div>
+    </div>
     <div id="card-headline"></div>
     <div id="card-quote"></div>
     <div id="card-assessment"></div>
@@ -803,6 +832,7 @@ function getQualityColor(student) {
 const profiles = {
   'Chris Johnson': {
     bg: 'Bain, British',
+    photo: 'photos/Chris.jpg',
     headline: 'The Reframer',
     quote: '"I think the point is to signal that they\'re an innovative company... and that cascades down, so I perceive Nike as being this great brand." Professor adopted this framing for the rest of the session.',
     assessment: 'Consistently reframes questions rather than just answering them. Operates at the level of underlying mechanisms. Professors repeatedly use his contributions as launching pads. Distinguished tacit from institutionalised knowledge at Bain. Connected Kantian ethics to classroom rule-following.',
@@ -811,6 +841,7 @@ const profiles = {
   },
   'Andrew Bauer': {
     bg: 'Background not identified in transcripts',
+    photo: 'photos/Andrew.jpg',
     headline: 'The Volume Player',
     quote: 'Appears in 16+ transcripts across lectures, study groups, and coaching sessions. High frequency, broad range.',
     assessment: 'Highest raw contribution count in the section. The gap between total and validated contributions tells the story - quantity is there, the system is watching for quality to match. Present in virtually every session, willing to be first to speak.',
@@ -819,6 +850,7 @@ const profiles = {
   },
   'Nick Colbourne': {
     bg: 'EY, Belgian/British/Canadian',
+    photo: 'photos/Nick.jpg',
     headline: 'The Framework Challenger',
     quote: '"That assumes people aren\'t gonna want to pay in the middle... take a car, you might not be able to afford a Ferrari, but you don\'t wanna buy a really bad car. Surely there\'s people competing in the middle."',
     assessment: 'Higher-order intellectual move - questioning the model rather than just working within it. Called BS on McKinsey\'s $8 trillion AI estimate. Identified the boundary between uncertainty types in Decision Science. Professors repeatedly engage substantively rather than redirecting.',
@@ -835,6 +867,7 @@ const profiles = {
   },
   'Felix Fotso Kuate': {
     bg: 'Background not identified in transcripts',
+    photo: 'photos/Felix.jpg',
     headline: 'The Quiet All-Rounder',
     quote: 'Appears across 14 transcripts. Contributions span multiple courses and frameworks.',
     assessment: 'Steady presence across the full curriculum. The kind of participant who raises the average quality of every session without dominating any single one. Cross-disciplinary range suggests genuine intellectual curiosity.',
@@ -843,6 +876,7 @@ const profiles = {
   },
   'Guillermo Krauch': {
     bg: 'Bain Brasil, German-Paraguayan',
+    photo: 'photos/Guillermo.jpg',
     headline: 'The Economist',
     quote: '"If there was perfect competition, you would be basically at cost level because fair markets should work that way. So any advantage you can create would be anything above the cost."',
     assessment: 'Brings proper micro-economic reasoning when the rest of the room is pattern-matching. 7 out of 8 contributions validated. Grounded competitive advantage in perfect competition theory. Economics-first thinking from a family business dynasty and Bain consulting.',
@@ -851,6 +885,7 @@ const profiles = {
   },
   'Eva Sinha': {
     bg: 'Background not identified in transcripts',
+    photo: 'photos/Eva.jpg',
     headline: 'The Teaching Moment',
     quote: 'Professor turned her point into a key teaching moment, building the next segment of the lecture around her contribution.',
     assessment: 'High hit rate contributor whose points land with enough depth that professors use them as launching pads. Quality over frequency - when she speaks, the room shifts. Points connect theory to practice.',
@@ -859,6 +894,7 @@ const profiles = {
   },
   'Jessica Dill': {
     bg: 'Background not identified in transcripts',
+    photo: 'photos/Jessica.jpg',
     headline: 'The Steady Hand',
     quote: '"Focus on the data, have a process." Textbook correct, consistently applied.',
     assessment: 'Reliable contributor with good instincts. Participates consistently across sessions without dramatic peaks or valleys. Process-oriented thinking that anchors group discussions. The backbone of classroom discussion.',
@@ -875,6 +911,7 @@ const profiles = {
   },
   'Katie Anderson': {
     bg: 'Background not identified in transcripts',
+    photo: 'photos/Katie.jpg',
     headline: 'The Connector',
     quote: 'Strategy contributions on industry relationships as competitive moat. Decision Science work on COVID classification.',
     assessment: 'Participates frequently and connects ideas across domains. Draws from both Strategy and Decision Science contexts. The analytical elevation - turning observations into frameworks - is the next step.',
@@ -883,6 +920,7 @@ const profiles = {
   },
   'Justin Uffelman': {
     bg: 'Background not identified in transcripts',
+    photo: 'photos/Justin.jpg',
     headline: 'The Efficient Contributor',
     quote: '5 validated contributions from 6 total. One of the highest hit rates in the section.',
     assessment: 'Speaks less than many but when he does, it lands. The efficiency of his contribution profile is remarkable - almost nothing wasted. Selective engagement suggests careful listening and timing.',
@@ -899,6 +937,7 @@ const profiles = {
   },
   'Thomas Mulwa': {
     bg: 'Background not identified in transcripts',
+    photo: 'photos/Thomas.jpg',
     headline: 'The Late Bloomer',
     quote: 'Quiet in early sessions, then emerged with substantive contributions that showed real engagement with the material.',
     assessment: 'Classic late bloomer profile. The slow start wasn\'t silence - it was observation. When the contributions came, they showed accumulated understanding. The patience to wait until you have something worth saying.',
@@ -907,6 +946,7 @@ const profiles = {
   },
   'Gonzalo Salazar': {
     bg: 'Background not identified in transcripts',
+    photo: 'photos/Gonzalo.jpg',
     headline: 'The Late Bloomer',
     quote: '4 of 5 contributions validated - 80% hit rate, all concentrated in the second half of the term.',
     assessment: 'Another late bloomer, but with a twist: when he finally spoke up, nearly everything landed. Patience paid off in precision. The second-half surge suggests observation was deliberate, not passive.',
@@ -915,6 +955,7 @@ const profiles = {
   },
   'Sander Goudriaan': {
     bg: 'BCG, Belgian/Dutch',
+    photo: 'photos/Saander.jpg',
     headline: 'The Analyst',
     quote: 'Connected Amazon\'s scale to data advantages enabling customer intimacy while maintaining operational efficiency. One of the most analytically complete single answers across all transcripts.',
     assessment: 'Three contributions, three validations. The single most analytically complete answer in any transcript came from Sander. Quality per word is off the charts. BCG training shows in the structural precision.',
@@ -947,6 +988,7 @@ const profiles = {
   },
   'Fatima Dashe': {
     bg: 'Background not identified in transcripts',
+    photo: 'photos/Fatima.jpg',
     headline: 'The Practitioner',
     quote: 'Strategy contribution on BCG implementation as first-mover advantage. Standard consulting perspective, competently delivered.',
     assessment: 'Solid contributor who draws on professional experience. Three of four contributions validated - a practitioner who translates experience into classroom insight. Consistent quality when she engages.',
@@ -1316,6 +1358,17 @@ function showCard(studentIdx) {
   const ranked = getRanked(SESSIONS - 1);
   const rank = ranked.findIndex(r => r.idx === studentIdx) + 1;
   const hitRate = student.total > 0 ? Math.round((student.high / student.total) * 100) : 0;
+
+  // Photo
+  const photoEl = document.getElementById('card-photo');
+  if (profile.photo) {
+    photoEl.src = profile.photo;
+    photoEl.alt = student.name;
+    photoEl.classList.add('visible');
+  } else {
+    photoEl.classList.remove('visible');
+    photoEl.src = '';
+  }
 
   document.getElementById('card-rank').innerHTML = `Rank <span class="rank-num">#${rank}</span> of ${TOTAL_STUDENTS} · ${student.arch}`;
   document.getElementById('card-name').textContent = student.name;
