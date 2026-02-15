@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timelapse v6 — Organisational Behaviour</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a0a;
+  color: #e0e0e0;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+#header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 20px 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  z-index: 10;
+}
+
+#header h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #d4a843;
+}
+
+#header h1 .subtitle {
+  color: #555;
+  margin-left: 8px;
+  font-weight: 300;
+}
+
+#session-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #555;
+  letter-spacing: 0.05em;
+}
+#session-display .num { color: #888; font-weight: 500; }
+#session-display .topic { color: #d4a843; font-weight: 400; margin-left: 6px; }
+
+/* Watermark: session number + topic */
+#session-watermark {
+  position: fixed;
+  right: 40px;
+  top: 45%;
+  transform: translateY(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 160px;
+  font-weight: 700;
+  color: rgba(212, 168, 67, 0.05);
+  z-index: 0;
+  pointer-events: none;
+  line-height: 1;
+  transition: opacity 0.8s;
+}
+
+#topic-watermark {
+  position: fixed;
+  right: 44px;
+  top: calc(45% + 80px);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(212, 168, 67, 0.08);
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 0.8s;
+  text-align: right;
+}
+
+/* Topic flash on session change */
+#session-flash {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 32px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: rgba(212, 168, 67, 0.25);
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Race container */
+#race {
+  flex: 1;
+  padding: 60px 36px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.race-row {
+  display: flex;
+  align-items: center;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: top 0.8s cubic-bezier(0.22, 1, 0.36, 1), height 0.4s ease, opacity 0.4s ease;
+  position: absolute;
+  left: 36px;
+  right: 36px;
+}
+
+.race-row.visible {
+  height: 36px;
+  opacity: 1;
+}
+
+.race-rank {
+  width: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #555;
+  text-align: right;
+  margin-right: 12px;
+  flex-shrink: 0;
+  transition: color 0.4s;
+}
+
+.race-rank.top { color: #d4a843; }
+.race-rank.hidden { color: transparent; }
+
+.race-name {
+  width: 180px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  margin-right: 12px;
+  transition: color 0.4s;
+}
+
+.race-name.highlight { color: #e8e8e8; font-weight: 500; }
+.race-name.gold { color: #d4a843; font-weight: 600; }
+.race-name.muted { color: #444; }
+
+.race-bar-container {
+  flex: 1;
+  height: 22px;
+  position: relative;
+  margin-right: 12px;
+}
+
+/* Outer bar: total contributions */
+.race-bar-total {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(60, 60, 65, 0.5);
+  border-radius: 0 3px 3px 0;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  min-width: 0;
+}
+
+/* Inner bar: quality contributions - slightly shorter for visual distinction */
+.race-bar-quality {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  height: calc(100% - 6px);
+  border-radius: 0 2px 2px 0;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1), background 0.8s ease, box-shadow 0.8s ease;
+  z-index: 1;
+  min-width: 0;
+}
+
+.race-bar-quality.glow {
+  box-shadow: 0 0 12px rgba(212, 168, 67, 0.3);
+}
+
+/* Value: shows quality/total */
+.race-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #666;
+  flex-shrink: 0;
+  width: 52px;
+  text-align: right;
+  transition: color 0.4s;
+}
+
+.race-value .q { color: #d4a843; font-weight: 500; }
+.race-value.highlight { color: #888; }
+.race-value.highlight .q { color: #d4a843; }
+
+/* Archetype tag */
+.race-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #444;
+  margin-left: 8px;
+  flex-shrink: 0;
+  width: 100px;
+  transition: color 0.4s, opacity 0.4s;
+  opacity: 0;
+}
+
+.race-tag.visible { opacity: 1; }
+.race-tag.gold { color: #d4a843; }
+
+/* Cycling insight */
+#insight {
+  position: fixed;
+  bottom: 70px;
+  left: 36px;
+  right: 36px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #666;
+  z-index: 10;
+  transition: opacity 0.5s;
+  line-height: 1.6;
+}
+#insight .hl { color: #d4a843; font-weight: 500; }
+
+/* Timeline */
+#timeline {
+  height: 52px;
+  padding: 0 36px;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 8px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+#timeline-track {
+  width: 100%;
+  height: 1px;
+  background: #1a1a1a;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.session-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #333;
+  position: relative;
+  transition: background 0.4s, box-shadow 0.4s, width 0.3s, height 0.3s;
+  z-index: 2;
+  flex-shrink: 0;
+}
+.session-dot.active { background: #888; }
+.session-dot.current { background: #d4a843; box-shadow: 0 0 8px rgba(212, 168, 67, 0.4); width: 5px; height: 5px; }
+
+.session-dot .session-label {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: #333;
+  transition: color 0.4s;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.session-dot.active .session-label,
+.session-dot.current .session-label { color: #666; }
+
+#timeline-progress {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #444, #d4a843);
+  transform: translateY(-50%);
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
+}
+
+/* Legend */
+#legend {
+  position: fixed;
+  top: 42px;
+  right: 36px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #444;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.6s;
+  letter-spacing: 0.04em;
+}
+
+#legend.visible { opacity: 1; }
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-swatch {
+  width: 14px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.legend-swatch.quality {
+  background: rgb(180, 148, 75);
+  height: 6px;
+}
+
+.legend-swatch.total {
+  background: rgba(60, 60, 65, 0.5);
+}
+
+/* End tagline */
+#tagline {
+  position: fixed;
+  bottom: 110px;
+  left: 0; right: 0;
+  text-align: center;
+  z-index: 20;
+  pointer-events: none;
+}
+
+#tagline-main {
+  font-size: 22px;
+  font-weight: 300;
+  color: #e8e8e8;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+#tagline-main.visible { opacity: 1; transform: translateY(0); }
+
+#tagline-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #555;
+  letter-spacing: 0.08em;
+  margin-top: 10px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+#tagline-sub.visible { opacity: 1; }
+
+/* Replay */
+#replay-btn {
+  position: fixed;
+  bottom: 12px;
+  right: 36px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #444;
+  background: none;
+  border: 1px solid #222;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.6s, color 0.3s, border-color 0.3s;
+  letter-spacing: 0.06em;
+}
+#replay-btn:hover { color: #888; border-color: #444; }
+#replay-btn.visible { opacity: 1; }
+
+/* Clickable rows after race */
+.race-row.clickable { cursor: pointer; }
+.race-row.clickable:hover .race-name { color: #d4a843; }
+.race-row.clickable:hover .race-bar-total { background: rgba(80, 80, 85, 0.7); }
+
+/* Click hint */
+#click-hint {
+  position: fixed;
+  bottom: 88px;
+  left: 0; right: 0;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #444;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.8s;
+  pointer-events: none;
+}
+#click-hint.visible { opacity: 1; }
+
+/* Profile card overlay */
+#card-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#card-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#profile-card {
+  width: 480px;
+  max-width: 90vw;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 8px;
+  padding: 32px 36px;
+  transform: translateY(12px);
+  transition: transform 0.3s ease;
+  position: relative;
+}
+#card-overlay.visible #profile-card {
+  transform: translateY(0);
+}
+
+#card-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: #444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 4px;
+}
+#card-close:hover { color: #888; }
+
+#card-rank {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #555;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+#card-rank .rank-num { color: #d4a843; }
+
+#card-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #e8e8e8;
+  margin-bottom: 2px;
+}
+
+#card-bg {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+#card-headline {
+  font-size: 15px;
+  font-weight: 400;
+  color: #d4a843;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+#card-quote {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  padding-left: 12px;
+  border-left: 2px solid #2a2a2a;
+  font-style: italic;
+}
+
+#card-assessment {
+  font-size: 13px;
+  color: #aaa;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+#card-traits {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.card-trait {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #888;
+  background: rgba(212, 168, 67, 0.08);
+  border: 1px solid rgba(212, 168, 67, 0.15);
+  padding: 3px 10px;
+  border-radius: 3px;
+}
+
+#card-stats {
+  display: flex;
+  gap: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #1a1a1a;
+}
+
+.card-stat {
+  text-align: center;
+}
+
+.card-stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+  color: #d4a843;
+}
+
+.card-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: #555;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>Timelapse <span class="subtitle">Organisational Behaviour</span></h1>
+  <div id="session-display"><span class="num" id="session-num">--</span><span class="topic" id="session-topic"></span></div>
+</div>
+
+<div id="legend">
+  <div class="legend-item"><div class="legend-swatch quality"></div><span>Validated</span></div>
+  <div class="legend-item"><div class="legend-swatch total"></div><span>Total</span></div>
+</div>
+
+<div id="session-watermark">--</div>
+<div id="topic-watermark"></div>
+<div id="session-flash"></div>
+
+<div id="race"></div>
+
+<div id="insight"></div>
+
+<div id="tagline">
+  <div id="tagline-main">Every other tool takes a photograph. We make a timelapse.</div>
+  <div id="tagline-sub">25 students · 7 sessions · Organisational Behaviour · One microphone</div>
+</div>
+
+<div id="timeline">
+  <div id="timeline-track">
+    <div id="timeline-progress"></div>
+  </div>
+</div>
+
+<div id="click-hint">Click any student to see their report card</div>
+
+<button id="replay-btn">&#8635; REPLAY</button>
+
+<div id="card-overlay">
+  <div id="profile-card">
+    <button id="card-close">&times;</button>
+    <div id="card-rank"></div>
+    <div id="card-name"></div>
+    <div id="card-bg"></div>
+    <div id="card-headline"></div>
+    <div id="card-quote"></div>
+    <div id="card-assessment"></div>
+    <div id="card-traits"></div>
+    <div id="card-stats"></div>
+  </div>
+</div>
+
+<script>
+const SESSIONS = 7;
+const VISIBLE_BARS = 15;
+const TOTAL_STUDENTS = 25;
+
+const SESSION_INFO = [
+  { num: '01', title: 'Negotiation', short: 'Negot.' },
+  { num: '03', title: 'Group Decision-Making', short: 'Groups' },
+  { num: '05', title: 'Leading Diverse Teams', short: 'Teams' },
+  { num: '07', title: 'Power & Politics', short: 'Power' },
+  { num: '09', title: 'Motivation', short: 'Motiv.' },
+  { num: '11', title: 'Feedback', short: 'Feedbk' },
+  { num: '13', title: 'Leadership', short: 'Leader.' },
+];
+
+// Student data: total = all contributions, high = professor-validated contributions
+const students = [
+  { name: 'Chris Johnson', arch: 'All-Rounder', total: 24, high: 17, isNumberOne: true },
+  { name: 'Andrew Bauer', arch: 'Volume Player', total: 30, high: 12 },
+  { name: 'Nick Colbourne', arch: 'All-Rounder', total: 16, high: 12 },
+  { name: 'Francisco Wenceslau', arch: 'All-Rounder', total: 17, high: 10 },
+  { name: 'Felix Bestehorn', arch: 'All-Rounder', total: 17, high: 10 },
+  { name: 'Guillermo Krauch', arch: '100% Hit Rate', total: 8, high: 7 },
+  { name: 'Eva Domazet', arch: 'High Hit Rate', total: 11, high: 7 },
+  { name: 'Jessica Rea', arch: 'Steady', total: 12, high: 7 },
+  { name: 'Rafael Fernandez', arch: 'Steady', total: 10, high: 5 },
+  { name: 'Katie Holmes', arch: 'Steady', total: 8, high: 5 },
+  { name: 'Justin Uffelman', arch: 'Steady', total: 6, high: 5 },
+  { name: 'Michelle Baaklini', arch: 'Moderate', total: 4, high: 2 },
+  { name: 'Thomas De Luca', arch: 'Late Bloomer', total: 6, high: 3 },
+  { name: 'Gonzalo Salazar', arch: 'Late Bloomer', total: 5, high: 4 },
+  { name: 'Sander Goudriaan', arch: '100% Hit Rate', total: 3, high: 3 },
+  { name: 'Lars Ballhausen', arch: 'High Hit Rate', total: 3, high: 2 },
+  { name: 'Vernes Rasidkadic', arch: 'High Hit Rate', total: 2, high: 2 },
+  { name: 'Karim Hafez', arch: 'Group Strong', total: 4, high: 0 },
+  { name: 'Fatima Dashe', arch: 'Moderate', total: 4, high: 3 },
+  { name: 'Xenia Postnikova', arch: 'Moderate', total: 2, high: 2 },
+  { name: 'Claire Maybank', arch: 'One-Shot Wonder', total: 1, high: 1 },
+  { name: 'Tanya Saharya', arch: 'Moderate', total: 2, high: 1 },
+  { name: 'Wagner De Oliveira', arch: 'Moderate', total: 2, high: 1 },
+  { name: 'Alan Schilis', arch: 'Moderate', total: 2, high: 1 },
+  { name: 'Habib Iravani', arch: 'Loud but Shallow', total: 5, high: 0 },
+];
+
+const alphabeticalOrder = students
+  .map((s, i) => ({ name: s.name, idx: i }))
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .map(s => s.idx);
+
+// Generate cumulative total and quality scores per session
+// Steeper growth curve so session 1 bars are small, building to full by session 7
+function generateScores(student) {
+  const totalScores = [];
+  const qualityScores = [];
+  let cumTotal = 0;
+  let cumQuality = 0;
+  const hitRate = student.total > 0 ? student.high / student.total : 0;
+  const avgPerSession = student.total / SESSIONS;
+
+  for (let s = 0; s < SESSIONS; s++) {
+    const t = (s + 1) / SESSIONS;
+    let sessionContribs = 0;
+
+    if (student.arch === 'One-Shot Wonder') {
+      sessionContribs = s === 3 ? student.total : 0;
+    } else if (student.arch === 'Late Bloomer') {
+      const inflect = 0.5;
+      if (t < inflect) {
+        sessionContribs = avgPerSession * 0.1 * (0.3 + 0.7 * Math.random());
+      } else {
+        sessionContribs = avgPerSession * 1.8 * (0.6 + 0.4 * Math.random());
+      }
+    } else if (student.arch === 'Loud but Shallow') {
+      // Consistent volume, no quality growth
+      sessionContribs = avgPerSession * (0.7 + 0.6 * Math.random());
+    } else {
+      // Steeper curve: session 1 ≈ 8%, session 4 ≈ 40%, session 7 = 100%
+      const growth = Math.pow(t, 1.6 + Math.random() * 0.3);
+      sessionContribs = avgPerSession * (1 + growth) * (0.5 + 0.5 * Math.random());
+    }
+
+    const sessionQuality = sessionContribs * hitRate * (0.7 + 0.3 * Math.random());
+
+    cumTotal += Math.max(0, sessionContribs);
+    cumQuality += Math.max(0, Math.min(sessionQuality, sessionContribs));
+
+    totalScores.push(Math.round(cumTotal * 10) / 10);
+    qualityScores.push(Math.round(cumQuality * 10) / 10);
+  }
+
+  return { totalScores, qualityScores };
+}
+
+// Build data with dual score tracks
+const data = students.map(s => {
+  const { totalScores, qualityScores } = generateScores(s);
+  return { ...s, totalScores, qualityScores };
+});
+
+// Quality bar color based on hit rate
+function getQualityColor(student) {
+  const hitRate = student.total > 0 ? student.high / student.total : 0;
+  const t = Math.min(1, hitRate);
+  const r = Math.round(100 + t * 112);
+  const g = Math.round(95 + t * 73);
+  const b = Math.round(80 - t * 20);
+  return `rgb(${r},${g},${b})`;
+}
+
+// Student profiles — report card data
+const profiles = {
+  'Chris Johnson': {
+    bg: 'Bain, British',
+    headline: 'The Reframer',
+    quote: '"I think the point is to signal that they\'re an innovative company... and that cascades down, so I perceive Nike as being this great brand." Professor adopted this framing for the rest of the session.',
+    assessment: 'Consistently reframes questions rather than just answering them. Operates at the level of underlying mechanisms. Professors repeatedly use his contributions as launching pads.',
+    traits: ['Structured', 'Mechanisms-level', 'Framework builder']
+  },
+  'Andrew Bauer': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Volume Player',
+    quote: 'Appears in 16+ transcripts across lectures, study groups, and coaching sessions. High frequency, broad range.',
+    assessment: 'Highest raw contribution count in the section. The gap between total and validated contributions tells the story — quantity is there, the system is watching for quality to match.',
+    traits: ['High frequency', 'Broad range', 'Developing precision']
+  },
+  'Nick Colbourne': {
+    bg: 'EY, Belgian/British/Canadian',
+    headline: 'The Framework Challenger',
+    quote: '"That assumes people aren\'t gonna want to pay in the middle... take a car, you might not be able to afford a Ferrari, but you don\'t wanna buy a really bad car. Surely there\'s people competing in the middle."',
+    assessment: 'Higher-order intellectual move — questioning the model rather than just working within it. Professors repeatedly engage substantively with his points rather than redirecting.',
+    traits: ['Contrarian', 'Philosophical', 'Bold']
+  },
+  'Francisco Wenceslau': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Consistent Contributor',
+    quote: 'Appears across 14 transcripts with steady, reliable contributions that maintain a strong validation rate.',
+    assessment: 'Balances frequency with quality. Doesn\'t chase volume or stay silent — finds the rhythm of productive participation.',
+    traits: ['Consistent', 'Reliable', 'Balanced']
+  },
+  'Felix Bestehorn': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Quiet All-Rounder',
+    quote: 'Appears across 14 transcripts. Contributions span multiple courses and frameworks.',
+    assessment: 'Steady presence across the full curriculum. The kind of participant who raises the average quality of every session without dominating any single one.',
+    traits: ['Versatile', 'Steady', 'Cross-disciplinary']
+  },
+  'Guillermo Krauch': {
+    bg: 'Bain Brasil, German-Paraguayan',
+    headline: 'The Economist',
+    quote: '"If there was perfect competition, you would be basically at cost level because fair markets should work that way. So any advantage you can create would be anything above the cost."',
+    assessment: 'Brings proper micro-economic reasoning when the rest of the room is pattern-matching. 7 out of 8 contributions validated. Economics-grounded thinking from a family business dynasty.',
+    traits: ['Micro-economic', 'Precise', '100% hit rate']
+  },
+  'Eva Domazet': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Teaching Moment',
+    quote: 'Professor turned her point into a key teaching moment, building the next segment of the lecture around her contribution.',
+    assessment: 'High hit rate contributor whose points land with enough depth that professors use them as launching pads. Quality over frequency.',
+    traits: ['High impact', 'Depth', 'Professor-validated']
+  },
+  'Jessica Rea': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Steady Hand',
+    quote: '"Focus on the data, have a process." Textbook correct, consistently applied.',
+    assessment: 'Reliable contributor with good instincts. Participates consistently across sessions without dramatic peaks or valleys. The backbone of classroom discussion.',
+    traits: ['Process-oriented', 'Reliable', 'Consistent']
+  },
+  'Rafael Fernandez': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Steady Participant',
+    quote: 'Appears across 9 transcripts with measured, considered contributions.',
+    assessment: 'Solid participation rate with a balanced profile. Not chasing the spotlight but reliably present when it matters.',
+    traits: ['Measured', 'Present', 'Balanced']
+  },
+  'Katie Holmes': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Connector',
+    quote: 'Strategy contributions on industry relationships as competitive moat. Decision Science work on COVID classification.',
+    assessment: 'Participates frequently and connects ideas across domains. The analytical elevation — turning observations into frameworks — is the next step.',
+    traits: ['Frequent', 'Cross-domain', 'Developing']
+  },
+  'Justin Uffelman': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Efficient Contributor',
+    quote: '5 validated contributions from 6 total. One of the highest hit rates in the section.',
+    assessment: 'Speaks less than many but when he does, it lands. The efficiency of his contribution profile is remarkable — almost nothing wasted.',
+    traits: ['Efficient', 'High hit rate', 'Selective']
+  },
+  'Michelle Baaklini': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Developing Voice',
+    quote: 'Contributions span multiple sessions as confidence builds across the term.',
+    assessment: 'Building a participation profile over time. The trajectory matters more than the snapshot — this is a voice that\'s finding its register.',
+    traits: ['Growing', 'Building confidence', 'Trajectory']
+  },
+  'Thomas De Luca': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Late Bloomer',
+    quote: 'Quiet in early sessions, then emerged with substantive contributions that showed real engagement with the material.',
+    assessment: 'Classic late bloomer profile. The slow start wasn\'t silence — it was observation. When the contributions came, they showed accumulated understanding.',
+    traits: ['Observer first', 'Late surge', 'Accumulated insight']
+  },
+  'Gonzalo Salazar': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Late Bloomer',
+    quote: '4 of 5 contributions validated — 80% hit rate, all concentrated in the second half of the term.',
+    assessment: 'Another late bloomer, but with a twist: when he finally spoke up, nearly everything landed. Patience paid off in precision.',
+    traits: ['Patient', 'Precise', 'Second-half surge']
+  },
+  'Sander Goudriaan': {
+    bg: 'BCG, Belgian/Dutch',
+    headline: 'The Analyst',
+    quote: 'Connected Amazon\'s scale to data advantages enabling customer intimacy while maintaining operational efficiency. One of the most analytically complete single answers across all transcripts.',
+    assessment: 'Three contributions, three validations. The single most analytically complete answer in any transcript came from Sander. Quality per word is off the charts.',
+    traits: ['Analytical', 'Complete', '100% hit rate']
+  },
+  'Lars Ballhausen': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Selective Speaker',
+    quote: 'Limited appearances but what exists shows genuine engagement with the material.',
+    assessment: 'Chooses moments carefully. Two validated contributions from three attempts — the selectivity is itself a signal.',
+    traits: ['Selective', 'Intentional', 'Quality-focused']
+  },
+  'Vernes Rasidkadic': {
+    bg: 'UniCredit, Bosnian',
+    headline: 'The Industry Expert',
+    quote: '"There\'s friction to change... inertia by the customers... a degree of trust... in COVID, there was a lot of flight to safety. So we got a lot of additional deposits from smaller banks."',
+    assessment: 'Limited appearances but the single most commercially deep answer in any transcript. Turned direct professional experience into a generalised strategic principle about ecosystem lock-in.',
+    traits: ['Commercial depth', 'Industry insight', 'Ecosystem thinking']
+  },
+  'Karim Hafez': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Confident Voice',
+    quote: 'Bet 50 euros on the birthday problem. Lost the bet. Showed confidence more than analysis.',
+    assessment: 'Strong presence in group settings. The gap between contributions and validations suggests the energy is there — channelling it into analytical depth is the unlock.',
+    traits: ['Confident', 'Group-oriented', 'Energy over analysis']
+  },
+  'Fatima Dashe': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Practitioner',
+    quote: 'Strategy contribution on BCG implementation as first-mover advantage. Standard consulting perspective, competently delivered.',
+    assessment: 'Solid contributor who draws on professional experience. Three of four contributions validated — a practitioner who translates experience into classroom insight.',
+    traits: ['Practical', 'Experience-based', 'Competent']
+  },
+  'Xenia Postnikova': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Operations Thinker',
+    quote: 'Strategy contribution on tech company sourcing from China. Operational excellence lens.',
+    assessment: 'Two contributions, both validated. Brings an operational perspective that grounds theoretical discussions in reality.',
+    traits: ['Operational', 'Grounded', 'Efficient']
+  },
+  'Claire Maybank': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The One-Shot Wonder',
+    quote: 'Made one contribution. Professor referenced it three times in the same session.',
+    assessment: 'The most remarkable efficiency ratio in the section. One contribution, three professor references. Proof that a single well-placed insight can define a presence.',
+    traits: ['Singular impact', 'Professor-referenced', 'Precision']
+  },
+  'Tanya Saharya': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Process Designer',
+    quote: 'OB contribution on establishing decision criteria before specifics. Correctly linked process design to outcome quality.',
+    assessment: 'Understands that how you decide matters as much as what you decide. The process-design instinct is valuable and distinctive.',
+    traits: ['Process-minded', 'Structured', 'OB-oriented']
+  },
+  'Wagner De Oliveira': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Professional Voice',
+    quote: 'Strategy contribution on Mastercard B2B services. Competent professional contribution.',
+    assessment: 'Draws on industry experience to contribute. The next step is analytical elevation — moving from "my company does X" to "here\'s why that works strategically."',
+    traits: ['Industry experience', 'Professional', 'Developing']
+  },
+  'Alan Schilis': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Emerging Contributor',
+    quote: 'Contributions across multiple sessions show growing engagement with the material.',
+    assessment: 'Building a participation profile. The trajectory is upward — each session shows more comfort with the format.',
+    traits: ['Growing', 'Engaged', 'Building']
+  },
+  'Habib Iravani': {
+    bg: 'Background not identified in transcripts',
+    headline: 'The Volume Without Validation',
+    quote: 'Appears across 4 transcripts with no professor-validated contributions identified.',
+    assessment: 'High energy, frequent participation, but the system hasn\'t registered validated contributions yet. The voice is there — the analytical depth is the gap to close.',
+    traits: ['High energy', 'Frequent', 'Needs depth']
+  },
+};
+
+// OB-specific insights
+const insights = [
+  '<span class="hl">25 students</span>. Same classroom. Same professor. <span class="hl">Seven sessions.</span>',
+  '<span class="hl">Negotiation</span> — Chris Johnson argues rule-following is Kantian ethics. Professor: <span class="hl">"Very good."</span>',
+  '<span class="hl">Group Decision-Making</span> — Hidden profiles emerge. Who shares unique information? Who withholds it?',
+  '<span class="hl">Diverse Teams</span> — Apollo 13 case. Nick Colbourne: <span class="hl">"He\'s giving them work to distract them."</span> Professor builds on it.',
+  '<span class="hl">Power & Politics</span> — The rules change. Volume doesn\'t equal influence.',
+  '<span class="hl">Motivation</span> — Semler\'s Semco: democratic leadership. The intrinsic motivation question reshuffles the pack.',
+  '<span class="hl">Feedback</span> — Nick Colbourne\'s role-play becomes a teaching moment on the <span class="hl">illusion of transparency</span>.',
+  '<span class="hl">Leadership</span> — Final session. <span class="hl">Chris Johnson: #1.</span> Quality over quantity, session after session.',
+];
+
+// Create DOM rows
+const raceContainer = document.getElementById('race');
+const rows = [];
+
+data.forEach((student, i) => {
+  const row = document.createElement('div');
+  row.className = 'race-row';
+  row.id = `row-${i}`;
+  row.innerHTML = `
+    <div class="race-rank hidden" id="rank-${i}"></div>
+    <div class="race-name muted" id="name-${i}">${student.name}</div>
+    <div class="race-bar-container">
+      <div class="race-bar-total" id="bar-t-${i}"></div>
+      <div class="race-bar-quality" id="bar-q-${i}"></div>
+    </div>
+    <div class="race-value" id="val-${i}">0</div>
+    <div class="race-tag" id="tag-${i}">${student.arch}</div>
+  `;
+  raceContainer.appendChild(row);
+  rows.push(row);
+});
+
+// Timeline with topic labels
+const timelineTrack = document.getElementById('timeline-track');
+SESSION_INFO.forEach((info, idx) => {
+  const dot = document.createElement('div');
+  dot.className = 'session-dot';
+  dot.id = `dot-${idx}`;
+  dot.innerHTML = `<span class="session-label">${info.short}</span>`;
+  timelineTrack.appendChild(dot);
+});
+
+// Scale ALL bars against the final session's max
+// This is the key fix: session 1 bars are tiny, growing to full by session 7
+function getFinalMax() {
+  return Math.max(...data.map(d => d.totalScores[SESSIONS - 1]));
+}
+
+// Rank by quality score (the thesis: quality > quantity)
+function getRanked(session) {
+  return data
+    .map((d, i) => ({
+      ...d, idx: i,
+      totalScore: d.totalScores[session],
+      qualityScore: d.qualityScores[session]
+    }))
+    .sort((a, b) => b.qualityScore - a.qualityScore);
+}
+
+const ROW_HEIGHT = 38;
+const TOP_OFFSET = 60;
+
+// Phase 1: Everyone appears alphabetically, all at zero
+function showStartingGrid() {
+  const insightEl = document.getElementById('insight');
+  const showCount = Math.min(VISIBLE_BARS, TOTAL_STUDENTS);
+  const startingSlots = alphabeticalOrder.slice(0, showCount);
+
+  startingSlots.forEach((studentIdx, slotPos) => {
+    setTimeout(() => {
+      const row = document.getElementById(`row-${studentIdx}`);
+      row.classList.add('visible');
+      row.style.top = (TOP_OFFSET + slotPos * ROW_HEIGHT) + 'px';
+
+      const barT = document.getElementById(`bar-t-${studentIdx}`);
+      barT.style.width = '0%';
+      const barQ = document.getElementById(`bar-q-${studentIdx}`);
+      barQ.style.width = '0%';
+
+      const nameEl = document.getElementById(`name-${studentIdx}`);
+      nameEl.className = 'race-name';
+
+      const rankEl = document.getElementById(`rank-${studentIdx}`);
+      rankEl.className = 'race-rank hidden';
+      rankEl.textContent = '';
+
+      const valEl = document.getElementById(`val-${studentIdx}`);
+      valEl.innerHTML = '0';
+      valEl.className = 'race-value';
+    }, slotPos * 100);
+  });
+
+  alphabeticalOrder.slice(showCount).forEach(studentIdx => {
+    const row = document.getElementById(`row-${studentIdx}`);
+    row.classList.remove('visible');
+  });
+
+  document.getElementById('session-watermark').textContent = '00';
+  document.getElementById('session-num').textContent = 'S00';
+  document.getElementById('session-topic').textContent = '';
+  document.getElementById('topic-watermark').textContent = '';
+
+  setTimeout(() => {
+    insightEl.innerHTML = insights[0];
+    insightEl.style.opacity = '1';
+  }, showCount * 100 + 400);
+}
+
+// Phase 1.5: Warm-up — everyone gets a tiny equal bar while still alphabetical
+function showWarmUp() {
+  const showCount = Math.min(VISIBLE_BARS, TOTAL_STUDENTS);
+  const startingSlots = alphabeticalOrder.slice(0, showCount);
+
+  startingSlots.forEach((studentIdx) => {
+    const barT = document.getElementById(`bar-t-${studentIdx}`);
+    barT.style.width = '4%';
+    barT.style.background = 'rgba(80, 80, 85, 0.6)';
+  });
+}
+
+// Phase 2: Update to session data — bars grow against the FINAL max
+function updateSession(session) {
+  const ranked = getRanked(session);
+  const maxTotal = getFinalMax(); // always scale against the end state
+  const info = SESSION_INFO[session];
+
+  // Update header
+  document.getElementById('session-watermark').textContent = info.num;
+  document.getElementById('session-num').textContent = `S${info.num}`;
+  document.getElementById('session-topic').textContent = `— ${info.title}`;
+  document.getElementById('topic-watermark').textContent = info.title;
+
+  // Flash topic name
+  const flashEl = document.getElementById('session-flash');
+  flashEl.textContent = info.title;
+  flashEl.style.opacity = '1';
+  setTimeout(() => { flashEl.style.opacity = '0'; }, 900);
+
+  // Show legend after first session
+  if (session === 0) {
+    setTimeout(() => {
+      document.getElementById('legend').classList.add('visible');
+    }, 400);
+  }
+
+  // Timeline
+  const progress = ((session + 1) / SESSIONS) * 100;
+  document.getElementById('timeline-progress').style.width = progress + '%';
+  for (let s = 0; s < SESSIONS; s++) {
+    const dot = document.getElementById(`dot-${s}`);
+    dot.className = 'session-dot';
+    if (s <= session) dot.classList.add('active');
+    if (s === session) dot.classList.add('current');
+  }
+
+  // Insight
+  const insightEl = document.getElementById('insight');
+  insightEl.style.opacity = '0';
+  setTimeout(() => {
+    insightEl.innerHTML = insights[session + 1] || '';
+    insightEl.style.opacity = '1';
+  }, 300);
+
+  // Update bars
+  ranked.forEach((student, rank) => {
+    const i = student.idx;
+    const row = document.getElementById(`row-${i}`);
+    const isVisible = rank < VISIBLE_BARS;
+
+    if (isVisible) {
+      row.classList.add('visible');
+      row.style.top = (TOP_OFFSET + rank * ROW_HEIGHT) + 'px';
+    } else {
+      row.classList.remove('visible');
+    }
+
+    // Rank
+    const rankEl = document.getElementById(`rank-${i}`);
+    rankEl.textContent = rank + 1;
+    rankEl.className = 'race-rank' + (rank < 3 ? ' top' : '');
+
+    // Name
+    const nameEl = document.getElementById(`name-${i}`);
+    nameEl.className = 'race-name';
+    if (student.isNumberOne && session >= 5) nameEl.classList.add('gold');
+    else if (rank < 5) nameEl.classList.add('highlight');
+
+    // Dual bars
+    const totalWidth = maxTotal > 0 ? (student.totalScore / maxTotal) * 100 : 0;
+    const qualityWidth = maxTotal > 0 ? (student.qualityScore / maxTotal) * 100 : 0;
+
+    const barT = document.getElementById(`bar-t-${i}`);
+    barT.style.width = totalWidth + '%';
+
+    const barQ = document.getElementById(`bar-q-${i}`);
+    barQ.style.width = qualityWidth + '%';
+    barQ.style.background = getQualityColor(student);
+    barQ.className = 'race-bar-quality';
+    if (rank === 0 && session >= 4) barQ.classList.add('glow');
+
+    // Value: quality/total
+    const qCount = Math.round(student.qualityScore);
+    const tCount = Math.round(student.totalScore);
+    const valEl = document.getElementById(`val-${i}`);
+    valEl.innerHTML = `<span class="q">${qCount}</span>/${tCount}`;
+    valEl.className = 'race-value' + (rank < 3 ? ' highlight' : '');
+
+    // Tag
+    const tagEl = document.getElementById(`tag-${i}`);
+    tagEl.className = 'race-tag';
+    if (isVisible && session >= 3) tagEl.classList.add('visible');
+    if (rank === 0) tagEl.classList.add('gold');
+  });
+}
+
+// Full animation
+function runAnimation() {
+  // Reset
+  document.getElementById('tagline-main').classList.remove('visible');
+  document.getElementById('tagline-sub').classList.remove('visible');
+  document.getElementById('replay-btn').classList.remove('visible');
+  document.getElementById('legend').classList.remove('visible');
+  document.getElementById('timeline-progress').style.width = '0%';
+  document.getElementById('insight').innerHTML = '';
+  document.getElementById('insight').style.opacity = '0';
+  document.getElementById('session-watermark').textContent = '--';
+  document.getElementById('session-num').textContent = '--';
+  document.getElementById('session-topic').textContent = '';
+  document.getElementById('topic-watermark').textContent = '';
+  document.getElementById('session-flash').style.opacity = '0';
+
+  rows.forEach((r, i) => {
+    r.classList.remove('visible');
+    document.getElementById(`bar-t-${i}`).style.width = '0%';
+    document.getElementById(`bar-q-${i}`).style.width = '0%';
+    document.getElementById(`bar-q-${i}`).className = 'race-bar-quality';
+    document.getElementById(`name-${i}`).className = 'race-name muted';
+    document.getElementById(`rank-${i}`).className = 'race-rank hidden';
+    document.getElementById(`rank-${i}`).textContent = '';
+    document.getElementById(`val-${i}`).innerHTML = '0';
+    document.getElementById(`val-${i}`).className = 'race-value';
+    document.getElementById(`tag-${i}`).className = 'race-tag';
+  });
+
+  for (let s = 0; s < SESSIONS; s++) {
+    document.getElementById(`dot-${s}`).className = 'session-dot';
+  }
+
+  // Regenerate scores for replay variety
+  data.forEach(d => {
+    const { totalScores, qualityScores } = generateScores(d);
+    d.totalScores = totalScores;
+    d.qualityScores = qualityScores;
+  });
+
+  // Phase 1: Names appear alphabetically, all at zero
+  setTimeout(() => {
+    showStartingGrid();
+  }, 400);
+
+  // Phase 1.5: Warm-up — tiny equal bars grow in (still alphabetical)
+  const buildTime = Math.min(VISIBLE_BARS, TOTAL_STUDENTS) * 100 + 400;
+  const warmUpStart = 400 + buildTime + 2000; // hold zero bars for 2s
+  setTimeout(() => {
+    showWarmUp();
+  }, warmUpStart);
+
+  // Phase 2: Race begins — bars differentiate and positions re-rank
+  const raceStart = warmUpStart + 2000; // hold warm-up for 2s
+
+  let session = 0;
+  function next() {
+    updateSession(session);
+    session++;
+    if (session >= SESSIONS) {
+      setTimeout(() => {
+        document.getElementById('insight').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('tagline-main').classList.add('visible');
+        }, 600);
+        setTimeout(() => {
+          document.getElementById('tagline-sub').classList.add('visible');
+        }, 1800);
+        setTimeout(() => {
+          document.getElementById('replay-btn').classList.add('visible');
+          document.getElementById('click-hint').classList.add('visible');
+          enableCardClicks();
+        }, 3000);
+      }, 1500);
+    } else {
+      // Slower pace with 7 sessions — let each breathe
+      const delay = session < 2 ? 1200 : session < 5 ? 1600 : 1800;
+      setTimeout(next, delay);
+    }
+  }
+
+  setTimeout(next, raceStart);
+}
+
+// Profile card logic
+let raceFinished = false;
+
+function showCard(studentIdx) {
+  const student = data[studentIdx];
+  const profile = profiles[student.name];
+  if (!profile) return;
+
+  // Find their final rank
+  const ranked = getRanked(SESSIONS - 1);
+  const rank = ranked.findIndex(r => r.idx === studentIdx) + 1;
+  const hitRate = student.total > 0 ? Math.round((student.high / student.total) * 100) : 0;
+
+  document.getElementById('card-rank').innerHTML = `Rank <span class="rank-num">#${rank}</span> of ${TOTAL_STUDENTS} · ${student.arch}`;
+  document.getElementById('card-name').textContent = student.name;
+  document.getElementById('card-bg').textContent = profile.bg;
+  document.getElementById('card-headline').textContent = profile.headline;
+  document.getElementById('card-quote').textContent = profile.quote;
+  document.getElementById('card-assessment').textContent = profile.assessment;
+
+  document.getElementById('card-traits').innerHTML = profile.traits
+    .map(t => `<span class="card-trait">${t}</span>`).join('');
+
+  document.getElementById('card-stats').innerHTML = `
+    <div class="card-stat">
+      <div class="card-stat-val">${student.high}</div>
+      <div class="card-stat-label">Validated</div>
+    </div>
+    <div class="card-stat">
+      <div class="card-stat-val">${student.total}</div>
+      <div class="card-stat-label">Total</div>
+    </div>
+    <div class="card-stat">
+      <div class="card-stat-val">${hitRate}%</div>
+      <div class="card-stat-label">Hit Rate</div>
+    </div>
+  `;
+
+  document.getElementById('card-overlay').classList.add('visible');
+}
+
+function hideCard() {
+  document.getElementById('card-overlay').classList.remove('visible');
+}
+
+// Click handlers
+document.getElementById('card-overlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('card-overlay')) hideCard();
+});
+document.getElementById('card-close').addEventListener('click', hideCard);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') hideCard();
+});
+
+// Enable clicking on race rows after race finishes
+function enableCardClicks() {
+  raceFinished = true;
+  rows.forEach((row, i) => {
+    row.classList.add('clickable');
+    row.addEventListener('click', () => {
+      if (raceFinished) showCard(i);
+    });
+  });
+}
+
+function disableCardClicks() {
+  raceFinished = false;
+  hideCard();
+  document.getElementById('click-hint').classList.remove('visible');
+  rows.forEach(row => row.classList.remove('clickable'));
+}
+
+document.getElementById('replay-btn').addEventListener('click', () => {
+  disableCardClicks();
+  runAnimation();
+});
+
+// Start
+setTimeout(runAnimation, 500);
+</script>
+</body>
+</html>
