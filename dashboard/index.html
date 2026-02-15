@@ -148,8 +148,17 @@ body {
 .leaderboard { margin-bottom: 32px; }
 .lb-title {
   font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #444;
-  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px;
+  letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px;
 }
+.lb-legend {
+  display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.lb-legend-item {
+  display: flex; align-items: center; gap: 4px;
+  font-family: 'JetBrains Mono', monospace; font-size: 8px;
+  color: #555; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.lb-legend-dot { width: 8px; height: 8px; border-radius: 2px; }
 .lb-row {
   display: flex; align-items: center; height: 36px; cursor: pointer;
   transition: background 0.15s; padding: 0 8px; border-radius: 4px;
@@ -161,19 +170,18 @@ body {
 }
 .lb-rank.top { color: #d4a843; }
 .lb-name {
-  width: 180px; font-size: 13px; color: #999; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; margin-right: 12px;
+  width: 200px; font-size: 13px; color: #999; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; margin-right: 4px;
+}
+.lb-count {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #444;
+  width: 28px; flex-shrink: 0; margin-right: 12px;
 }
 .lb-row:hover .lb-name { color: #d4a843; }
-.lb-bar-wrap { flex: 1; height: 20px; position: relative; margin-right: 12px; }
-.lb-bar-total {
-  position: absolute; top: 0; left: 0; height: 100%;
-  background: rgba(60,60,65,0.5); border-radius: 0 3px 3px 0;
-  transition: width 0.4s ease;
-}
-.lb-bar-quality {
-  position: absolute; top: 3px; left: 0; height: calc(100% - 6px);
-  border-radius: 0 2px 2px 0; transition: width 0.4s ease;
+.lb-bar-wrap { flex: 1; height: 18px; display: flex; gap: 1px; margin-right: 12px; }
+.lb-seg {
+  height: 100%; border-radius: 2px; transition: width 0.4s ease;
+  min-width: 0;
 }
 .lb-gpa {
   font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #666;
@@ -420,6 +428,7 @@ body {
   </div>
   <div class="leaderboard" id="session-leaderboard">
     <div class="lb-title">Session Leaderboard</div>
+    <div class="lb-legend" id="lb-legend"></div>
     <div id="lb-rows"></div>
   </div>
   <div class="moments-section">
@@ -726,27 +735,45 @@ function renderHeatmap(si) {
   });
 }
 
+const DIM_KEYS = ['c','d','f','p','co','e'];
+const DIM_LABELS = ['Curiosity','Depth','Frequency','Precision','Courage','Elevation'];
+const DIM_COLORS = ['#5b8a72','#4a7fb5','#d4a843','#c47d2e','#b5554a','#8b6bb5'];
+
 function renderSessionLeaderboard(si) {
+  // Legend
+  const legend = document.getElementById('lb-legend');
+  legend.innerHTML = DIM_KEYS.map((k, i) => `
+    <div class="lb-legend-item">
+      <div class="lb-legend-dot" style="background:${DIM_COLORS[i]}"></div>${DIM_LABELS[i]}
+    </div>
+  `).join('');
+
   const active = STUDENTS.filter(s => s.ss[si].t > 0)
     .map(s => ({ ...s, st: s.ss[si].t, sq: s.ss[si].q }))
     .sort((a,b) => {
-      if (b.sq !== a.sq) return b.sq - a.sq;
+      const aSum = DIM_KEYS.reduce((sum, k) => sum + (a.sc[k]||0), 0);
+      const bSum = DIM_KEYS.reduce((sum, k) => sum + (b.sc[k]||0), 0);
+      if (bSum !== aSum) return bSum - aSum;
       return b.st - a.st;
     });
 
-  const maxT = Math.max(...active.map(s => s.st), 1);
+  const maxSum = Math.max(...active.map(s => DIM_KEYS.reduce((sum, k) => sum + (s.sc[k]||0), 0)), 1);
   const el = document.getElementById('lb-rows');
-  el.innerHTML = active.map((s, i) => `
+  el.innerHTML = active.map((s, i) => {
+    const segs = DIM_KEYS.map((k, j) => {
+      const v = s.sc[k] || 0;
+      const pct = (v / maxSum) * 100;
+      return `<div class="lb-seg" style="width:${pct}%;background:${DIM_COLORS[j]}${v===0?';opacity:0.15':''}"></div>`;
+    }).join('');
+    return `
     <div class="lb-row" data-name="${s.n}">
       <div class="lb-rank${i<3?' top':''}">${i+1}</div>
       <div class="lb-name">${s.n}</div>
-      <div class="lb-bar-wrap">
-        <div class="lb-bar-total" style="width:${(s.st/maxT)*100}%"></div>
-        <div class="lb-bar-quality" style="width:${(s.sq/maxT)*100}%;background:${qualColor(s)}"></div>
-      </div>
+      <div class="lb-count">(${s.st})</div>
+      <div class="lb-bar-wrap">${segs}</div>
       <div class="lb-gpa${s.gpa>=3.5?' gold':''}">${s.gpa.toFixed(1)}</div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 
   el.querySelectorAll('.lb-row').forEach(row => {
     row.addEventListener('click', () => showCard(row.dataset.name));
