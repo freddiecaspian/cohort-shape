@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timelapse v5 — Organisational Behaviour</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a0a;
+  color: #e0e0e0;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+#header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 20px 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  z-index: 10;
+}
+
+#header h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #d4a843;
+}
+
+#header h1 .subtitle {
+  color: #555;
+  margin-left: 8px;
+  font-weight: 300;
+}
+
+#session-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #555;
+  letter-spacing: 0.05em;
+}
+#session-display .num { color: #888; font-weight: 500; }
+#session-display .topic { color: #d4a843; font-weight: 400; margin-left: 6px; }
+
+/* Watermark: session number + topic */
+#session-watermark {
+  position: fixed;
+  right: 40px;
+  top: 45%;
+  transform: translateY(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 160px;
+  font-weight: 700;
+  color: rgba(212, 168, 67, 0.05);
+  z-index: 0;
+  pointer-events: none;
+  line-height: 1;
+  transition: opacity 0.8s;
+}
+
+#topic-watermark {
+  position: fixed;
+  right: 44px;
+  top: calc(45% + 80px);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(212, 168, 67, 0.08);
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 0.8s;
+  text-align: right;
+}
+
+/* Topic flash on session change */
+#session-flash {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 32px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: rgba(212, 168, 67, 0.25);
+  z-index: 5;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Race container */
+#race {
+  flex: 1;
+  padding: 60px 36px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.race-row {
+  display: flex;
+  align-items: center;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: top 0.8s cubic-bezier(0.22, 1, 0.36, 1), height 0.4s ease, opacity 0.4s ease;
+  position: absolute;
+  left: 36px;
+  right: 36px;
+}
+
+.race-row.visible {
+  height: 36px;
+  opacity: 1;
+}
+
+.race-rank {
+  width: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #555;
+  text-align: right;
+  margin-right: 12px;
+  flex-shrink: 0;
+  transition: color 0.4s;
+}
+
+.race-rank.top { color: #d4a843; }
+.race-rank.hidden { color: transparent; }
+
+.race-name {
+  width: 180px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  margin-right: 12px;
+  transition: color 0.4s;
+}
+
+.race-name.highlight { color: #e8e8e8; font-weight: 500; }
+.race-name.gold { color: #d4a843; font-weight: 600; }
+.race-name.muted { color: #444; }
+
+.race-bar-container {
+  flex: 1;
+  height: 22px;
+  position: relative;
+  margin-right: 12px;
+}
+
+/* Outer bar: total contributions */
+.race-bar-total {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(60, 60, 65, 0.5);
+  border-radius: 0 3px 3px 0;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  min-width: 0;
+}
+
+/* Inner bar: quality contributions - slightly shorter for visual distinction */
+.race-bar-quality {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  height: calc(100% - 6px);
+  border-radius: 0 2px 2px 0;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1), background 0.8s ease, box-shadow 0.8s ease;
+  z-index: 1;
+  min-width: 0;
+}
+
+.race-bar-quality.glow {
+  box-shadow: 0 0 12px rgba(212, 168, 67, 0.3);
+}
+
+/* Value: shows quality/total */
+.race-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #666;
+  flex-shrink: 0;
+  width: 52px;
+  text-align: right;
+  transition: color 0.4s;
+}
+
+.race-value .q { color: #d4a843; font-weight: 500; }
+.race-value.highlight { color: #888; }
+.race-value.highlight .q { color: #d4a843; }
+
+/* Archetype tag */
+.race-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #444;
+  margin-left: 8px;
+  flex-shrink: 0;
+  width: 100px;
+  transition: color 0.4s, opacity 0.4s;
+  opacity: 0;
+}
+
+.race-tag.visible { opacity: 1; }
+.race-tag.gold { color: #d4a843; }
+
+/* Cycling insight */
+#insight {
+  position: fixed;
+  bottom: 70px;
+  left: 36px;
+  right: 36px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #666;
+  z-index: 10;
+  transition: opacity 0.5s;
+  line-height: 1.6;
+}
+#insight .hl { color: #d4a843; font-weight: 500; }
+
+/* Timeline */
+#timeline {
+  height: 52px;
+  padding: 0 36px;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 8px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+#timeline-track {
+  width: 100%;
+  height: 1px;
+  background: #1a1a1a;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.session-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #333;
+  position: relative;
+  transition: background 0.4s, box-shadow 0.4s, width 0.3s, height 0.3s;
+  z-index: 2;
+  flex-shrink: 0;
+}
+.session-dot.active { background: #888; }
+.session-dot.current { background: #d4a843; box-shadow: 0 0 8px rgba(212, 168, 67, 0.4); width: 5px; height: 5px; }
+
+.session-dot .session-label {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: #333;
+  transition: color 0.4s;
+  white-space: nowrap;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.session-dot.active .session-label,
+.session-dot.current .session-label { color: #666; }
+
+#timeline-progress {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #444, #d4a843);
+  transform: translateY(-50%);
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
+}
+
+/* Legend */
+#legend {
+  position: fixed;
+  top: 42px;
+  right: 36px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #444;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.6s;
+  letter-spacing: 0.04em;
+}
+
+#legend.visible { opacity: 1; }
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-swatch {
+  width: 14px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.legend-swatch.quality {
+  background: rgb(180, 148, 75);
+  height: 6px;
+}
+
+.legend-swatch.total {
+  background: rgba(60, 60, 65, 0.5);
+}
+
+/* End tagline */
+#tagline {
+  position: fixed;
+  bottom: 110px;
+  left: 0; right: 0;
+  text-align: center;
+  z-index: 20;
+  pointer-events: none;
+}
+
+#tagline-main {
+  font-size: 22px;
+  font-weight: 300;
+  color: #e8e8e8;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+#tagline-main.visible { opacity: 1; transform: translateY(0); }
+
+#tagline-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #555;
+  letter-spacing: 0.08em;
+  margin-top: 10px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+#tagline-sub.visible { opacity: 1; }
+
+/* Replay */
+#replay-btn {
+  position: fixed;
+  bottom: 12px;
+  right: 36px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #444;
+  background: none;
+  border: 1px solid #222;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.6s, color 0.3s, border-color 0.3s;
+  letter-spacing: 0.06em;
+}
+#replay-btn:hover { color: #888; border-color: #444; }
+#replay-btn.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>Timelapse <span class="subtitle">Organisational Behaviour</span></h1>
+  <div id="session-display"><span class="num" id="session-num">--</span><span class="topic" id="session-topic"></span></div>
+</div>
+
+<div id="legend">
+  <div class="legend-item"><div class="legend-swatch quality"></div><span>Validated</span></div>
+  <div class="legend-item"><div class="legend-swatch total"></div><span>Total</span></div>
+</div>
+
+<div id="session-watermark">--</div>
+<div id="topic-watermark"></div>
+<div id="session-flash"></div>
+
+<div id="race"></div>
+
+<div id="insight"></div>
+
+<div id="tagline">
+  <div id="tagline-main">Every other tool takes a photograph. We make a timelapse.</div>
+  <div id="tagline-sub">25 students · 7 sessions · Organisational Behaviour · One microphone</div>
+</div>
+
+<div id="timeline">
+  <div id="timeline-track">
+    <div id="timeline-progress"></div>
+  </div>
+</div>
+
+<button id="replay-btn">&#8635; REPLAY</button>
+
+<script>
+const SESSIONS = 7;
+const VISIBLE_BARS = 15;
+const TOTAL_STUDENTS = 25;
+
+const SESSION_INFO = [
+  { num: '01', title: 'Negotiation', short: 'Negot.' },
+  { num: '03', title: 'Group Decision-Making', short: 'Groups' },
+  { num: '05', title: 'Leading Diverse Teams', short: 'Teams' },
+  { num: '07', title: 'Power & Politics', short: 'Power' },
+  { num: '09', title: 'Motivation', short: 'Motiv.' },
+  { num: '11', title: 'Feedback', short: 'Feedbk' },
+  { num: '13', title: 'Leadership', short: 'Leader.' },
+];
+
+// Student data: total = all contributions, high = professor-validated contributions
+const students = [
+  { name: 'Chris Johnson', arch: 'All-Rounder', total: 24, high: 17, isNumberOne: true },
+  { name: 'Andrew Bauer', arch: 'Volume Player', total: 30, high: 12 },
+  { name: 'Nick Colbourne', arch: 'All-Rounder', total: 16, high: 12 },
+  { name: 'Francisco Wenceslau', arch: 'All-Rounder', total: 17, high: 10 },
+  { name: 'Felix Bestehorn', arch: 'All-Rounder', total: 17, high: 10 },
+  { name: 'Guillermo Krauch', arch: '100% Hit Rate', total: 8, high: 7 },
+  { name: 'Eva Domazet', arch: 'High Hit Rate', total: 11, high: 7 },
+  { name: 'Jessica Rea', arch: 'Steady', total: 12, high: 7 },
+  { name: 'Rafael Fernandez', arch: 'Steady', total: 10, high: 5 },
+  { name: 'Katie Holmes', arch: 'Steady', total: 8, high: 5 },
+  { name: 'Justin Uffelman', arch: 'Steady', total: 6, high: 5 },
+  { name: 'Michelle Baaklini', arch: 'Moderate', total: 4, high: 2 },
+  { name: 'Thomas De Luca', arch: 'Late Bloomer', total: 6, high: 3 },
+  { name: 'Gonzalo Salazar', arch: 'Late Bloomer', total: 5, high: 4 },
+  { name: 'Sander Goudriaan', arch: '100% Hit Rate', total: 3, high: 3 },
+  { name: 'Lars Ballhausen', arch: 'High Hit Rate', total: 3, high: 2 },
+  { name: 'Vernes Rasidkadic', arch: 'High Hit Rate', total: 2, high: 2 },
+  { name: 'Karim Hafez', arch: 'Group Strong', total: 4, high: 0 },
+  { name: 'Fatima Dashe', arch: 'Moderate', total: 4, high: 3 },
+  { name: 'Xenia Postnikova', arch: 'Moderate', total: 2, high: 2 },
+  { name: 'Claire Maybank', arch: 'One-Shot Wonder', total: 1, high: 1 },
+  { name: 'Tanya Saharya', arch: 'Moderate', total: 2, high: 1 },
+  { name: 'Wagner De Oliveira', arch: 'Moderate', total: 2, high: 1 },
+  { name: 'Alan Schilis', arch: 'Moderate', total: 2, high: 1 },
+  { name: 'Habib Iravani', arch: 'Loud but Shallow', total: 5, high: 0 },
+];
+
+const alphabeticalOrder = students
+  .map((s, i) => ({ name: s.name, idx: i }))
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .map(s => s.idx);
+
+// Generate cumulative total and quality scores per session
+// Key v5 change: two separate tracks for the dual-bar display
+function generateScores(student) {
+  const totalScores = [];
+  const qualityScores = [];
+  let cumTotal = 0;
+  let cumQuality = 0;
+  const hitRate = student.total > 0 ? student.high / student.total : 0;
+  const avgPerSession = student.total / SESSIONS;
+
+  for (let s = 0; s < SESSIONS; s++) {
+    const t = (s + 1) / SESSIONS;
+    let sessionContribs = 0;
+
+    if (student.arch === 'One-Shot Wonder') {
+      sessionContribs = s === 3 ? student.total : 0;
+    } else if (student.arch === 'Late Bloomer') {
+      const inflect = 0.5;
+      if (t < inflect) {
+        sessionContribs = avgPerSession * 0.15 * (0.3 + 0.7 * Math.random());
+      } else {
+        sessionContribs = avgPerSession * 1.6 * (0.6 + 0.4 * Math.random());
+      }
+    } else if (student.arch === 'Loud but Shallow') {
+      sessionContribs = avgPerSession * (0.6 + 0.8 * Math.random());
+    } else {
+      // Gradual growth curve - starts small, builds over sessions
+      const growth = Math.pow(t, 0.35 + Math.random() * 0.15);
+      sessionContribs = avgPerSession * growth * (0.5 + 0.5 * Math.random());
+    }
+
+    // Quality is proportional to hit rate with some variance
+    const sessionQuality = sessionContribs * hitRate * (0.7 + 0.3 * Math.random());
+
+    cumTotal += Math.max(0, sessionContribs);
+    cumQuality += Math.max(0, Math.min(sessionQuality, sessionContribs));
+
+    totalScores.push(Math.round(cumTotal * 10) / 10);
+    qualityScores.push(Math.round(cumQuality * 10) / 10);
+  }
+
+  return { totalScores, qualityScores };
+}
+
+// Build data with dual score tracks
+const data = students.map(s => {
+  const { totalScores, qualityScores } = generateScores(s);
+  return { ...s, totalScores, qualityScores };
+});
+
+// Quality bar color based on hit rate
+function getQualityColor(student) {
+  const hitRate = student.total > 0 ? student.high / student.total : 0;
+  const t = Math.min(1, hitRate);
+  const r = Math.round(100 + t * 112);
+  const g = Math.round(95 + t * 73);
+  const b = Math.round(80 - t * 20);
+  return `rgb(${r},${g},${b})`;
+}
+
+// OB-specific insights
+const insights = [
+  '<span class="hl">25 students</span>. Same classroom. Same professor. <span class="hl">Seven sessions.</span>',
+  '<span class="hl">Negotiation</span> — Chris Johnson argues rule-following is Kantian ethics. Professor: <span class="hl">"Very good."</span>',
+  '<span class="hl">Group Decision-Making</span> — Hidden profiles emerge. Who shares unique information? Who withholds it?',
+  '<span class="hl">Diverse Teams</span> — Apollo 13 case. Nick Colbourne: <span class="hl">"He\'s giving them work to distract them."</span> Professor builds on it.',
+  '<span class="hl">Power & Politics</span> — The rules change. Volume doesn\'t equal influence.',
+  '<span class="hl">Motivation</span> — Semler\'s Semco: democratic leadership. The intrinsic motivation question reshuffles the pack.',
+  '<span class="hl">Feedback</span> — Nick Colbourne\'s role-play becomes a teaching moment on the <span class="hl">illusion of transparency</span>.',
+  '<span class="hl">Leadership</span> — Final session. <span class="hl">Chris Johnson: #1.</span> Quality over quantity, session after session.',
+];
+
+// Create DOM rows
+const raceContainer = document.getElementById('race');
+const rows = [];
+
+data.forEach((student, i) => {
+  const row = document.createElement('div');
+  row.className = 'race-row';
+  row.id = `row-${i}`;
+  row.innerHTML = `
+    <div class="race-rank hidden" id="rank-${i}"></div>
+    <div class="race-name muted" id="name-${i}">${student.name}</div>
+    <div class="race-bar-container">
+      <div class="race-bar-total" id="bar-t-${i}"></div>
+      <div class="race-bar-quality" id="bar-q-${i}"></div>
+    </div>
+    <div class="race-value" id="val-${i}">0</div>
+    <div class="race-tag" id="tag-${i}">${student.arch}</div>
+  `;
+  raceContainer.appendChild(row);
+  rows.push(row);
+});
+
+// Timeline with topic labels
+const timelineTrack = document.getElementById('timeline-track');
+SESSION_INFO.forEach((info, idx) => {
+  const dot = document.createElement('div');
+  dot.className = 'session-dot';
+  dot.id = `dot-${idx}`;
+  dot.innerHTML = `<span class="session-label">${info.short}</span>`;
+  timelineTrack.appendChild(dot);
+});
+
+// Scoring helpers
+function getMaxTotal(session) {
+  return Math.max(...data.map(d => d.totalScores[session]));
+}
+
+// Rank by quality score (the thesis: quality > quantity)
+function getRanked(session) {
+  return data
+    .map((d, i) => ({
+      ...d, idx: i,
+      totalScore: d.totalScores[session],
+      qualityScore: d.qualityScores[session]
+    }))
+    .sort((a, b) => b.qualityScore - a.qualityScore);
+}
+
+const ROW_HEIGHT = 38;
+const TOP_OFFSET = 60;
+
+// Phase 1: Names appear with zero-width bars (no equal starting grid)
+function showStartingGrid() {
+  const insightEl = document.getElementById('insight');
+  const showCount = Math.min(VISIBLE_BARS, TOTAL_STUDENTS);
+  const startingSlots = alphabeticalOrder.slice(0, showCount);
+
+  startingSlots.forEach((studentIdx, slotPos) => {
+    setTimeout(() => {
+      const row = document.getElementById(`row-${studentIdx}`);
+      row.classList.add('visible');
+      row.style.top = (TOP_OFFSET + slotPos * ROW_HEIGHT) + 'px';
+
+      // Zero-width bars — no "everyone starts at 30%" jump
+      const barT = document.getElementById(`bar-t-${studentIdx}`);
+      barT.style.width = '0%';
+
+      const barQ = document.getElementById(`bar-q-${studentIdx}`);
+      barQ.style.width = '0%';
+
+      const nameEl = document.getElementById(`name-${studentIdx}`);
+      nameEl.className = 'race-name muted';
+
+      const rankEl = document.getElementById(`rank-${studentIdx}`);
+      rankEl.className = 'race-rank hidden';
+      rankEl.textContent = '';
+
+      const valEl = document.getElementById(`val-${studentIdx}`);
+      valEl.innerHTML = '<span class="q">0</span><span>/0</span>';
+      valEl.className = 'race-value';
+    }, slotPos * 50);
+  });
+
+  alphabeticalOrder.slice(showCount).forEach(studentIdx => {
+    const row = document.getElementById(`row-${studentIdx}`);
+    row.classList.remove('visible');
+  });
+
+  document.getElementById('session-watermark').textContent = '00';
+  document.getElementById('session-num').textContent = 'S00';
+  document.getElementById('session-topic').textContent = '';
+  document.getElementById('topic-watermark').textContent = '';
+
+  setTimeout(() => {
+    insightEl.innerHTML = insights[0];
+    insightEl.style.opacity = '1';
+  }, showCount * 50 + 200);
+}
+
+// Phase 2: Update to session data — bars grow incrementally
+function updateSession(session) {
+  const ranked = getRanked(session);
+  const maxTotal = getMaxTotal(session);
+  const info = SESSION_INFO[session];
+
+  // Update header
+  document.getElementById('session-watermark').textContent = info.num;
+  document.getElementById('session-num').textContent = `S${info.num}`;
+  document.getElementById('session-topic').textContent = `— ${info.title}`;
+  document.getElementById('topic-watermark').textContent = info.title;
+
+  // Flash topic name
+  const flashEl = document.getElementById('session-flash');
+  flashEl.textContent = info.title;
+  flashEl.style.opacity = '1';
+  setTimeout(() => { flashEl.style.opacity = '0'; }, 900);
+
+  // Show legend after first session
+  if (session === 0) {
+    setTimeout(() => {
+      document.getElementById('legend').classList.add('visible');
+    }, 400);
+  }
+
+  // Timeline
+  const progress = ((session + 1) / SESSIONS) * 100;
+  document.getElementById('timeline-progress').style.width = progress + '%';
+  for (let s = 0; s < SESSIONS; s++) {
+    const dot = document.getElementById(`dot-${s}`);
+    dot.className = 'session-dot';
+    if (s <= session) dot.classList.add('active');
+    if (s === session) dot.classList.add('current');
+  }
+
+  // Insight
+  const insightEl = document.getElementById('insight');
+  insightEl.style.opacity = '0';
+  setTimeout(() => {
+    insightEl.innerHTML = insights[session + 1] || '';
+    insightEl.style.opacity = '1';
+  }, 300);
+
+  // Update bars
+  ranked.forEach((student, rank) => {
+    const i = student.idx;
+    const row = document.getElementById(`row-${i}`);
+    const isVisible = rank < VISIBLE_BARS;
+
+    if (isVisible) {
+      row.classList.add('visible');
+      row.style.top = (TOP_OFFSET + rank * ROW_HEIGHT) + 'px';
+    } else {
+      row.classList.remove('visible');
+    }
+
+    // Rank
+    const rankEl = document.getElementById(`rank-${i}`);
+    rankEl.textContent = rank + 1;
+    rankEl.className = 'race-rank' + (rank < 3 ? ' top' : '');
+
+    // Name
+    const nameEl = document.getElementById(`name-${i}`);
+    nameEl.className = 'race-name';
+    if (student.isNumberOne && session >= 5) nameEl.classList.add('gold');
+    else if (rank < 5) nameEl.classList.add('highlight');
+
+    // Dual bars
+    const totalWidth = maxTotal > 0 ? (student.totalScore / maxTotal) * 100 : 0;
+    const qualityWidth = maxTotal > 0 ? (student.qualityScore / maxTotal) * 100 : 0;
+
+    const barT = document.getElementById(`bar-t-${i}`);
+    barT.style.width = totalWidth + '%';
+
+    const barQ = document.getElementById(`bar-q-${i}`);
+    barQ.style.width = qualityWidth + '%';
+    barQ.style.background = getQualityColor(student);
+    barQ.className = 'race-bar-quality';
+    if (rank === 0 && session >= 4) barQ.classList.add('glow');
+
+    // Value: quality/total
+    const qCount = Math.round(student.qualityScore);
+    const tCount = Math.round(student.totalScore);
+    const valEl = document.getElementById(`val-${i}`);
+    valEl.innerHTML = `<span class="q">${qCount}</span>/${tCount}`;
+    valEl.className = 'race-value' + (rank < 3 ? ' highlight' : '');
+
+    // Tag
+    const tagEl = document.getElementById(`tag-${i}`);
+    tagEl.className = 'race-tag';
+    if (isVisible && session >= 3) tagEl.classList.add('visible');
+    if (rank === 0) tagEl.classList.add('gold');
+  });
+}
+
+// Full animation
+function runAnimation() {
+  // Reset
+  document.getElementById('tagline-main').classList.remove('visible');
+  document.getElementById('tagline-sub').classList.remove('visible');
+  document.getElementById('replay-btn').classList.remove('visible');
+  document.getElementById('legend').classList.remove('visible');
+  document.getElementById('timeline-progress').style.width = '0%';
+  document.getElementById('insight').innerHTML = '';
+  document.getElementById('insight').style.opacity = '0';
+  document.getElementById('session-watermark').textContent = '--';
+  document.getElementById('session-num').textContent = '--';
+  document.getElementById('session-topic').textContent = '';
+  document.getElementById('topic-watermark').textContent = '';
+  document.getElementById('session-flash').style.opacity = '0';
+
+  rows.forEach((r, i) => {
+    r.classList.remove('visible');
+    document.getElementById(`bar-t-${i}`).style.width = '0%';
+    document.getElementById(`bar-q-${i}`).style.width = '0%';
+    document.getElementById(`bar-q-${i}`).className = 'race-bar-quality';
+    document.getElementById(`name-${i}`).className = 'race-name muted';
+    document.getElementById(`rank-${i}`).className = 'race-rank hidden';
+    document.getElementById(`rank-${i}`).textContent = '';
+    document.getElementById(`val-${i}`).innerHTML = '<span class="q">0</span>/0';
+    document.getElementById(`val-${i}`).className = 'race-value';
+    document.getElementById(`tag-${i}`).className = 'race-tag';
+  });
+
+  for (let s = 0; s < SESSIONS; s++) {
+    document.getElementById(`dot-${s}`).className = 'session-dot';
+  }
+
+  // Regenerate scores for replay variety
+  data.forEach(d => {
+    const { totalScores, qualityScores } = generateScores(d);
+    d.totalScores = totalScores;
+    d.qualityScores = qualityScores;
+  });
+
+  // Phase 1: Names appear
+  setTimeout(() => {
+    showStartingGrid();
+  }, 400);
+
+  // Phase 2: Race begins after names are shown
+  const buildTime = Math.min(VISIBLE_BARS, TOTAL_STUDENTS) * 50 + 200;
+  const holdTime = 2000;
+  const raceStart = 400 + buildTime + holdTime;
+
+  let session = 0;
+  function next() {
+    updateSession(session);
+    session++;
+    if (session >= SESSIONS) {
+      setTimeout(() => {
+        document.getElementById('insight').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('tagline-main').classList.add('visible');
+        }, 600);
+        setTimeout(() => {
+          document.getElementById('tagline-sub').classList.add('visible');
+        }, 1800);
+        setTimeout(() => {
+          document.getElementById('replay-btn').classList.add('visible');
+        }, 3000);
+      }, 1500);
+    } else {
+      // Slower pace with 7 sessions — let each breathe
+      const delay = session < 2 ? 1200 : session < 5 ? 1600 : 1800;
+      setTimeout(next, delay);
+    }
+  }
+
+  setTimeout(next, raceStart);
+}
+
+document.getElementById('replay-btn').addEventListener('click', runAnimation);
+
+// Start
+setTimeout(runAnimation, 500);
+</script>
+</body>
+</html>
