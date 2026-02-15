@@ -633,7 +633,7 @@ function showStartingGrid() {
       const valEl = document.getElementById(`val-${studentIdx}`);
       valEl.innerHTML = '0';
       valEl.className = 'race-value';
-    }, slotPos * 60);
+    }, slotPos * 100);
   });
 
   alphabeticalOrder.slice(showCount).forEach(studentIdx => {
@@ -649,7 +649,7 @@ function showStartingGrid() {
   setTimeout(() => {
     insightEl.innerHTML = insights[0];
     insightEl.style.opacity = '1';
-  }, showCount * 60 + 200);
+  }, showCount * 100 + 400);
 }
 
 // Phase 1.5: Warm-up — everyone gets a tiny equal bar while still alphabetical
@@ -805,14 +805,14 @@ function runAnimation() {
   }, 400);
 
   // Phase 1.5: Warm-up — tiny equal bars grow in (still alphabetical)
-  const buildTime = Math.min(VISIBLE_BARS, TOTAL_STUDENTS) * 60 + 200;
-  const warmUpStart = 400 + buildTime + 1500; // hold zero bars for 1.5s
+  const buildTime = Math.min(VISIBLE_BARS, TOTAL_STUDENTS) * 100 + 400;
+  const warmUpStart = 400 + buildTime + 2000; // hold zero bars for 2s
   setTimeout(() => {
     showWarmUp();
   }, warmUpStart);
 
   // Phase 2: Race begins — bars differentiate and positions re-rank
-  const raceStart = warmUpStart + 1500; // hold warm-up for 1.5s
+  const raceStart = warmUpStart + 2000; // hold warm-up for 2s
 
   let session = 0;
   function next() {
