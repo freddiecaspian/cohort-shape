@@ -483,7 +483,7 @@ const alphabeticalOrder = students
   .map(s => s.idx);
 
 // Generate cumulative total and quality scores per session
-// Key v5 change: two separate tracks for the dual-bar display
+// Steeper growth curve so session 1 bars are small, building to full by session 7
 function generateScores(student) {
   const totalScores = [];
   const qualityScores = [];
@@ -501,19 +501,19 @@ function generateScores(student) {
     } else if (student.arch === 'Late Bloomer') {
       const inflect = 0.5;
       if (t < inflect) {
-        sessionContribs = avgPerSession * 0.15 * (0.3 + 0.7 * Math.random());
+        sessionContribs = avgPerSession * 0.1 * (0.3 + 0.7 * Math.random());
       } else {
-        sessionContribs = avgPerSession * 1.6 * (0.6 + 0.4 * Math.random());
+        sessionContribs = avgPerSession * 1.8 * (0.6 + 0.4 * Math.random());
       }
     } else if (student.arch === 'Loud but Shallow') {
-      sessionContribs = avgPerSession * (0.6 + 0.8 * Math.random());
+      // Consistent volume, no quality growth
+      sessionContribs = avgPerSession * (0.7 + 0.6 * Math.random());
     } else {
-      // Gradual growth curve - starts small, builds over sessions
-      const growth = Math.pow(t, 0.35 + Math.random() * 0.15);
-      sessionContribs = avgPerSession * growth * (0.5 + 0.5 * Math.random());
+      // Steeper curve: session 1 ≈ 8%, session 4 ≈ 40%, session 7 = 100%
+      const growth = Math.pow(t, 1.6 + Math.random() * 0.3);
+      sessionContribs = avgPerSession * (1 + growth) * (0.5 + 0.5 * Math.random());
     }
 
-    // Quality is proportional to hit rate with some variance
     const sessionQuality = sessionContribs * hitRate * (0.7 + 0.3 * Math.random());
 
     cumTotal += Math.max(0, sessionContribs);
@@ -586,9 +586,10 @@ SESSION_INFO.forEach((info, idx) => {
   timelineTrack.appendChild(dot);
 });
 
-// Scoring helpers
-function getMaxTotal(session) {
-  return Math.max(...data.map(d => d.totalScores[session]));
+// Scale ALL bars against the final session's max
+// This is the key fix: session 1 bars are tiny, growing to full by session 7
+function getFinalMax() {
+  return Math.max(...data.map(d => d.totalScores[SESSIONS - 1]));
 }
 
 // Rank by quality score (the thesis: quality > quantity)
@@ -605,7 +606,7 @@ function getRanked(session) {
 const ROW_HEIGHT = 38;
 const TOP_OFFSET = 60;
 
-// Phase 1: Names appear with zero-width bars (no equal starting grid)
+// Phase 1: Everyone appears alphabetically, all at zero
 function showStartingGrid() {
   const insightEl = document.getElementById('insight');
   const showCount = Math.min(VISIBLE_BARS, TOTAL_STUDENTS);
@@ -617,24 +618,22 @@ function showStartingGrid() {
       row.classList.add('visible');
       row.style.top = (TOP_OFFSET + slotPos * ROW_HEIGHT) + 'px';
 
-      // Zero-width bars — no "everyone starts at 30%" jump
       const barT = document.getElementById(`bar-t-${studentIdx}`);
       barT.style.width = '0%';
-
       const barQ = document.getElementById(`bar-q-${studentIdx}`);
       barQ.style.width = '0%';
 
       const nameEl = document.getElementById(`name-${studentIdx}`);
-      nameEl.className = 'race-name muted';
+      nameEl.className = 'race-name';
 
       const rankEl = document.getElementById(`rank-${studentIdx}`);
       rankEl.className = 'race-rank hidden';
       rankEl.textContent = '';
 
       const valEl = document.getElementById(`val-${studentIdx}`);
-      valEl.innerHTML = '<span class="q">0</span><span>/0</span>';
+      valEl.innerHTML = '0';
       valEl.className = 'race-value';
-    }, slotPos * 50);
+    }, slotPos * 60);
   });
 
   alphabeticalOrder.slice(showCount).forEach(studentIdx => {
@@ -650,13 +649,25 @@ function showStartingGrid() {
   setTimeout(() => {
     insightEl.innerHTML = insights[0];
     insightEl.style.opacity = '1';
-  }, showCount * 50 + 200);
+  }, showCount * 60 + 200);
 }
 
-// Phase 2: Update to session data — bars grow incrementally
+// Phase 1.5: Warm-up — everyone gets a tiny equal bar while still alphabetical
+function showWarmUp() {
+  const showCount = Math.min(VISIBLE_BARS, TOTAL_STUDENTS);
+  const startingSlots = alphabeticalOrder.slice(0, showCount);
+
+  startingSlots.forEach((studentIdx) => {
+    const barT = document.getElementById(`bar-t-${studentIdx}`);
+    barT.style.width = '4%';
+    barT.style.background = 'rgba(80, 80, 85, 0.6)';
+  });
+}
+
+// Phase 2: Update to session data — bars grow against the FINAL max
 function updateSession(session) {
   const ranked = getRanked(session);
-  const maxTotal = getMaxTotal(session);
+  const maxTotal = getFinalMax(); // always scale against the end state
   const info = SESSION_INFO[session];
 
   // Update header
@@ -772,7 +783,7 @@ function runAnimation() {
     document.getElementById(`name-${i}`).className = 'race-name muted';
     document.getElementById(`rank-${i}`).className = 'race-rank hidden';
     document.getElementById(`rank-${i}`).textContent = '';
-    document.getElementById(`val-${i}`).innerHTML = '<span class="q">0</span>/0';
+    document.getElementById(`val-${i}`).innerHTML = '0';
     document.getElementById(`val-${i}`).className = 'race-value';
     document.getElementById(`tag-${i}`).className = 'race-tag';
   });
@@ -788,15 +799,20 @@ function runAnimation() {
     d.qualityScores = qualityScores;
   });
 
-  // Phase 1: Names appear
+  // Phase 1: Names appear alphabetically, all at zero
   setTimeout(() => {
     showStartingGrid();
   }, 400);
 
-  // Phase 2: Race begins after names are shown
-  const buildTime = Math.min(VISIBLE_BARS, TOTAL_STUDENTS) * 50 + 200;
-  const holdTime = 2000;
-  const raceStart = 400 + buildTime + holdTime;
+  // Phase 1.5: Warm-up — tiny equal bars grow in (still alphabetical)
+  const buildTime = Math.min(VISIBLE_BARS, TOTAL_STUDENTS) * 60 + 200;
+  const warmUpStart = 400 + buildTime + 1500; // hold zero bars for 1.5s
+  setTimeout(() => {
+    showWarmUp();
+  }, warmUpStart);
+
+  // Phase 2: Race begins — bars differentiate and positions re-rank
+  const raceStart = warmUpStart + 1500; // hold warm-up for 1.5s
 
   let session = 0;
   function next() {
