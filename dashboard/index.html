@@ -328,6 +328,15 @@ body {
 .sc-trend {
   margin-left: auto; font-size: 12px;
 }
+.card-divider {
+  grid-column: 1 / -1; border-top: 1px solid #2a2a2a; margin: 4px 0;
+  position: relative;
+}
+.card-divider::after {
+  content: 'Top 12'; position: absolute; top: -8px; left: 16px;
+  font-family: 'JetBrains Mono', monospace; font-size: 8px; color: #444;
+  letter-spacing: 0.1em; text-transform: uppercase; background: var(--bg); padding: 0 8px;
+}
 
 /* Trends */
 .chart-container { background: #111; border: 1px solid #1a1a1a; border-radius: 6px; padding: 24px; margin-bottom: 24px; }
@@ -472,8 +481,8 @@ body {
     <div class="section-pill">E</div>
   </div>
   <div class="tab-nav">
-    <button class="tab-btn active" data-tab="sessions">Sessions</button>
-    <button class="tab-btn" data-tab="section">Section</button>
+    <button class="tab-btn" data-tab="sessions">Sessions</button>
+    <button class="tab-btn active" data-tab="section">Section</button>
     <button class="tab-btn" data-tab="trends">Trends</button>
   </div>
 </div>
@@ -489,7 +498,7 @@ body {
 </div>
 
 <!-- Tab 1: Sessions -->
-<div class="tab-content active" id="tab-sessions">
+<div class="tab-content" id="tab-sessions">
   <div class="session-picker" id="session-picker"></div>
   <div class="session-header" id="session-header"></div>
 
@@ -525,7 +534,7 @@ body {
 </div>
 
 <!-- Tab 2: Section -->
-<div class="tab-content" id="tab-section">
+<div class="tab-content active" id="tab-section">
   <div class="overview-controls" id="overview-controls"></div>
   <div class="alert-banner" id="alert-banner"></div>
   <div class="card-grid" id="card-grid"></div>
@@ -1021,7 +1030,7 @@ function renderOverview() {
           ${s.tr.slice(0,2).map(t => `<span class="sc-trait">${t}</span>`).join('')}
           <div class="sc-trend" style="color:${trendColor(s)}">${trend(s)}</div>
         </div>
-      </div>`;
+      </div>${i === 11 ? '<div class="card-divider"></div>' : ''}`;
   }).join('');
 
   grid.querySelectorAll('.student-card').forEach(card => {
