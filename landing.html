@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timelapse — Participation Intelligence</title>
+<meta name="description" content="Every other tool takes a photograph. We make a timelapse. AI-powered participation intelligence for education and assessment.">
+<meta property="og:title" content="Timelapse — Participation Intelligence">
+<meta property="og:description" content="Every other tool takes a photograph. We make a timelapse.">
+<meta property="og:type" content="website">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0a;
+  --bg-card: #111111;
+  --border: #1a1a1a;
+  --text: #e0dcd4;
+  --text-dim: #888;
+  --text-muted: #555;
+  --accent: #d4a843;
+  --accent-dim: rgba(212, 168, 67, 0.15);
+  --amber: #c4956a;
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #222 #0a0a0a;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── NAV ─────────────────────────────────────────────── */
+
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  transition: transform 0.3s;
+}
+
+.nav-brand {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover { color: var(--text); }
+
+/* ─── SECTIONS ────────────────────────────────────────── */
+
+section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 120px 40px 80px;
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+}
+
+section.full-width {
+  max-width: none;
+}
+
+/* ─── HERO ────────────────────────────────────────────── */
+
+#hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0 40px;
+}
+
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: fadeUp 1s ease 0.3s forwards;
+}
+
+.hero-headline {
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  max-width: 800px;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 1s ease 0.6s forwards;
+}
+
+.hero-headline em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.hero-sub {
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text-dim);
+  max-width: 580px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: fadeUp 1s ease 0.9s forwards;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 48px;
+  opacity: 0;
+  animation: fadeUp 1s ease 1.2s forwards;
+}
+
+.hero-stat {
+  text-align: center;
+}
+
+.hero-stat-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--accent);
+  display: block;
+}
+
+.hero-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  opacity: 0;
+  animation: fadeUp 1s ease 1.8s forwards;
+}
+
+.scroll-hint::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 24px;
+  background: linear-gradient(to bottom, var(--text-muted), transparent);
+  margin: 8px auto 0;
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; height: 24px; }
+  50% { opacity: 1; height: 32px; }
+}
+
+/* ─── REVEAL ANIMATION ────────────────────────────────── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.15s; }
+.reveal-delay-2 { transition-delay: 0.3s; }
+.reveal-delay-3 { transition-delay: 0.45s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── SECTION HEADERS ─────────────────────────────────── */
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: clamp(24px, 3.5vw, 38px);
+  font-weight: 300;
+  line-height: 1.3;
+  margin-bottom: 20px;
+}
+
+.section-body {
+  font-size: 16px;
+  color: var(--text-dim);
+  max-width: 640px;
+  line-height: 1.8;
+}
+
+/* ─── ORIGIN STORY ────────────────────────────────────── */
+
+#origin {
+  min-height: auto;
+  padding-top: 160px;
+  padding-bottom: 120px;
+}
+
+.story-text {
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 2;
+  color: var(--text-dim);
+  max-width: 680px;
+}
+
+.story-text strong {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.story-text .highlight {
+  color: var(--accent);
+  font-weight: 400;
+}
+
+.story-break {
+  width: 40px;
+  height: 1px;
+  background: var(--border);
+  margin: 40px 0;
+}
+
+.story-pullquote {
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.6;
+  border-left: 2px solid var(--accent);
+  padding-left: 24px;
+  margin: 40px 0;
+  max-width: 600px;
+}
+
+/* ─── PROBLEM ─────────────────────────────────────────── */
+
+.problem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 48px;
+}
+
+.problem-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 36px;
+}
+
+.problem-card-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.problem-card h3 {
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.problem-card p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+.problem-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.problem-stat-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.problem-stat-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ─── HOW IT WORKS ────────────────────────────────────── */
+
+.pipeline {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin-top: 56px;
+  position: relative;
+}
+
+.pipeline-step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+  padding: 0 16px;
+}
+
+.pipeline-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 22px;
+  transition: border-color 0.4s, box-shadow 0.4s;
+}
+
+.pipeline-step:hover .pipeline-icon {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px var(--accent-dim);
+}
+
+.pipeline-step h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.pipeline-step p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.pipeline-arrow {
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 18px;
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+/* ─── PROOF ───────────────────────────────────────────── */
+
+#proof {
+  text-align: center;
+  align-items: center;
+}
+
+.proof-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 500;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.proof-context {
+  font-size: 18px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.proof-detail {
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 520px;
+  margin-bottom: 48px;
+}
+
+.proof-cta {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  border: 1px solid rgba(212, 168, 67, 0.3);
+  padding: 12px 28px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.proof-cta:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+/* ─── COMPARISON TABLE ────────────────────────────────── */
+
+.compare-table {
+  width: 100%;
+  margin-top: 48px;
+  border-collapse: collapse;
+}
+
+.compare-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.compare-table th:last-child {
+  color: var(--accent);
+}
+
+.compare-table td {
+  font-size: 14px;
+  color: var(--text-dim);
+  padding: 16px;
+  border-bottom: 1px solid #141414;
+  vertical-align: top;
+}
+
+.compare-table td:first-child {
+  color: var(--text);
+  font-weight: 400;
+}
+
+.compare-table td:last-child {
+  color: var(--text);
+}
+
+/* ─── MARKET ──────────────────────────────────────────── */
+
+.market-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 48px;
+}
+
+.market-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 32px;
+}
+
+.market-card-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.market-card h3 {
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+
+.market-card .market-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  color: var(--accent);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.market-card p {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ─── WHY NOW ─────────────────────────────────────────── */
+
+.why-now-list {
+  list-style: none;
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.why-now-item {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.why-now-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.why-now-text h4 {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.why-now-text p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+/* ─── TEAM ────────────────────────────────────────────── */
+
+.team-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 48px;
+}
+
+.team-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 36px;
+}
+
+.team-card h3 {
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+
+.team-card .team-role {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  margin-bottom: 20px;
+}
+
+.team-card p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.7;
+}
+
+.team-card .team-highlight {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+  font-style: italic;
+}
+
+/* ─── CLOSE ───────────────────────────────────────────── */
+
+#close {
+  text-align: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.close-line {
+  width: 40px;
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 40px;
+}
+
+.close-headline {
+  font-size: clamp(24px, 3.5vw, 36px);
+  font-weight: 300;
+  line-height: 1.4;
+  margin-bottom: 32px;
+  max-width: 600px;
+}
+
+.close-headline em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.close-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.close-meta a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* ─── FOOTER ──────────────────────────────────────────── */
+
+footer {
+  padding: 40px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+}
+
+footer p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  section { padding: 100px 24px 60px; }
+  nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  .problem-grid, .market-grid, .team-grid { grid-template-columns: 1fr; }
+  .pipeline { flex-direction: column; align-items: center; }
+  .pipeline-arrow { transform: rotate(90deg); padding: 0; flex: 0 0 32px; }
+  .hero-stats { flex-direction: column; gap: 24px; }
+  .compare-table { font-size: 13px; }
+  .compare-table td, .compare-table th { padding: 10px 8px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── NAV ─────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-brand">Timelapse</div>
+  <ul class="nav-links">
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#solution">How It Works</a></li>
+    <li><a href="#proof">Proof</a></li>
+    <li><a href="#market">Market</a></li>
+    <li><a href="#team">Team</a></li>
+  </ul>
+</nav>
+
+<!-- ─── HERO ────────────────────────────────────────────── -->
+<section id="hero" class="full-width">
+  <div class="hero-label">Participation Intelligence</div>
+  <h1 class="hero-headline">Every other tool takes a photograph.<br>We make a <em>timelapse</em>.</h1>
+  <p class="hero-sub">One microphone. No special hardware. AI that tracks how every person in the room evolves over weeks and months - patterns no human observer could catch.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="hero-stat-num">165</span>
+      <span class="hero-stat-label">Transcripts processed</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num">90</span>
+      <span class="hero-stat-label">Students tracked</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num">14</span>
+      <span class="hero-stat-label">Sessions longitudinal</span>
+    </div>
+  </div>
+  <div class="scroll-hint">SCROLL</div>
+</section>
+
+<!-- ─── ORIGIN STORY ────────────────────────────────────── -->
+<section id="origin">
+  <div class="reveal">
+    <div class="section-label">The Origin</div>
+  </div>
+  <div class="story-text reveal reveal-delay-1">
+    <p>I built a transcription tool to process my INSEAD lecture recordings. Single audio file, one microphone, zero pre-configuration. I pointed it at a live class and hit run.</p>
+  </div>
+  <div class="story-break reveal reveal-delay-2"></div>
+  <div class="story-text reveal reveal-delay-2">
+    <p>Without being told anything about the people in the room, the system was <strong>inferring speaker nationalities from accents</strong>, tracking conversational dynamics across sessions, identifying who was leading discussion and who was invisible - not in a single class, but <span class="highlight">longitudinally, over months</span>.</p>
+  </div>
+  <div class="story-break reveal reveal-delay-3"></div>
+  <div class="story-pullquote reveal reveal-delay-3">
+    Then the system did something I didn't expect. It found my co-founder.
+  </div>
+  <div class="story-text reveal reveal-delay-3">
+    <p>Across 165 transcripts, the AI ranked Chris Johnson as the <strong>#1 contributor</strong> in our 90-person section. Professors' own feedback confirmed it independently. 65 minutes after I showed Chris the analysis, we'd mapped the product, the privacy architecture, the go-to-market, and shaken hands.</p>
+  </div>
+  <div class="story-break reveal"></div>
+  <div class="story-text reveal">
+    <p><span class="highlight">The product that will assess classroom participation is the same product that identified its own co-founder.</span> That's not a pitch. That's proof.</p>
+  </div>
+</section>
+
+<!-- ─── PROBLEM ──────────────────────────────────────────── -->
+<section id="problem">
+  <div class="reveal">
+    <div class="section-label">The Problem</div>
+    <h2 class="section-title">High-stakes assessment,<br>low-fidelity tools</h2>
+    <p class="section-body">Participation counts for 30-50% of the grade at top business schools. Assessment centres test the most human qualities. And the observation infrastructure for both? A notebook.</p>
+  </div>
+
+  <div class="problem-grid">
+    <div class="problem-card reveal reveal-delay-1">
+      <div class="problem-card-label">Higher Education</div>
+      <h3>One professor. 90 students. 15 sessions. Memory.</h3>
+      <p>A PhD researcher sits in every OB session with a notebook, tracking 90 students across a term. Professors grade participation weeks later from recall. Recency bias. Personality bias. No longitudinal view. The assessment is simultaneously high-stakes and low-fidelity.</p>
+      <div class="problem-stat">
+        <span class="problem-stat-num">30-50%</span>
+        <span class="problem-stat-text">of the final grade at top MBA programmes - assessed from memory</span>
+      </div>
+    </div>
+
+    <div class="problem-card reveal reveal-delay-2">
+      <div class="problem-card-label">Assessment Centres</div>
+      <h3>Two assessors. Six candidates. No replay.</h3>
+      <p>While you're writing notes on Candidate A, Candidates B and C make points you miss entirely. The exercise happens once. If a borderline decision comes down to "did she build on his point or just repeat it?" - nobody can check. Assessor quality at 9am vs 4pm? Different.</p>
+      <div class="problem-stat">
+        <span class="problem-stat-num">100s</span>
+        <span class="problem-stat-text">of assessment centres per hiring cycle at a single firm - assessor fatigue is structural</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SOLUTION ─────────────────────────────────────────── -->
+<section id="solution">
+  <div class="reveal">
+    <div class="section-label">The Solution</div>
+    <h2 class="section-title">The classroom stays human.<br>The assessment gets smarter.</h2>
+    <p class="section-body">We don't touch the classroom. We touch what happens after. One recording device captures the full audio signal for every person, every session. AI turns it into structured intelligence the assessor never had.</p>
+  </div>
+
+  <div class="pipeline reveal">
+    <div class="pipeline-step reveal reveal-delay-1">
+      <div class="pipeline-icon">🎙</div>
+      <h4>Record</h4>
+      <p>One microphone. No special hardware. No pre-configuration.</p>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step reveal reveal-delay-2">
+      <div class="pipeline-icon">🔊</div>
+      <h4>Attribute</h4>
+      <p>Speaker identification via voice fingerprint. Who said what, when, for how long.</p>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step reveal reveal-delay-3">
+      <div class="pipeline-icon">⚡</div>
+      <h4>Analyse</h4>
+      <p>AI scores participation quality, maps interactions, tracks complexity over time.</p>
+    </div>
+    <div class="pipeline-arrow">→</div>
+    <div class="pipeline-step reveal">
+      <div class="pipeline-icon">📊</div>
+      <h4>Deliver</h4>
+      <p>Per-person reports. Longitudinal views. Patterns invisible to the human eye.</p>
+    </div>
+  </div>
+
+  <table class="compare-table reveal" style="margin-top: 64px;">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Human Observer</th>
+        <th>Timelapse</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Coverage</td>
+        <td>Fragments of whoever they watched</td>
+        <td>Full signal for everyone, every session</td>
+      </tr>
+      <tr>
+        <td>Longitudinal</td>
+        <td>Memory degrades across sessions</td>
+        <td>Tracks trajectory over weeks and months</td>
+      </tr>
+      <tr>
+        <td>Objectivity</td>
+        <td>"I think she contributed well"</td>
+        <td>47 contributions, increasing complexity, 3 instances of building on peers</td>
+      </tr>
+      <tr>
+        <td>Scalability</td>
+        <td>One observer per class, one class at a time</td>
+        <td>Every section, every session, simultaneously</td>
+      </tr>
+      <tr>
+        <td>Replay</td>
+        <td>Gone when it's gone</td>
+        <td>Structured data persists (raw audio deleted)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ─── PROOF ────────────────────────────────────────────── -->
+<section id="proof">
+  <div class="reveal">
+    <div class="section-label">The Proof</div>
+    <div class="proof-number">#1</div>
+    <p class="proof-context">Ranked by the system. Confirmed by professors.</p>
+    <p class="proof-detail">Across 165 transcripts and 90 students, the system independently identified Chris Johnson as the top contributor in our MBA section. Professors' own grading confirmed the ranking. Nobody told the system who to look for.</p>
+  </div>
+  <a href="./timelapse.html" target="_blank" class="proof-cta reveal reveal-delay-1">VIEW THE LIVE DEMO →</a>
+</section>
+
+<!-- ─── WHY AUDIO ─────────────────────────────────────────── -->
+<section id="why-audio">
+  <div class="reveal">
+    <div class="section-label">Why Audio</div>
+    <h2 class="section-title">The voice conveys what<br>the transcript cannot</h2>
+  </div>
+  <div class="story-pullquote reveal reveal-delay-1">
+    "You don't negotiate over email... the voice conveys a lot of emotional expression." <br><span style="font-size: 14px; color: var(--text-muted); font-style: normal;">- Marwan Sinaceur, INSEAD Professor of Organisational Behaviour</span>
+  </div>
+  <ul class="why-now-list">
+    <li class="why-now-item reveal reveal-delay-1">
+      <span class="why-now-num">01</span>
+      <div class="why-now-text">
+        <h4>Privacy by design</h4>
+        <p>A single microphone is categorically less invasive than cameras on every face. Consent is simpler. Audio is processed, insights delivered, raw recording deleted.</p>
+      </div>
+    </li>
+    <li class="why-now-item reveal reveal-delay-2">
+      <span class="why-now-num">02</span>
+      <div class="why-now-text">
+        <h4>Scalability</h4>
+        <p>One device. Cheap to capture, store, and process. Video multiplies cost and complexity by an order of magnitude.</p>
+      </div>
+    </li>
+    <li class="why-now-item reveal reveal-delay-3">
+      <span class="why-now-num">03</span>
+      <div class="why-now-text">
+        <h4>Sufficiency</h4>
+        <p>For participation assessment, voice carries the signal that matters: who spoke, how they spoke, what they said, who responded. We're not adding surveillance. We're upgrading assessment.</p>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ─── WHY NOW ───────────────────────────────────────────── -->
+<section id="why-now">
+  <div class="reveal">
+    <div class="section-label">Why Now</div>
+    <h2 class="section-title">This product was impossible<br>24 months ago</h2>
+    <p class="section-body">Three capabilities crossed their accuracy thresholds simultaneously. Each existed before. None was good enough. The combination only became viable in the last 12-18 months.</p>
+  </div>
+  <ul class="why-now-list">
+    <li class="why-now-item reveal reveal-delay-1">
+      <span class="why-now-num">01</span>
+      <div class="why-now-text">
+        <h4>Transcription accuracy hit 95%+</h4>
+        <p>Multi-speaker audio transcription became production-ready (AWS Transcribe, Whisper).</p>
+      </div>
+    </li>
+    <li class="why-now-item reveal reveal-delay-2">
+      <span class="why-now-num">02</span>
+      <div class="why-now-text">
+        <h4>Speaker diarization became reliable</h4>
+        <p>Voice fingerprinting from a single microphone - no pre-registration needed for initial analysis.</p>
+      </div>
+    </li>
+    <li class="why-now-item reveal reveal-delay-3">
+      <span class="why-now-num">03</span>
+      <div class="why-now-text">
+        <h4>LLMs can reason about conversation</h4>
+        <p>Not just transcribe words, but assess quality, track dynamics, identify behavioural signals. The analysis layer that makes raw transcripts useful.</p>
+      </div>
+    </li>
+  </ul>
+  <div class="story-text reveal" style="margin-top: 48px;">
+    <p>And the trajectory accelerates. NVIDIA improved AI computing performance <strong>100,000x in a decade</strong>. What costs ~$1,000 per section per year today will cost $100 within 3-5 years. The unit economics only improve from here.</p>
+  </div>
+</section>
+
+<!-- ─── MARKET ────────────────────────────────────────────── -->
+<section id="market">
+  <div class="reveal">
+    <div class="section-label">The Market</div>
+    <h2 class="section-title">Start where we have proof.<br>Expand where the pattern holds.</h2>
+  </div>
+
+  <div class="market-grid">
+    <div class="market-card reveal reveal-delay-1">
+      <div class="market-card-label">Beachhead 1</div>
+      <h3>Higher Education</h3>
+      <div class="market-num">$50M</div>
+      <p>950 AACSB-accredited business schools worldwide. $2,000-5,000 per section per year. Replaces manual observation and reduces assessment burden. We pilot at INSEAD first - prestige cascades.</p>
+    </div>
+    <div class="market-card reveal reveal-delay-2">
+      <div class="market-card-label">Beachhead 2</div>
+      <h3>Assessment Centres</h3>
+      <div class="market-num">$100M+</div>
+      <p>MBB, Big 4, and corporates run hundreds of centres per hiring cycle. $500-1,500 per session. Better hiring decisions at a fraction of current assessor cost. No competitor does this.</p>
+    </div>
+    <div class="market-card reveal reveal-delay-1">
+      <div class="market-card-label">Year 2-3</div>
+      <h3>Corporate L&D</h3>
+      <div class="market-num">$2B+</div>
+      <p>Executive education, leadership programmes, founder accelerators. Same product, corporate buyer, training ROI pressure.</p>
+    </div>
+    <div class="market-card reveal reveal-delay-2">
+      <div class="market-card-label">Year 3-5</div>
+      <h3>K-12 Education</h3>
+      <div class="market-num">$20B+</div>
+      <p>The big vision - once privacy architecture and efficacy are proven in simpler contexts first.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── MOAT ──────────────────────────────────────────────── -->
+<section id="moat">
+  <div class="reveal">
+    <div class="section-label">The Moat</div>
+    <h2 class="section-title">Session 1 gives you a transcript.<br>Session 15 gives you predictions.</h2>
+    <p class="section-body">Models are commoditising. The advantage is accumulated intelligence. The system gets smarter the longer it listens. Ripping us out means losing the entire developmental history - that's not feature lock-in, it's data no replacement can recreate.</p>
+  </div>
+  <ul class="why-now-list" style="margin-top: 40px;">
+    <li class="why-now-item reveal reveal-delay-1">
+      <span class="why-now-num">→</span>
+      <div class="why-now-text">
+        <h4>Data flywheel</h4>
+        <p>More classrooms, better participation models, more accurate insights, more schools want it.</p>
+      </div>
+    </li>
+    <li class="why-now-item reveal reveal-delay-2">
+      <span class="why-now-num">→</span>
+      <div class="why-now-text">
+        <h4>Domain specificity</h4>
+        <p>Understanding what "good participation" looks like in an MBA classroom vs an assessment centre requires domain knowledge, not better models.</p>
+      </div>
+    </li>
+    <li class="why-now-item reveal reveal-delay-3">
+      <span class="why-now-num">→</span>
+      <div class="why-now-text">
+        <h4>First mover distribution</h4>
+        <p>First into business schools owns the category. Switching costs are high once a school integrates into grading workflows.</p>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<!-- ─── TEAM ──────────────────────────────────────────────── -->
+<section id="team">
+  <div class="reveal">
+    <div class="section-label">The Team</div>
+    <h2 class="section-title">We're the subjects of the assessment<br>system we're building</h2>
+    <p class="section-body">We didn't set out to build an EdTech startup. We discovered the capability, recognised the pain because we live inside it, and now we're building for the professionals who share that pain from the other side of the desk.</p>
+  </div>
+
+  <div class="team-grid">
+    <div class="team-card reveal reveal-delay-1">
+      <h3>Freddie Chambers</h3>
+      <div class="team-role">CEO & Product</div>
+      <p>INSEAD MBA 2026. Built the working prototype - not a mockup, a production-tested system across 25+ lectures. Product background at WPP. Built an AI wine app independently. 1,000+ note knowledge system with custom AI workflows.</p>
+      <div class="team-highlight">"The system that ranked Chris #1 is the same system we're commercialising."</div>
+    </div>
+    <div class="team-card reveal reveal-delay-2">
+      <h3>Chris Johnson</h3>
+      <div class="team-role">COO & Strategy</div>
+      <p>INSEAD MBA 2026. Bain & Company - strategy consulting, financial modelling, market sizing. Ran through Bain's assessment centre process. Built a squash matching app independently.</p>
+      <div class="team-highlight">"Ranked #1 contributor in a 90-person MBA section - by the product itself."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CLOSE ─────────────────────────────────────────────── -->
+<section id="close">
+  <div class="reveal">
+    <div class="close-line"></div>
+    <h2 class="close-headline">The classroom stays human.<br>The assessment gets <em>smarter</em>.</h2>
+    <p class="close-meta">INSEAD Venture Competition · Spring 2026</p>
+    <p class="close-meta" style="margin-top: 8px;">Freddie Chambers & Chris Johnson · INSEAD MBA 26D</p>
+  </div>
+</section>
+
+<footer>
+  <p>Timelapse · Participation Intelligence · 2026</p>
+</footer>
+
+<!-- ─── SCROLL REVEAL ─────────────────────────────────────── -->
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timelapse</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a0a;
+  color: #e0e0e0;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+#canvas-area {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 40px;
+  padding-bottom: 0;
+}
+
+/* Top stat */
+#top-stat {
+  position: fixed;
+  top: 28px;
+  right: 36px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 400;
+  color: #666;
+  letter-spacing: 0.02em;
+  transition: color 0.4s;
+  z-index: 10;
+}
+#top-stat span {
+  color: #d4a843;
+  font-weight: 500;
+}
+
+/* Session label */
+#session-label {
+  position: fixed;
+  top: 28px;
+  left: 36px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 300;
+  color: #444;
+  letter-spacing: 0.05em;
+  z-index: 10;
+}
+#session-label span {
+  color: #888;
+  font-weight: 500;
+}
+
+/* Bars container */
+#bars-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  width: 100%;
+  height: calc(100% - 20px);
+  padding-bottom: 4px;
+}
+
+.bar-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+  cursor: pointer;
+}
+
+.bar {
+  width: 100%;
+  max-width: 14px;
+  min-height: 0;
+  border-radius: 2px 2px 0 0;
+  transition: height 0.8s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.8s ease, box-shadow 0.8s ease;
+  position: relative;
+}
+
+.bar.glow {
+  filter: drop-shadow(0 0 6px rgba(212, 168, 67, 0.4));
+}
+
+.bar.intense-glow {
+  filter: drop-shadow(0 0 10px rgba(255, 200, 60, 0.6)) drop-shadow(0 0 20px rgba(255, 200, 60, 0.2));
+}
+
+.ghost-marker {
+  width: 8px;
+  height: 1px;
+  background: #2a2a2a;
+  border-radius: 1px;
+  transition: opacity 0.4s;
+}
+
+.ghost-marker.pulse {
+  animation: ghostPulse 2s ease-in-out;
+}
+
+@keyframes ghostPulse {
+  0%, 100% { background: #2a2a2a; box-shadow: none; }
+  50% { background: #555; box-shadow: 0 0 8px rgba(255,200,60,0.15); width: 10px; }
+}
+
+/* Ghost outline for fading voices */
+.peak-ghost {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  max-width: 14px;
+  border: 1px solid rgba(100, 100, 100, 0.15);
+  border-bottom: none;
+  border-radius: 2px 2px 0 0;
+  pointer-events: none;
+  transition: height 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+  opacity: 0;
+}
+
+/* One-shot wonder pulse ring */
+.pulse-ring {
+  position: absolute;
+  bottom: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 200, 60, 0.5);
+  left: 50%;
+  transform: translateX(-50%);
+  animation: pulseRing 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulseRing {
+  0%, 100% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+  50% { opacity: 1; transform: translateX(-50%) scale(1.4); }
+}
+
+/* #1 label */
+.bar-label {
+  position: absolute;
+  bottom: -22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: #d4a843;
+  white-space: nowrap;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* Tooltip */
+#tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: rgba(15, 15, 15, 0.95);
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  padding: 14px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.2s;
+  max-width: 280px;
+  backdrop-filter: blur(10px);
+}
+#tooltip.visible { opacity: 1; }
+#tooltip .archetype {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #d4a843;
+  margin-bottom: 6px;
+}
+#tooltip .count {
+  color: #999;
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+#tooltip .quote {
+  color: #ccc;
+  font-style: italic;
+  font-size: 11px;
+  line-height: 1.5;
+  border-left: 2px solid #333;
+  padding-left: 10px;
+}
+
+/* Timeline */
+#timeline {
+  height: 52px;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+#timeline-track {
+  width: 100%;
+  height: 1px;
+  background: #1a1a1a;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.session-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #333;
+  position: relative;
+  transition: background 0.4s, box-shadow 0.4s;
+  z-index: 2;
+}
+
+.session-dot.active {
+  background: #888;
+  box-shadow: 0 0 6px rgba(200,200,200,0.2);
+}
+
+.session-dot.current {
+  background: #d4a843;
+  box-shadow: 0 0 8px rgba(212, 168, 67, 0.4);
+  width: 5px;
+  height: 5px;
+}
+
+.session-dot .session-num {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #333;
+  transition: color 0.4s;
+}
+.session-dot.active .session-num,
+.session-dot.current .session-num { color: #666; }
+
+#timeline-progress {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #444, #d4a843);
+  transform: translateY(-50%);
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
+}
+
+/* Taglines */
+#tagline-container {
+  position: fixed;
+  bottom: 70px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  z-index: 20;
+  pointer-events: none;
+}
+
+#tagline-main {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: #e8e8e8;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+#tagline-main.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#tagline-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 300;
+  color: #555;
+  letter-spacing: 0.08em;
+  margin-top: 10px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+#tagline-sub.visible { opacity: 1; }
+
+#tagline-question {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: #888;
+  margin-top: 16px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+#tagline-question.visible { opacity: 1; }
+
+/* Replay button */
+#replay-btn {
+  position: fixed;
+  bottom: 16px;
+  right: 36px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #444;
+  background: none;
+  border: 1px solid #222;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.6s, color 0.3s, border-color 0.3s;
+  letter-spacing: 0.06em;
+}
+#replay-btn:hover { color: #888; border-color: #444; }
+#replay-btn.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="session-label">SESSION <span id="session-num-display">—</span></div>
+<div id="top-stat">Top 5 students: <span id="stat-pct">—</span> of validated contributions</div>
+
+<div id="canvas-area">
+  <div id="bars-container"></div>
+</div>
+
+<div id="timeline">
+  <div id="timeline-track">
+    <div id="timeline-progress"></div>
+  </div>
+</div>
+
+<div id="tagline-container">
+  <div id="tagline-main">Every other tool takes a photograph. We make a timelapse.</div>
+  <div id="tagline-sub">48 students · 14 sessions · 165 transcripts · One microphone</div>
+  <div id="tagline-question">What did the professor's notebook miss?</div>
+</div>
+
+<div id="tooltip">
+  <div class="archetype"></div>
+  <div class="count"></div>
+  <div class="quote"></div>
+</div>
+
+<button id="replay-btn">↻ REPLAY</button>
+
+<script>
+// ─── STUDENT DATA GENERATION ─────────────────────────────────────────
+
+const SESSIONS = 14;
+const STUDENTS = 48;
+
+// Archetype definitions
+const archetypes = {
+  allRounder:    { count: 5, label: 'All-Rounder', quotes: ['"You\'re so textbook, it\'s binomial"', '"I love that — exactly right"', '"Wonderful… that level of recall"', '"That\'s the answer I was hoping for"', '"Yes — and notice how that connects to last week"'] },
+  highHitRate:   { count: 3, label: 'Highest Hit Rate', quotes: ['"That\'s exactly the insight"', '"Brilliant — in one sentence"', '"Perfect. That\'s the whole case."'] },
+  oneShot:       { count: 1, label: 'One-Shot Wonder', quotes: ['"I referenced your point three times today"'] },
+  lateBloomer:   { count: 4, label: 'Late Bloomer', quotes: ['"Where has this been hiding?"', '"You\'ve clearly been thinking about this"', '"There it is — great contribution"', '"Nice to hear from you on this"'] },
+  fadingVoice:   { count: 3, label: 'Fading Voice', quotes: ['"Good start to the term"', '"I remember your earlier point"', '"We haven\'t heard from you in a while"'] },
+  steady:        { count: 6, label: 'Steady Presence', quotes: ['"Thanks for that"', '"Okay, fair point"', '"Good — let\'s keep going"', '"That works"', '"Reasonable take"', '"Fine, yes"'] },
+  ghost:         { count: 8, label: 'Ghost', quotes: ['"0 contributions across 165 transcripts"'] },
+  filler:        { count: 18, label: 'Moderate Contributor', quotes: ['"Interesting angle"', '"Okay, go on"', '"That\'s one way to look at it"'] }
+};
+
+// Color scale: grey → amber → gold
+function getColor(warmth) {
+  // warmth 0..1
+  const grey = [90, 90, 95];
+  const amber = [212, 168, 67];
+  const gold = [255, 210, 60];
+  let r, g, b;
+  if (warmth < 0.5) {
+    const t = warmth / 0.5;
+    r = grey[0] + (amber[0] - grey[0]) * t;
+    g = grey[1] + (amber[1] - grey[1]) * t;
+    b = grey[2] + (amber[2] - grey[2]) * t;
+  } else {
+    const t = (warmth - 0.5) / 0.5;
+    r = amber[0] + (gold[0] - amber[0]) * t;
+    g = amber[1] + (gold[1] - amber[1]) * t;
+    b = amber[2] + (gold[2] - amber[2]) * t;
+  }
+  return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+}
+
+// Generate session-by-session data for each student
+function generateStudentData() {
+  const students = [];
+  let idx = 0;
+
+  // Helper: build trajectory
+  function makeTraj(heightCurve, warmthCurve, archetype, quoteIdx) {
+    return {
+      archetype: archetype,
+      quote: archetypes[archetype].quotes[quoteIdx % archetypes[archetype].quotes.length],
+      sessions: Array.from({length: SESSIONS}, (_, s) => ({
+        height: heightCurve(s),
+        warmth: warmthCurve(s)
+      }))
+    };
+  }
+
+  // All-Rounders (5): tall + gold, consistent growth
+  for (let i = 0; i < 5; i++) {
+    const peak = 0.75 + Math.random() * 0.2;
+    const warmPeak = 0.8 + Math.random() * 0.2;
+    students.push(makeTraj(
+      s => Math.min(peak, 0.08 + (peak - 0.08) * Math.pow((s + 1) / SESSIONS, 0.6 + Math.random() * 0.3)),
+      s => Math.min(warmPeak, 0.1 + (warmPeak - 0.1) * Math.pow((s + 1) / SESSIONS, 0.5)),
+      'allRounder', i
+    ));
+  }
+
+  // High Hit Rate (3): short but intensely bright
+  for (let i = 0; i < 3; i++) {
+    const peak = 0.15 + Math.random() * 0.12;
+    students.push(makeTraj(
+      s => 0.04 + (peak - 0.04) * Math.pow((s + 1) / SESSIONS, 0.7),
+      s => Math.min(1, 0.15 + 0.85 * Math.pow((s + 1) / SESSIONS, 0.4)),
+      'highHitRate', i
+    ));
+  }
+
+  // One-Shot Wonder (1): barely visible, single contribution
+  students.push(makeTraj(
+    s => s >= 5 ? 0.05 : 0.02,
+    s => s >= 5 ? 0.9 : 0.05,
+    'oneShot', 0
+  ));
+
+  // Late Bloomers (4): slow then inflect at session 8-9
+  for (let i = 0; i < 4; i++) {
+    const peak = 0.5 + Math.random() * 0.25;
+    const inflect = 7 + Math.floor(Math.random() * 2); // session 8 or 9
+    students.push(makeTraj(
+      s => {
+        if (s < inflect) return 0.04 + 0.08 * (s / inflect);
+        return 0.12 + (peak - 0.12) * Math.pow((s - inflect) / (SESSIONS - 1 - inflect), 0.7);
+      },
+      s => {
+        if (s < inflect) return 0.1 + 0.15 * (s / inflect);
+        return 0.25 + 0.55 * Math.pow((s - inflect) / (SESSIONS - 1 - inflect), 0.6);
+      },
+      'lateBloomer', i
+    ));
+  }
+
+  // Fading Voices (3): peak around session 4, then shrink
+  for (let i = 0; i < 3; i++) {
+    const peak = 0.5 + Math.random() * 0.2;
+    students.push(makeTraj(
+      s => {
+        if (s <= 4) return 0.05 + (peak - 0.05) * (s / 4);
+        return Math.max(0.06, peak * Math.pow(0.82, s - 4));
+      },
+      s => {
+        if (s <= 4) return 0.15 + 0.4 * (s / 4);
+        return Math.max(0.08, 0.55 * Math.pow(0.88, s - 4));
+      },
+      'fadingVoice', i
+    ));
+  }
+
+  // Steady (6): medium, blue-grey throughout
+  for (let i = 0; i < 6; i++) {
+    const h = 0.25 + Math.random() * 0.15;
+    students.push(makeTraj(
+      s => 0.04 + (h - 0.04) * Math.pow((s + 1) / SESSIONS, 0.5) + (Math.random() - 0.5) * 0.02,
+      s => 0.08 + 0.12 * Math.pow((s + 1) / SESSIONS, 0.6),
+      'steady', i
+    ));
+  }
+
+  // Ghosts (8): nothing
+  for (let i = 0; i < 8; i++) {
+    students.push({
+      archetype: 'ghost',
+      quote: '0 contributions across 165 transcripts',
+      sessions: Array.from({length: SESSIONS}, () => ({ height: 0, warmth: 0 }))
+    });
+  }
+
+  // Filler (18): moderate, varied
+  for (let i = 0; i < 18; i++) {
+    const peak = 0.2 + Math.random() * 0.3;
+    const warmPeak = 0.15 + Math.random() * 0.35;
+    students.push(makeTraj(
+      s => 0.03 + (peak - 0.03) * Math.pow((s + 1) / SESSIONS, 0.5 + Math.random() * 0.4) + (Math.random() - 0.5) * 0.015,
+      s => 0.05 + (warmPeak - 0.05) * Math.pow((s + 1) / SESSIONS, 0.5),
+      'filler', i
+    ));
+  }
+
+  // Shuffle to mix archetypes, but keep #1 all-rounder at a memorable position
+  const numberOne = students[0]; // first all-rounder is #1
+  const rest = students.slice(1);
+  // Fisher-Yates
+  for (let i = rest.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [rest[i], rest[j]] = [rest[j], rest[i]];
+  }
+  // Place #1 at position ~12 (visually prominent)
+  const insertPos = 11;
+  rest.splice(insertPos, 0, numberOne);
+  return rest;
+}
+
+// ─── CONTRIBUTION COUNT / STAT HELPERS ────────────────────────────────
+
+function getContribCount(student, session) {
+  if (student.archetype === 'ghost') return 0;
+  if (student.archetype === 'oneShot') return session >= 5 ? 1 : 0;
+  const s = student.sessions[session];
+  return Math.max(0, Math.round(s.height * 40 + s.warmth * 5));
+}
+
+function getValidatedCount(student, session) {
+  if (student.archetype === 'ghost') return 0;
+  const c = getContribCount(student, session);
+  const s = student.sessions[session];
+  return Math.round(c * s.warmth);
+}
+
+function computeTopStat(students, session) {
+  const validated = students.map(st => {
+    let total = 0;
+    for (let s = 0; s <= session; s++) total += getValidatedCount(st, s);
+    return total;
+  });
+  const sorted = [...validated].sort((a, b) => b - a);
+  const top5 = sorted.slice(0, 5).reduce((a, b) => a + b, 0);
+  const total = sorted.reduce((a, b) => a + b, 0);
+  if (total === 0) return '—';
+  return Math.round((top5 / total) * 100) + '%';
+}
+
+function getTotalContribs(student, session) {
+  let total = 0;
+  for (let s = 0; s <= session; s++) total += getContribCount(student, s);
+  return total;
+}
+
+// ─── DOM SETUP ───────────────────────────────────────────────────────
+
+const studentsData = generateStudentData();
+const barsContainer = document.getElementById('bars-container');
+const tooltip = document.getElementById('tooltip');
+const barElements = [];
+
+studentsData.forEach((st, i) => {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'bar-wrapper';
+
+  if (st.archetype === 'ghost') {
+    const marker = document.createElement('div');
+    marker.className = 'ghost-marker';
+    marker.id = `ghost-${i}`;
+    wrapper.appendChild(marker);
+  } else {
+    // Peak ghost outline for fading voices
+    if (st.archetype === 'fadingVoice') {
+      const peakGhost = document.createElement('div');
+      peakGhost.className = 'peak-ghost';
+      peakGhost.id = `peak-ghost-${i}`;
+      wrapper.appendChild(peakGhost);
+    }
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.id = `bar-${i}`;
+    wrapper.appendChild(bar);
+
+    // Pulse ring for one-shot
+    if (st.archetype === 'oneShot') {
+      const ring = document.createElement('div');
+      ring.className = 'pulse-ring';
+      ring.id = `pulse-ring-${i}`;
+      ring.style.display = 'none';
+      wrapper.appendChild(ring);
+    }
+
+    // #1 label
+    if (i === studentsData.indexOf(studentsData.find(s => s === studentsData.find((s2, idx) => s2.archetype === 'allRounder' && studentsData.slice(0, idx).filter(x => x.archetype === 'allRounder').length === 0)))) {
+      const label = document.createElement('div');
+      label.className = 'bar-label';
+      label.id = 'number-one-label';
+      label.textContent = '#1 — IDENTIFIED BY SYSTEM. CONFIRMED BY PROFESSORS.';
+      wrapper.appendChild(label);
+    }
+  }
+
+  // Hover events
+  wrapper.addEventListener('mouseenter', (e) => showTooltip(e, st));
+  wrapper.addEventListener('mousemove', (e) => moveTooltip(e));
+  wrapper.addEventListener('mouseleave', hideTooltip);
+
+  barsContainer.appendChild(wrapper);
+  barElements.push(wrapper);
+});
+
+// Find #1 (first allRounder in shuffled array)
+const numberOneIdx = studentsData.findIndex(s => s.archetype === 'allRounder');
+
+// Timeline dots
+const timelineTrack = document.getElementById('timeline-track');
+for (let s = 1; s <= SESSIONS; s++) {
+  const dot = document.createElement('div');
+  dot.className = 'session-dot';
+  dot.id = `session-dot-${s}`;
+  const num = document.createElement('span');
+  num.className = 'session-num';
+  num.textContent = s;
+  dot.appendChild(num);
+  timelineTrack.appendChild(dot);
+}
+
+// ─── TOOLTIP ──────────────────────────────────────────────────────────
+
+let currentSession = -1;
+
+function showTooltip(e, student) {
+  if (currentSession < 0) return;
+  const archLabel = document.querySelector('#tooltip .archetype');
+  const countEl = document.querySelector('#tooltip .count');
+  const quoteEl = document.querySelector('#tooltip .quote');
+
+  if (student.archetype === 'ghost') {
+    archLabel.textContent = 'GHOST';
+    countEl.textContent = '0 contributions across 165 transcripts';
+    quoteEl.textContent = 'They were in the room. The system has nothing.';
+  } else {
+    archLabel.textContent = archetypes[student.archetype].label.toUpperCase();
+    const total = getTotalContribs(student, currentSession);
+    countEl.textContent = `${total} contribution${total !== 1 ? 's' : ''} through session ${currentSession + 1}`;
+    quoteEl.textContent = student.quote;
+  }
+
+  tooltip.classList.add('visible');
+  moveTooltip(e);
+}
+
+function moveTooltip(e) {
+  const x = e.clientX + 16;
+  const y = e.clientY - 10;
+  tooltip.style.left = Math.min(x, window.innerWidth - 300) + 'px';
+  tooltip.style.top = Math.max(10, y - 80) + 'px';
+}
+
+function hideTooltip() {
+  tooltip.classList.remove('visible');
+}
+
+// ─── ANIMATION ───────────────────────────────────────────────────────
+
+const maxBarHeight = window.innerHeight * 0.62;
+let peakHeights = new Array(STUDENTS).fill(0);
+let animationFinished = false;
+
+function updateSession(session) {
+  currentSession = session;
+  document.getElementById('session-num-display').textContent = (session + 1).toString().padStart(2, '0');
+
+  // Timeline
+  const progress = ((session + 1) / SESSIONS) * 100;
+  document.getElementById('timeline-progress').style.width = progress + '%';
+
+  for (let s = 1; s <= SESSIONS; s++) {
+    const dot = document.getElementById(`session-dot-${s}`);
+    dot.className = 'session-dot';
+    if (s <= session + 1) dot.classList.add('active');
+    if (s === session + 1) dot.classList.add('current');
+  }
+
+  // Stat
+  document.getElementById('stat-pct').textContent = computeTopStat(studentsData, session);
+
+  // Update bars
+  studentsData.forEach((st, i) => {
+    if (st.archetype === 'ghost') return;
+
+    const bar = document.getElementById(`bar-${i}`);
+    if (!bar) return;
+
+    const data = st.sessions[session];
+    const h = Math.max(2, data.height * maxBarHeight);
+    const color = getColor(data.warmth);
+
+    bar.style.height = h + 'px';
+    bar.style.backgroundColor = color;
+
+    // Track peak for fading voices
+    if (h > peakHeights[i]) peakHeights[i] = h;
+
+    // Fading voice ghost outlines
+    if (st.archetype === 'fadingVoice' && session > 4) {
+      const peakGhost = document.getElementById(`peak-ghost-${i}`);
+      if (peakGhost && peakHeights[i] > h + 5) {
+        peakGhost.style.height = peakHeights[i] + 'px';
+        peakGhost.style.opacity = '1';
+      }
+    }
+
+    // High hit rate glow
+    if (st.archetype === 'highHitRate' && session >= 6) {
+      bar.classList.add('intense-glow');
+    } else if (st.archetype === 'allRounder' && session >= 10) {
+      bar.classList.add('glow');
+    }
+
+    // One-shot pulse ring
+    if (st.archetype === 'oneShot' && session >= 5) {
+      const ring = document.getElementById(`pulse-ring-${i}`);
+      if (ring) ring.style.display = 'block';
+    }
+
+    // #1 label appears at session 12+
+    if (i === numberOneIdx && session >= 11) {
+      const label = document.getElementById('number-one-label');
+      if (label) label.style.opacity = '1';
+    }
+  });
+}
+
+function runAnimation() {
+  animationFinished = false;
+  peakHeights = new Array(STUDENTS).fill(0);
+
+  // Reset everything
+  document.getElementById('tagline-main').classList.remove('visible');
+  document.getElementById('tagline-sub').classList.remove('visible');
+  document.getElementById('tagline-question').classList.remove('visible');
+  document.getElementById('replay-btn').classList.remove('visible');
+
+  studentsData.forEach((st, i) => {
+    if (st.archetype === 'ghost') return;
+    const bar = document.getElementById(`bar-${i}`);
+    if (bar) {
+      bar.style.height = '0px';
+      bar.classList.remove('glow', 'intense-glow');
+    }
+    const pg = document.getElementById(`peak-ghost-${i}`);
+    if (pg) { pg.style.height = '0px'; pg.style.opacity = '0'; }
+    const ring = document.getElementById(`pulse-ring-${i}`);
+    if (ring) ring.style.display = 'none';
+    const label = document.getElementById('number-one-label');
+    if (label) label.style.opacity = '0';
+  });
+
+  document.getElementById('timeline-progress').style.width = '0%';
+  for (let s = 1; s <= SESSIONS; s++) {
+    document.getElementById(`session-dot-${s}`).className = 'session-dot';
+  }
+
+  let session = 0;
+  const interval = setInterval(() => {
+    updateSession(session);
+    session++;
+    if (session >= SESSIONS) {
+      clearInterval(interval);
+      onAnimationComplete();
+    }
+  }, 1200);
+}
+
+function onAnimationComplete() {
+  animationFinished = true;
+
+  // Tagline sequence
+  setTimeout(() => {
+    document.getElementById('tagline-main').classList.add('visible');
+  }, 800);
+
+  setTimeout(() => {
+    document.getElementById('tagline-sub').classList.add('visible');
+  }, 2000);
+
+  setTimeout(() => {
+    document.getElementById('tagline-question').classList.add('visible');
+    // Pulse ghosts
+    document.querySelectorAll('.ghost-marker').forEach(m => {
+      m.classList.add('pulse');
+      setTimeout(() => m.classList.remove('pulse'), 2200);
+    });
+  }, 4000);
+
+  setTimeout(() => {
+    document.getElementById('replay-btn').classList.add('visible');
+  }, 5000);
+}
+
+document.getElementById('replay-btn').addEventListener('click', () => {
+  runAnimation();
+});
+
+// ─── START ───────────────────────────────────────────────────────────
+
+setTimeout(() => runAnimation(), 600);
+</script>
+</body>
+</html>
