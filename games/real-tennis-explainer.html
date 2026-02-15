@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Real Tennis Works</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0e0e18;
+            --bg-section: #151525;
+            --bg-card: #1e1e32;
+            --court-floor: #5c4a3a;
+            --court-wall: #3a2f25;
+            --court-penthouse: #4a3f33;
+            --gold: #d4a853;
+            --gold-glow: rgba(212, 168, 83, 0.3);
+            --text: #e8e0d4;
+            --text-muted: #9a9080;
+            --text-heading: #ffffff;
+            --accent: #d4a853;
+            --net: #ffffff;
+            --chalk: rgba(255,255,255,0.25);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 20px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-heading);
+        }
+
+        /* ── Navigation ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(14, 14, 24, 0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(212, 168, 83, 0.15);
+            padding: 12px 24px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-family: 'Space Grotesk', sans-serif;
+            padding: 6px 14px;
+            border-radius: 20px;
+            white-space: nowrap;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--gold);
+            border-color: var(--gold);
+            background: var(--gold-glow);
+        }
+
+        /* ── Sections ── */
+        section {
+            padding: 100px 24px 80px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        section:nth-child(even) {
+            background: var(--bg-section);
+            max-width: 100%;
+            padding-left: calc((100% - 900px) / 2 + 24px);
+            padding-right: calc((100% - 900px) / 2 + 24px);
+        }
+
+        .section-label {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: clamp(28px, 5vw, 42px);
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 600px;
+        }
+
+        /* ── Hero ── */
+        #hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 60px;
+            position: relative;
+        }
+
+        #hero h1 {
+            font-size: clamp(36px, 7vw, 64px);
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+        }
+
+        #hero h1 span {
+            color: var(--gold);
+        }
+
+        #hero .subtitle {
+            font-size: clamp(16px, 3vw, 22px);
+            color: var(--text-muted);
+            margin-bottom: 48px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .hero-intro {
+            max-width: 580px;
+            font-size: 17px;
+            line-height: 1.8;
+            margin-bottom: 48px;
+            color: var(--text);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            max-width: 600px;
+            width: 100%;
+            margin-bottom: 60px;
+        }
+
+        .comparison-grid .col-header {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .comparison-grid .col-header.lawn { color: #6cb86c; }
+        .comparison-grid .col-header.real { color: var(--gold); }
+
+        .comparison-item {
+            font-size: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .comparison-item.lawn { color: var(--text-muted); }
+        .comparison-item.real { color: var(--text); }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            animation: bounce 2s infinite;
+        }
+
+        .scroll-hint svg { width: 24px; height: 24px; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(8px); }
+        }
+
+        /* ── Court SVG ── */
+        .court-container {
+            position: relative;
+            width: 100%;
+            max-width: 820px;
+            margin: 0 auto 20px;
+        }
+
+        #court-svg {
+            width: 100%;
+            height: auto;
+            cursor: pointer;
+        }
+
+        .court-feature {
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .court-feature:hover {
+            opacity: 0.85;
+        }
+
+        .court-feature.highlighted {
+            filter: drop-shadow(0 0 8px var(--gold));
+        }
+
+        .feature-tooltip {
+            background: var(--bg-card);
+            border: 1px solid var(--gold);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-top: 16px;
+            display: none;
+            animation: fadeUp 0.3s ease;
+        }
+
+        .feature-tooltip.visible { display: block; }
+
+        .feature-tooltip h4 {
+            color: var(--gold);
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .feature-tooltip p {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text);
+        }
+
+        .feature-tooltip .lawn-comparison {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 13px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .tap-prompt {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 12px;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Scoring ── */
+        .score-flow {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .score-point {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 16px 24px;
+            text-align: center;
+            min-width: 70px;
+        }
+
+        .score-point .num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+
+        .score-point .label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .score-arrow {
+            font-size: 20px;
+            color: var(--text-muted);
+        }
+
+        .callout {
+            background: rgba(212, 168, 83, 0.08);
+            border-left: 3px solid var(--gold);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 24px 0;
+            font-size: 15px;
+        }
+
+        .callout strong {
+            color: var(--gold);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 30px 0;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .info-card h4 {
+            font-size: 15px;
+            margin-bottom: 8px;
+            color: var(--gold);
+        }
+
+        .info-card p {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ── Serves ── */
+        .serve-rules {
+            margin-bottom: 40px;
+        }
+
+        .serve-rules ol {
+            padding-left: 24px;
+        }
+
+        .serve-rules li {
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        .serve-accordion {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 30px;
+        }
+
+        .serve-item {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .serve-item.open {
+            border-color: var(--gold);
+        }
+
+        .serve-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .serve-header h4 {
+            font-size: 15px;
+            color: var(--text-heading);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .serve-number {
+            background: var(--gold);
+            color: var(--bg-dark);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .serve-chevron {
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+
+        .serve-item.open .serve-chevron {
+            transform: rotate(180deg);
+        }
+
+        .serve-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .serve-item.open .serve-body {
+            max-height: 500px;
+        }
+
+        .serve-content {
+            padding: 0 20px 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .serve-detail {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .serve-detail strong {
+            color: var(--gold);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .serve-tag {
+            display: inline-block;
+            background: rgba(212, 168, 83, 0.15);
+            color: var(--gold);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* ── Rallies ── */
+        .winning-targets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 30px 0;
+        }
+
+        .target-card {
+            background: var(--bg-card);
+            border: 1px solid var(--gold);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .target-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .target-card h4 {
+            color: var(--gold);
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .target-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .walls-list {
+            list-style: none;
+            margin: 24px 0;
+        }
+
+        .walls-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .walls-list .check {
+            color: var(--gold);
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* ── Chase ── */
+        .chase-stepper {
+            margin: 40px 0;
+        }
+
+        .chase-steps-nav {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+        }
+
+        .step-dot {
+            width: 40px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: var(--gold);
+            width: 60px;
+        }
+
+        .step-dot.completed {
+            background: rgba(212, 168, 83, 0.4);
+        }
+
+        .chase-step {
+            display: none;
+            animation: fadeUp 0.4s ease;
+        }
+
+        .chase-step.active {
+            display: block;
+        }
+
+        .chase-step-number {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 13px;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .chase-step h3 {
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+
+        .chase-step p {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .chase-visual {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .chase-visual svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .chase-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+
+        .chase-btn {
+            font-family: 'Space Grotesk', sans-serif;
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: 1px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .chase-btn:hover {
+            background: var(--gold);
+            color: var(--bg-dark);
+        }
+
+        .chase-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .chase-btn.primary {
+            background: var(--gold);
+            color: var(--bg-dark);
+        }
+
+        .chase-btn.primary:hover {
+            background: #e8b85f;
+        }
+
+        /* ── Quick Reference ── */
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 30px 0;
+        }
+
+        .glossary-item {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .glossary-item h4 {
+            font-size: 14px;
+            color: var(--gold);
+            margin-bottom: 6px;
+        }
+
+        .glossary-item p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .diff-list {
+            list-style: none;
+            margin: 30px 0;
+        }
+
+        .diff-list li {
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 16px;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .diff-list .vs {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .diff-list .lawn { color: var(--text-muted); text-align: right; }
+        .diff-list .real { color: var(--gold); }
+
+        .cta-section {
+            text-align: center;
+            margin-top: 60px;
+            padding: 40px;
+            background: rgba(212, 168, 83, 0.06);
+            border: 1px solid rgba(212, 168, 83, 0.15);
+            border-radius: 16px;
+        }
+
+        .cta-section h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .cta-section p {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 15px;
+        }
+
+        .cta-link {
+            display: inline-block;
+            background: var(--gold);
+            color: var(--bg-dark);
+            padding: 12px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
+            transition: background 0.3s;
+        }
+
+        .cta-link:hover { background: #e8b85f; }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-muted);
+            font-size: 13px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 700px) {
+            section {
+                padding: 80px 16px 60px;
+            }
+
+            section:nth-child(even) {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .comparison-grid,
+            .info-grid,
+            .winning-targets,
+            .glossary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .diff-list li {
+                grid-template-columns: 1fr;
+                gap: 4px;
+            }
+
+            .diff-list .vs { text-align: left; }
+            .diff-list .lawn { text-align: left; }
+
+            nav {
+                padding: 10px 12px;
+            }
+
+            nav a {
+                font-size: 12px;
+                padding: 5px 10px;
+            }
+
+            .score-flow {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .winning-targets {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav>
+    <a href="#hero">Intro</a>
+    <a href="#court">The Court</a>
+    <a href="#scoring">Scoring</a>
+    <a href="#serving">Serving</a>
+    <a href="#rallies">Rallies</a>
+    <a href="#chase">The Chase</a>
+    <a href="#reference">Reference</a>
+</nav>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SECTION 1: HERO / INTRO                     -->
+<!-- ════════════════════════════════════════════ -->
+<section id="hero">
+    <h1>How <span>Real Tennis</span> Works</h1>
+    <div class="subtitle">A Quick Guide for Lawn Tennis Players</div>
+
+    <p class="hero-intro">
+        Real tennis is the original racket sport, played since the 1500s in enclosed stone courts across Europe. The scoring is familiar - 15, 30, 40, game - but the court, the walls, and the chase system make it a completely different game.
+    </p>
+
+    <div class="comparison-grid">
+        <div class="col-header lawn">Lawn Tennis</div>
+        <div class="col-header real">Real Tennis</div>
+
+        <div class="comparison-item lawn">Open rectangular court</div>
+        <div class="comparison-item real">Enclosed court with walls, galleries, and a sloped roof</div>
+
+        <div class="comparison-item lawn">Ball out if it hits a wall</div>
+        <div class="comparison-item real">Walls, roof, and angled surfaces are all in play</div>
+
+        <div class="comparison-item lawn">Two bounces = point over</div>
+        <div class="comparison-item real">Two bounces can set a "chase" - a deferred point</div>
+
+        <div class="comparison-item lawn">Symmetrical court</div>
+        <div class="comparison-item real">Asymmetric court with unique features on each side</div>
+
+        <div class="comparison-item lawn">Serve anywhere in the box</div>
+        <div class="comparison-item real">Serve must hit the sloped penthouse roof first</div>
+    </div>
+
+    <div class="scroll-hint">
+        <span>Scroll to explore</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12l7 7 7-7"/>
+        </svg>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SECTION 2: THE COURT                        -->
+<!-- ════════════════════════════════════════════ -->
+<section id="court">
+    <div class="section-label">The Court</div>
+    <h2 class="section-title">An Enclosed World</h2>
+    <p class="section-subtitle">The court is roughly 110ft long and 38ft wide. Every surface is in play - walls, sloped roofs, angled buttresses. Tap any feature below to learn what it does.</p>
+
+    <div class="court-container">
+        <svg id="court-svg" viewBox="0 0 880 420" xmlns="http://www.w3.org/2000/svg">
+            <!-- Court floor -->
+            <rect x="50" y="50" width="780" height="280" fill="#4a3d30" rx="2"/>
+
+            <!-- Floor lines (chase lines) -->
+            <line x1="130" y1="50" x2="130" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
+            <line x1="210" y1="50" x2="210" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
+            <line x1="290" y1="50" x2="290" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
+            <line x1="370" y1="50" x2="370" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
+            <!-- Net position -->
+            <line x1="540" y1="50" x2="540" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
+            <line x1="620" y1="50" x2="620" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
+            <line x1="700" y1="50" x2="700" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
+            <line x1="780" y1="50" x2="780" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
+
+            <!-- Half-court / service line -->
+            <line x1="620" y1="50" x2="620" y2="330" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+
+            <!-- Main wall (top - solid) -->
+            <g class="court-feature" data-feature="main-wall">
+                <rect x="50" y="30" width="780" height="20" fill="#2e2419" rx="1"/>
+            </g>
+
+            <!-- Gallery wall (bottom) - background -->
+            <rect x="50" y="330" width="780" height="20" fill="#2e2419" rx="1"/>
+
+            <!-- Penthouse strip (sloped roof - along gallery wall, inside court) -->
+            <g class="court-feature" data-feature="penthouse">
+                <rect x="50" y="295" width="780" height="35" fill="#3e3428" opacity="0.7" rx="1"/>
+                <!-- Penthouse edge line -->
+                <line x1="50" y1="295" x2="830" y2="295" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+            </g>
+
+            <!-- NET -->
+            <g class="court-feature" data-feature="net">
+                <line x1="440" y1="48" x2="440" y2="332" stroke="#ffffff" stroke-width="3"/>
+                <!-- Net posts -->
+                <circle cx="440" cy="50" r="4" fill="#ffffff"/>
+                <circle cx="440" cy="330" r="4" fill="#ffffff"/>
+            </g>
+
+            <!-- Side labels -->
+            <text x="245" y="185" fill="rgba(255,255,255,0.2)" font-family="Space Grotesk, sans-serif" font-size="16" font-weight="600" text-anchor="middle" letter-spacing="4">SERVICE SIDE</text>
+            <text x="640" y="185" fill="rgba(255,255,255,0.2)" font-family="Space Grotesk, sans-serif" font-size="16" font-weight="600" text-anchor="middle" letter-spacing="4">HAZARD SIDE</text>
+
+            <!-- DEDANS (service end back wall - winning target) -->
+            <g class="court-feature" data-feature="dedans">
+                <rect x="30" y="90" width="20" height="200" fill="#d4a853" rx="2" opacity="0.85"/>
+                <text x="18" y="195" fill="#d4a853" font-family="Space Grotesk, sans-serif" font-size="11" text-anchor="middle" transform="rotate(-90, 18, 195)" letter-spacing="2">DEDANS</text>
+            </g>
+
+            <!-- GRILLE (hazard end back wall - winning target) -->
+            <g class="court-feature" data-feature="grille">
+                <rect x="830" y="220" width="20" height="90" fill="#d4a853" rx="2" opacity="0.85"/>
+                <text x="862" y="268" fill="#d4a853" font-family="Space Grotesk, sans-serif" font-size="11" text-anchor="middle" transform="rotate(90, 862, 268)" letter-spacing="2">GRILLE</text>
+            </g>
+
+            <!-- TAMBOUR (angled buttress on main wall, hazard side near net) -->
+            <g class="court-feature" data-feature="tambour">
+                <polygon points="475,30 520,30 520,50 475,50 490,70 475,70" fill="#5a4a3a" stroke="#6a5a4a" stroke-width="1"/>
+                <polygon points="475,50 490,70 520,50" fill="#5a4a3a" stroke="#6a5a4a" stroke-width="1"/>
+                <text x="497" y="24" fill="rgba(255,255,255,0.5)" font-family="Space Grotesk, sans-serif" font-size="10" text-anchor="middle">TAMBOUR</text>
+            </g>
+
+            <!-- SERVICE SIDE GALLERIES (along bottom wall) -->
+            <!-- Last Gallery -->
+            <g class="court-feature" data-feature="last-gallery-s">
+                <rect x="70" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
+                <text x="105" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">Last Gal.</text>
+            </g>
+            <!-- Second Gallery -->
+            <g class="court-feature" data-feature="second-gallery-s">
+                <rect x="150" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
+                <text x="185" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">2nd Gal.</text>
+            </g>
+            <!-- The Door (Service) -->
+            <g class="court-feature" data-feature="door-s">
+                <rect x="230" y="330" width="50" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
+                <text x="255" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">Door</text>
+            </g>
+            <!-- First Gallery (Service) -->
+            <g class="court-feature" data-feature="first-gallery-s">
+                <rect x="290" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
+                <text x="325" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">1st Gal.</text>
+            </g>
+            <!-- Service Penthouse gap -->
+            <rect x="370" y="330" width="70" height="20" fill="#2e2419" rx="1"/>
+            <text x="405" y="365" fill="rgba(255,255,255,0.25)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">Svc. Pent.</text>
+
+            <!-- HAZARD SIDE GALLERIES -->
+            <!-- Winning Gallery (winning target!) -->
+            <g class="court-feature" data-feature="winning-gallery">
+                <rect x="450" y="330" width="70" height="20" fill="#d4a853" opacity="0.7" stroke="#d4a853" stroke-width="1" rx="1"/>
+                <text x="485" y="365" fill="#d4a853" font-family="Inter, sans-serif" font-size="9" text-anchor="middle" font-weight="600">Win. Gal.</text>
+            </g>
+            <!-- First Gallery (Hazard) -->
+            <g class="court-feature" data-feature="first-gallery-h">
+                <rect x="530" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
+                <text x="565" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">1st Gal.</text>
+            </g>
+            <!-- The Door (Hazard) -->
+            <g class="court-feature" data-feature="door-h">
+                <rect x="610" y="330" width="50" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
+                <text x="635" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">Door</text>
+            </g>
+            <!-- Second Gallery (Hazard) -->
+            <g class="court-feature" data-feature="second-gallery-h">
+                <rect x="670" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
+                <text x="705" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">2nd Gal.</text>
+            </g>
+            <!-- Last Gallery (Hazard) -->
+            <g class="court-feature" data-feature="last-gallery-h">
+                <rect x="750" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
+                <text x="785" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">Last Gal.</text>
+            </g>
+
+            <!-- Service box (dashed) on hazard side -->
+            <g class="court-feature" data-feature="service-box">
+                <rect x="540" y="200" width="180" height="95" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-dasharray="6,4" rx="2"/>
+                <text x="630" y="255" fill="rgba(255,255,255,0.2)" font-family="Inter, sans-serif" font-size="10" text-anchor="middle">Service Box</text>
+            </g>
+
+            <!-- Hazard line -->
+            <line x1="620" y1="50" x2="620" y2="295" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+            <text x="620" y="290" fill="rgba(255,255,255,0.3)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">Hazard Line</text>
+
+            <!-- Gallery wall label -->
+            <text x="440" y="400" fill="rgba(255,255,255,0.2)" font-family="Space Grotesk, sans-serif" font-size="11" text-anchor="middle" letter-spacing="3">GALLERY WALL (with penthouse above)</text>
+
+            <!-- Main wall label -->
+            <text x="440" y="22" fill="rgba(255,255,255,0.2)" font-family="Space Grotesk, sans-serif" font-size="11" text-anchor="middle" letter-spacing="3">MAIN WALL</text>
+        </svg>
+    </div>
+
+    <p class="tap-prompt">Tap any feature on the court to learn more</p>
+
+    <div class="feature-tooltip" id="feature-tooltip">
+        <h4 id="tooltip-title"></h4>
+        <p id="tooltip-desc"></p>
+        <div class="lawn-comparison" id="tooltip-comparison"></div>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SECTION 3: SCORING                          -->
+<!-- ════════════════════════════════════════════ -->
+<section id="scoring">
+    <div class="section-label">Scoring</div>
+    <h2 class="section-title">Familiar Numbers, Different Rules</h2>
+    <p class="section-subtitle">The point structure is the same as lawn tennis - but a few key differences change the dynamic.</p>
+
+    <h3 style="margin-top:30px; margin-bottom:16px;">Points</h3>
+    <p>Same as lawn tennis. Four points wins a game:</p>
+
+    <div class="score-flow">
+        <div class="score-point"><div class="num">0</div><div class="label">Love</div></div>
+        <div class="score-arrow">&rarr;</div>
+        <div class="score-point"><div class="num">15</div><div class="label">1st point</div></div>
+        <div class="score-arrow">&rarr;</div>
+        <div class="score-point"><div class="num">30</div><div class="label">2nd point</div></div>
+        <div class="score-arrow">&rarr;</div>
+        <div class="score-point"><div class="num">40</div><div class="label">3rd point</div></div>
+        <div class="score-arrow">&rarr;</div>
+        <div class="score-point" style="border-color: var(--gold);"><div class="num" style="color: var(--gold);">Game</div><div class="label">4th point</div></div>
+    </div>
+
+    <div class="callout">
+        <strong>Key difference:</strong> The server's score is always called first - not the leader's. So "30-15" means the server has 30 and the receiver has 15, even if the receiver is winning the set.
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:16px;">Games and Sets</h3>
+
+    <div class="info-grid">
+        <div class="info-card">
+            <h4>Games</h4>
+            <p>First to 6 games wins the set. Unlike lawn tennis, you don't need to win by two - a set can finish 6-5. No tiebreaks.</p>
+        </div>
+        <div class="info-card">
+            <h4>Sets</h4>
+            <p>Matches are typically best of 3 sets (social play) or best of 5 (competitive). Advantage sets are played - no tiebreakers.</p>
+        </div>
+        <div class="info-card">
+            <h4>Deuce</h4>
+            <p>At 40-40 in level play, advantage rules apply (like lawn tennis). In handicap matches, 40-40 is sudden death - next point wins.</p>
+        </div>
+        <div class="info-card">
+            <h4>Handicaps</h4>
+            <p>Every player has a handicap number. The difference between players sets the starting score each game - weaker players get point head-starts.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SECTION 4: SERVING                          -->
+<!-- ════════════════════════════════════════════ -->
+<section id="serving">
+    <div class="section-label">Serving</div>
+    <h2 class="section-title">Hit the Roof</h2>
+    <p class="section-subtitle">Serving in real tennis is nothing like lawn tennis. The ball must hit the sloped penthouse roof and land in the service box.</p>
+
+    <div class="serve-rules">
+        <ol>
+            <li>The server stands on the <strong>service side</strong> (left of the net in the diagram above)</li>
+            <li>The ball must hit the <strong>penthouse</strong> (the sloped roof along the gallery wall) on the hazard side</li>
+            <li>It must then bounce into the <strong>service box</strong> on the hazard side floor</li>
+            <li>The receiver returns from the hazard side</li>
+            <li>Two serves per point (like lawn tennis) - unless handicap rules say otherwise</li>
+        </ol>
+    </div>
+
+    <div class="callout">
+        <strong>Key principle:</strong> Length over power. A deep, awkward bounce is almost always better than a fast, shallow one. "Even a bad railroad is a 25-handicap serve."
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:8px;">The 9 Serve Types</h3>
+    <p style="margin-bottom:20px; color:var(--text-muted);">Each serve has a different trajectory, spin, and tactical purpose. Most players rely on 2-3 and mix in others to disrupt rhythm.</p>
+
+    <div class="serve-accordion">
+        <!-- Railroad -->
+        <div class="serve-item">
+            <div class="serve-header" onclick="toggleServe(this)">
+                <h4><span class="serve-number">1</span> Railroad Serve <span class="serve-tag">Workhorse</span></h4>
+                <span class="serve-chevron">&#9662;</span>
+            </div>
+            <div class="serve-body">
+                <div class="serve-content">
+                    <div class="serve-detail"><strong>Technique</strong><br>Change grip (forehand face as mirror). Racket back over shoulder. Toss about 2 feet above your head. Step forward left. Strike the underside with an across-and-under motion. Follow through past your left leg.</div>
+                    <div class="serve-detail"><strong>What it does</strong><br>Ball travels down the edge of the penthouse with speed and spin, bounces on the floor, and spins back towards the Winning Gallery. One of the hardest serves to return.</div>
+                    <div class="serve-detail"><strong>When to use</strong><br>Your go-to first serve. Reliable, effective at every level. Aim for one bounce on the penthouse, one on the floor, hitting the back wall low and tight.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bobble -->
+        <div class="serve-item">
+            <div class="serve-header" onclick="toggleServe(this)">
+                <h4><span class="serve-number">2</span> Bobble Serve <span class="serve-tag">Safe option</span></h4>
+                <span class="serve-chevron">&#9662;</span>
+            </div>
+            <div class="serve-body">
+                <div class="serve-content">
+                    <div class="serve-detail"><strong>Technique</strong><br>Strike without spin, just above knee height. Aim for it to land halfway up the penthouse above Hazard First Gallery. The ball "bumbles" up in an arc, nearly touching the top of the penthouse, then drops near the grille wall.</div>
+                    <div class="serve-detail"><strong>What it does</strong><br>Forces awkward footwork with a late, low drop. The unpredictable bounce makes it hard to time a clean return.</div>
+                    <div class="serve-detail"><strong>When to use</strong><br>Good first serve or safer option. Play it shorter than you think.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boomerang -->
+        <div class="serve-item">
+            <div class="serve-header" onclick="toggleServe(this)">
+                <h4><span class="serve-number">3</span> Boomerang Serve <span class="serve-tag">Chaos</span></h4>
+                <span class="serve-chevron">&#9662;</span>
+            </div>
+            <div class="serve-body">
+                <div class="serve-content">
+                    <div class="serve-detail"><strong>Technique</strong><br>Similar to the Bobble but firmer. Aim to land the ball onto the service penthouse beyond the Winning Gallery. The ball arcs toward the grille penthouse, hits the high back wall, and returns across the side penthouse.</div>
+                    <div class="serve-detail"><strong>What it does</strong><br>Exploits the full geometry of the court. Creates complexity and hesitation.</div>
+                    <div class="serve-detail"><strong>When to use</strong><br>Sparingly, against players who struggle with quick lateral movement. High unpredictability.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidewall -->
+        <div class="serve-item">
+            <div class="serve-header" onclick="toggleServe(this)">
+                <h4><span class="serve-number">4</span> Sidewall Serve <span class="serve-tag">Spin</span></h4>
+                <span class="serve-chevron">&#9662;</span>
+            </div>
+            <div class="serve-body">
+                <div class="serve-content">
+                    <div class="serve-detail"><strong>Technique</strong><br>Face the main wall, racket above shoulder with elbow bent. Step left and hit the underside with an open face, generating cut and sidespin. Ball hits the service wall, spins down to the penthouse, bounces about 6 feet from the grille wall.</div>
+                    <div class="serve-detail"><strong>What it does</strong><br>Slow bounce with awkward spin that pulls the ball back towards the tambour. Pulls the receiver out of position.</div>
+                    <div class="serve-detail"><strong>When to use</strong><br>Effective against receivers who volley early. Good when you have a strong chase to protect.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Underarm Twist -->
+        <div class="serve-item">
+            <div class="serve-header" onclick="toggleServe(this)">
+                <h4><span class="serve-number">5</span> Underarm Twist <span class="serve-tag">Spin</span></h4>
+                <span class="serve-chevron">&#9662;</span>
+            </div>
+            <div class="serve-body">
+                <div class="serve-content">
+                    <div class="serve-detail"><strong>Technique</strong><br>Start with racket high and to the side. Drop the ball in front, swing down and across with a cut motion applying sidespin. Generates a low, spinning bounce.</div>
+                    <div class="serve-detail"><strong>What it does</strong><br>The heavy spin makes the ball hard to control on the return. Stays low after bouncing.</div>
+                    <div class="serve-detail"><strong>When to use</strong><br>Against players who struggle with spin or depth. Focus on spin and placement, not power.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demi-Pique -->
+        <div class="serve-item">
+            <div class="serve-header" onclick="toggleServe(this)">
+                <h4><span class="serve-number">6</span> Demi-Pique <span class="serve-tag">Tactical</span></h4>
+                <span class="serve-chevron">&#9662;</span>
+            </div>
+            <div class="serve-body">
+                <div class="serve-content">
+                    <div class="serve-detail"><strong>Technique</strong><br>Hit into the penthouse above Hazard First Gallery with sidewall action. Ball bounces up towards the service wall, grazing the penthouse on the way down.</div>
+                    <div class="serve-detail"><strong>What it does</strong><br>Creates indecision. The receiver can't tell whether to volley or let it bounce.</div>
+                    <div class="serve-detail"><strong>When to use</strong><br>Ideal against volleyers. Precision over pace - the uncertainty is the weapon.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drag -->
+        <div class="serve-item">
+            <div class="serve-header" onclick="toggleServe(this)">
+                <h4><span class="serve-number">7</span> Drag Serve <span class="serve-tag">Finesse</span></h4>
+                <span class="serve-chevron">&#9662;</span>
+            </div>
+            <div class="serve-body">
+                <div class="serve-content">
+                    <div class="serve-detail"><strong>Technique</strong><br>Uses sidewall action. Ball curves through the air and lands right on the edge of the penthouse above Hazard First Gallery, then dies in the receiver's corner.</div>
+                    <div class="serve-detail"><strong>What it does</strong><br>Tight angles catch the receiver flat-footed. Forces a late, low contact.</div>
+                    <div class="serve-detail"><strong>When to use</strong><br>When aiming for precision. Requires great control - think finesse, not force.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drop -->
+        <div class="serve-item">
+            <div class="serve-header" onclick="toggleServe(this)">
+                <h4><span class="serve-number">8</span> Drop Serve <span class="serve-tag">Surprise</span></h4>
+                <span class="serve-chevron">&#9662;</span>
+            </div>
+            <div class="serve-body">
+                <div class="serve-content">
+                    <div class="serve-detail"><strong>Technique</strong><br>Hit from near the main wall using sidewall motion, just below waist height. Aim toward the rafters. If it hits the penthouse, it plops into the back corner.</div>
+                    <div class="serve-detail"><strong>What it does</strong><br>Sudden change in pace and bounce height. Breaks the receiver's rhythm.</div>
+                    <div class="serve-detail"><strong>When to use</strong><br>As a surprise. High risk for second serves - use sparingly.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Giraffe -->
+        <div class="serve-item">
+            <div class="serve-header" onclick="toggleServe(this)">
+                <h4><span class="serve-number">9</span> Giraffe Serve <span class="serve-tag">Height</span></h4>
+                <span class="serve-chevron">&#9662;</span>
+            </div>
+            <div class="serve-body">
+                <div class="serve-content">
+                    <div class="serve-detail"><strong>Technique</strong><br>Underarm twist action, strike above knee height aiming high toward the beams. Ball bounces quickly off the penthouse, runs tight along the back wall.</div>
+                    <div class="serve-detail"><strong>What it does</strong><br>Pushes the receiver deep and tight against the back wall. Forces weak returns.</div>
+                    <div class="serve-detail"><strong>When to use</strong><br>To exploit opponents who are weak off the back wall. Emphasise height as much as spin.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SECTION 5: RALLIES & WALLS                  -->
+<!-- ════════════════════════════════════════════ -->
+<section id="rallies">
+    <div class="section-label">Rallies & Walls</div>
+    <h2 class="section-title">Everything Is In Play</h2>
+    <p class="section-subtitle">In lawn tennis, the ball is out if it hits a wall. In real tennis, walls and roofs are your weapons.</p>
+
+    <ul class="walls-list">
+        <li>
+            <span class="check">&#10003;</span>
+            <div><strong>Main wall</strong> - The solid wall opposite the galleries. Hit the ball off it, play it off the rebound. All fair game.</div>
+        </li>
+        <li>
+            <span class="check">&#10003;</span>
+            <div><strong>Penthouse roof</strong> - The sloped lean-to above the galleries. Balls can bounce off it, roll along it, and drop back into play.</div>
+        </li>
+        <li>
+            <span class="check">&#10003;</span>
+            <div><strong>Back walls</strong> - Both end walls are in play. A ball hitting the back wall and coming back into court is still live.</div>
+        </li>
+        <li>
+            <span class="check">&#10003;</span>
+            <div><strong>Tambour</strong> - The angled buttress on the main wall. Balls hitting the tambour deflect at unpredictable angles, creating some of the most dramatic moments in the game.</div>
+        </li>
+        <li>
+            <span class="check">&#10003;</span>
+            <div><strong>Volley or one bounce</strong> - Same rule as lawn tennis: you can volley or play after one bounce. If the ball bounces twice, it sets a chase (more on that next).</div>
+        </li>
+    </ul>
+
+    <h3 style="margin-top:48px; margin-bottom:16px;">Three Winning Targets</h3>
+    <p style="margin-bottom:20px;">Hit the ball into any of these and you win the point outright - no questions asked:</p>
+
+    <div class="winning-targets">
+        <div class="target-card">
+            <div class="target-icon">&#9670;</div>
+            <h4>Dedans</h4>
+            <p>Large netted opening at the back of the service side. The most dramatic winning shot - like a goal in football.</p>
+        </div>
+        <div class="target-card">
+            <div class="target-icon">&#9632;</div>
+            <h4>Grille</h4>
+            <p>Small netted opening low on the hazard end back wall. A precise, satisfying target - hard to hit but impossible to defend.</p>
+        </div>
+        <div class="target-card">
+            <div class="target-icon">&#9654;</div>
+            <h4>Winning Gallery</h4>
+            <p>The gallery opening nearest the net on the hazard side. Hit the ball into it from anywhere on court to win the point.</p>
+        </div>
+    </div>
+
+    <div class="callout">
+        <strong>The tambour in action:</strong> A ball hitting the angled tambour wall can shoot off at wild angles. Good players use it as a weapon; everyone else fears it. Three scenarios: ball hits the tambour directly (run backwards, then step in), ball narrowly misses it (one step, high boast), or short balls near it (early step, aggressive strike).
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SECTION 6: THE CHASE                        -->
+<!-- ════════════════════════════════════════════ -->
+<section id="chase">
+    <div class="section-label">The Chase</div>
+    <h2 class="section-title">The Unique Twist</h2>
+    <p class="section-subtitle">This is what makes real tennis unlike any other racket sport. In lawn tennis, two bounces ends the point. In real tennis, it creates a deferred contest.</p>
+
+    <div class="chase-stepper">
+        <div class="chase-steps-nav">
+            <div class="step-dot active" onclick="goToStep(0)"></div>
+            <div class="step-dot" onclick="goToStep(1)"></div>
+            <div class="step-dot" onclick="goToStep(2)"></div>
+            <div class="step-dot" onclick="goToStep(3)"></div>
+            <div class="step-dot" onclick="goToStep(4)"></div>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="chase-step active" data-step="0">
+            <div class="chase-step-number">Step 1 of 5</div>
+            <h3>The Ball Bounces Twice</h3>
+            <p>During a rally, a player hits a great shot and their opponent can't reach it. The ball bounces once, then bounces again on the floor.</p>
+            <p>In lawn tennis, the point would be over. In real tennis, the spot where the ball bounced the second time is noted - this is now a <strong style="color:var(--gold)">"chase"</strong>.</p>
+            <div class="chase-visual">
+                <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="10" y="10" width="380" height="120" fill="#4a3d30" rx="4"/>
+                    <line x1="200" y1="10" x2="200" y2="130" stroke="white" stroke-width="2"/>
+                    <text x="100" y="30" fill="rgba(255,255,255,0.3)" font-family="Space Grotesk" font-size="10" text-anchor="middle">SERVICE</text>
+                    <text x="300" y="30" fill="rgba(255,255,255,0.3)" font-family="Space Grotesk" font-size="10" text-anchor="middle">HAZARD</text>
+                    <!-- Ball bouncing -->
+                    <circle cx="120" cy="70" r="6" fill="#d4a853" opacity="0.4"/>
+                    <circle cx="150" cy="85" r="8" fill="#d4a853"/>
+                    <text x="150" y="110" fill="#d4a853" font-family="Space Grotesk" font-size="10" text-anchor="middle">2nd bounce here</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="chase-step" data-step="1">
+            <div class="chase-step-number">Step 2 of 5</div>
+            <h3>The Chase Is Marked</h3>
+            <p>The marker (a real person at the side of the court) calls out the position of the second bounce using the <strong>chase lines</strong> on the floor. These lines run across the court at regular intervals.</p>
+            <p>For example: <em>"Chase better than 4"</em> or <em>"Chase the door"</em> (if the ball entered a gallery).</p>
+            <p><strong style="color:var(--gold)">Closer to the back wall = a "better" chase = harder for your opponent to beat.</strong></p>
+            <div class="chase-visual">
+                <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="10" y="10" width="380" height="120" fill="#4a3d30" rx="4"/>
+                    <line x1="200" y1="10" x2="200" y2="130" stroke="white" stroke-width="2"/>
+                    <!-- Chase lines -->
+                    <line x1="60" y1="10" x2="60" y2="130" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="3,5"/>
+                    <line x1="110" y1="10" x2="110" y2="130" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="3,5"/>
+                    <line x1="150" y1="10" x2="150" y2="130" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="3,5"/>
+                    <!-- Chase mark -->
+                    <line x1="150" y1="10" x2="150" y2="130" stroke="#d4a853" stroke-width="2"/>
+                    <circle cx="150" cy="70" r="5" fill="#d4a853"/>
+                    <text x="150" y="8" fill="#d4a853" font-family="Space Grotesk" font-size="10" text-anchor="middle">CHASE</text>
+                    <text x="30" y="75" fill="rgba(255,255,255,0.4)" font-family="Inter" font-size="9" text-anchor="middle" transform="rotate(-90, 30, 75)">Back wall</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="chase-step" data-step="2">
+            <div class="chase-step-number">Step 3 of 5</div>
+            <h3>Play Continues</h3>
+            <p>The chase is "stored" but the game continues as normal. Points keep being played.</p>
+            <p>Players change ends when:</p>
+            <ul style="padding-left:24px; margin:12px 0;">
+                <li>Two chases have been laid, OR</li>
+                <li>One chase is laid and the score reaches 40 (i.e. "chase and 40")</li>
+            </ul>
+            <p>The end change is when the chase gets resolved.</p>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="chase-step" data-step="3">
+            <div class="chase-step-number">Step 4 of 5</div>
+            <h3>Players Change Ends</h3>
+            <p>When the end change happens, the player who set the chase now moves to the side where the chase was marked. Their opponent must try to <strong>"beat the chase"</strong>.</p>
+            <p>To beat it, they need to make their shot's second bounce land <strong style="color:var(--gold)">closer to the back wall</strong> than the chase mark - or hit a winning target (dedans, grille, or winning gallery).</p>
+            <div class="chase-visual">
+                <svg viewBox="0 0 400 140" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="10" y="10" width="380" height="120" fill="#4a3d30" rx="4"/>
+                    <line x1="200" y1="10" x2="200" y2="130" stroke="white" stroke-width="2"/>
+                    <!-- Chase mark -->
+                    <line x1="150" y1="10" x2="150" y2="130" stroke="#d4a853" stroke-width="2" stroke-dasharray="4,3"/>
+                    <text x="150" y="8" fill="#d4a853" font-family="Space Grotesk" font-size="9" text-anchor="middle">CHASE</text>
+                    <!-- Must beat zone -->
+                    <rect x="10" y="10" width="140" height="120" fill="rgba(100,200,100,0.1)" rx="4"/>
+                    <text x="75" y="75" fill="rgba(100,200,100,0.5)" font-family="Space Grotesk" font-size="11" text-anchor="middle">MUST LAND</text>
+                    <text x="75" y="90" fill="rgba(100,200,100,0.5)" font-family="Space Grotesk" font-size="11" text-anchor="middle">HERE TO WIN</text>
+                    <!-- Arrow -->
+                    <text x="30" y="130" fill="rgba(255,255,255,0.3)" font-family="Inter" font-size="9">Back wall</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="chase-step" data-step="4">
+            <div class="chase-step-number">Step 5 of 5</div>
+            <h3>Why It Matters</h3>
+            <p>The chase system rewards <strong>good length</strong>. A ball that dies near the back wall sets a chase that's almost impossible to beat. A weak shot that bounces twice near the middle of the court sets an easy chase.</p>
+            <p>Think of it like setting a high jump bar: you're daring your opponent to clear it. The better your shot, the higher the bar.</p>
+            <div class="callout">
+                <strong>Strategic depth:</strong> At 40-0, take the easy point - no need to risk giving away a chase. At deuce, chase management becomes critical. As Rob Fahey says: "Play the odds."
+            </div>
+        </div>
+
+        <div class="chase-controls">
+            <button class="chase-btn" id="chase-prev" onclick="prevStep()" disabled>Previous</button>
+            <button class="chase-btn primary" id="chase-next" onclick="nextStep()">Next</button>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- SECTION 7: QUICK REFERENCE                  -->
+<!-- ════════════════════════════════════════════ -->
+<section id="reference">
+    <div class="section-label">Quick Reference</div>
+    <h2 class="section-title">Cheat Sheet</h2>
+    <p class="section-subtitle">Everything you need to know before stepping onto court.</p>
+
+    <h3 style="margin-top:30px; margin-bottom:16px;">Court Features Glossary</h3>
+
+    <div class="glossary-grid">
+        <div class="glossary-item">
+            <h4>Penthouse</h4>
+            <p>Sloped lean-to roof running along the gallery wall. Serves must hit it. Balls roll along it and drop off the edge.</p>
+        </div>
+        <div class="glossary-item">
+            <h4>Dedans</h4>
+            <p>Large netted opening at the service end back wall. Hit the ball into it to win the point outright.</p>
+        </div>
+        <div class="glossary-item">
+            <h4>Grille</h4>
+            <p>Small netted opening on the hazard end back wall. Another instant-win target - precise and satisfying.</p>
+        </div>
+        <div class="glossary-item">
+            <h4>Tambour</h4>
+            <p>Angled buttress on the main wall, hazard side near the net. Creates unpredictable deflections.</p>
+        </div>
+        <div class="glossary-item">
+            <h4>Winning Gallery</h4>
+            <p>Gallery opening nearest the net on the hazard side. The third instant-win target.</p>
+        </div>
+        <div class="glossary-item">
+            <h4>Galleries</h4>
+            <p>Openings along the gallery wall beneath the penthouse. Balls entering galleries can set chases or win points.</p>
+        </div>
+        <div class="glossary-item">
+            <h4>Service Box</h4>
+            <p>Marked area on the hazard side floor where the serve must bounce after hitting the penthouse.</p>
+        </div>
+        <div class="glossary-item">
+            <h4>Chase Lines</h4>
+            <p>Lines across the floor marking positions. Used to record where a ball bounced twice (setting a chase).</p>
+        </div>
+        <div class="glossary-item">
+            <h4>Hazard Side</h4>
+            <p>The side of the court to the right of the net (in our diagram). The receiver stands here. Contains the grille.</p>
+        </div>
+        <div class="glossary-item">
+            <h4>Service Side</h4>
+            <p>The side to the left of the net. The server stands here. Contains the dedans.</p>
+        </div>
+        <div class="glossary-item">
+            <h4>Main Wall</h4>
+            <p>The solid wall opposite the galleries. No openings. Balls played off it are in play.</p>
+        </div>
+        <div class="glossary-item">
+            <h4>Marker</h4>
+            <p>The official who calls the score, records chases, and manages the game. Sits in the dedans.</p>
+        </div>
+    </div>
+
+    <h3 style="margin-top:48px; margin-bottom:16px;">Key Differences from Lawn Tennis</h3>
+
+    <ul class="diff-list">
+        <li>
+            <span class="lawn">Open court, ball goes out</span>
+            <span class="vs">vs</span>
+            <span class="real">Enclosed court, walls are in play</span>
+        </li>
+        <li>
+            <span class="lawn">Two bounces = point over</span>
+            <span class="vs">vs</span>
+            <span class="real">Two bounces can set a chase</span>
+        </li>
+        <li>
+            <span class="lawn">Serve anywhere in the box</span>
+            <span class="vs">vs</span>
+            <span class="real">Serve must hit the penthouse roof first</span>
+        </li>
+        <li>
+            <span class="lawn">Symmetrical court</span>
+            <span class="vs">vs</span>
+            <span class="real">Asymmetric with galleries, tambour, grille</span>
+        </li>
+        <li>
+            <span class="lawn">Tiebreaks at 6-6</span>
+            <span class="vs">vs</span>
+            <span class="real">No tiebreaks. Can win a set 6-5</span>
+        </li>
+        <li>
+            <span class="lawn">Universal handicap rare</span>
+            <span class="vs">vs</span>
+            <span class="real">Every player has a handicap number</span>
+        </li>
+        <li>
+            <span class="lawn">Leader's score called first</span>
+            <span class="vs">vs</span>
+            <span class="real">Server's score always called first</span>
+        </li>
+    </ul>
+
+    <div class="cta-section">
+        <h3>Now Go Play</h3>
+        <p>The best way to understand real tennis is to step onto a court. Find your nearest court and give it a go.</p>
+        <a class="cta-link" href="https://www.tennisandrackets.com/real-tennis/play" target="_blank">Find a Court</a>
+    </div>
+</section>
+
+<footer>
+    Built with notes from Rob Fahey, Ben Ronaldson, Clare Fahey & Chris Ronaldson
+</footer>
+
+<script>
+    // ── Feature Tooltips ──
+    const featureData = {
+        'main-wall': {
+            title: 'Main Wall',
+            desc: 'The solid wall running the full length of the court, opposite the galleries. No openings - just a flat surface to play the ball off. In rallies, players use the main wall for defensive and attacking shots.',
+            comparison: 'In lawn tennis, there are no walls. In real tennis, the main wall is constantly in play - like a backboard you can use strategically.'
+        },
+        'penthouse': {
+            title: 'Penthouse',
+            desc: 'The sloped lean-to roof that runs above the galleries along the gallery wall. Serves must hit the penthouse on the hazard side before bouncing in the service box. During rallies, the ball can bounce off the penthouse and drop back into court. Its slope creates unpredictable angles.',
+            comparison: 'No equivalent in lawn tennis. Think of it as a sloped roof that balls roll along before dropping off the edge.'
+        },
+        'net': {
+            title: 'The Net',
+            desc: 'The net divides the court into the service side (left) and hazard side (right). It is about 5 feet high at the posts and 3 feet in the centre - higher than a lawn tennis net. The server always serves from the service side.',
+            comparison: 'Higher than a lawn tennis net. The extra height means you have to be more precise with low shots over the net.'
+        },
+        'dedans': {
+            title: 'Dedans',
+            desc: 'A large netted opening at the back wall on the service side. Hit the ball into the dedans and you win the point outright - it is the most dramatic winning shot in real tennis. Spectators often watch the match from behind the dedans.',
+            comparison: 'No equivalent in lawn tennis. Think of it like scoring a goal - hit the target and you win the point immediately.'
+        },
+        'grille': {
+            title: 'Grille',
+            desc: 'A small netted opening low on the hazard end back wall. Another instant-win target. Hitting the grille requires precision - it is a small target, typically about 3 feet square, close to the floor.',
+            comparison: 'Like aiming for the corner pocket in snooker - a precision shot that wins the point outright.'
+        },
+        'tambour': {
+            title: 'Tambour',
+            desc: 'An angled buttress projecting from the main wall into the court, located on the hazard side near the net. When the ball hits the tambour, it deflects at unpredictable angles, creating chaotic situations. Good players use the tambour as a weapon; it is one of the most exciting features of the court.',
+            comparison: 'No equivalent in any other racket sport. Imagine a wall that kicks the ball sideways at crazy angles.'
+        },
+        'service-box': {
+            title: 'Service Box',
+            desc: 'The marked area on the hazard side floor where the serve must land after bouncing off the penthouse. If the ball does not land in the service box, the serve is a fault (like lawn tennis).',
+            comparison: 'Similar concept to the service box in lawn tennis, but the ball reaches it by bouncing off the penthouse roof first.'
+        },
+        'winning-gallery': {
+            title: 'Winning Gallery',
+            desc: 'The gallery opening nearest to the net on the hazard side of the gallery wall. Hit the ball into the winning gallery from anywhere on court and you win the point outright. It is one of three instant-win targets (along with the dedans and grille).',
+            comparison: 'No equivalent in lawn tennis. Another instant-win target, like the dedans and grille.'
+        },
+        'first-gallery-s': {
+            title: 'First Gallery (Service Side)',
+            desc: 'Gallery opening on the service side, closest to the net. If the ball enters this gallery, it typically sets a chase at that position. Not a winning gallery - the point is deferred.',
+            comparison: ''
+        },
+        'second-gallery-s': {
+            title: 'Second Gallery (Service Side)',
+            desc: 'Gallery opening on the service side, second from the net. Balls entering here set a chase.',
+            comparison: ''
+        },
+        'last-gallery-s': {
+            title: 'Last Gallery (Service Side)',
+            desc: 'Gallery opening furthest from the net on the service side, near the dedans. A ball landing here sets a chase close to the back wall - a very good chase to have.',
+            comparison: ''
+        },
+        'door-s': {
+            title: 'The Door (Service Side)',
+            desc: 'A small opening in the gallery wall where players and spectators enter the court. Located between the galleries. Balls can enter the door and set a chase.',
+            comparison: ''
+        },
+        'first-gallery-h': {
+            title: 'First Gallery (Hazard Side)',
+            desc: 'Gallery opening on the hazard side, next to the winning gallery. Not a winning target itself, but balls entering here set a chase.',
+            comparison: ''
+        },
+        'second-gallery-h': {
+            title: 'Second Gallery (Hazard Side)',
+            desc: 'Gallery opening on the hazard side. Balls entering set a chase at this position.',
+            comparison: ''
+        },
+        'last-gallery-h': {
+            title: 'Last Gallery (Hazard Side)',
+            desc: 'Gallery opening furthest from the net on the hazard side, near the grille. Balls entering set a chase.',
+            comparison: ''
+        },
+        'door-h': {
+            title: 'The Door (Hazard Side)',
+            desc: 'Court entrance on the hazard side. Between the galleries. Balls entering set a chase.',
+            comparison: ''
+        }
+    };
+
+    document.querySelectorAll('.court-feature').forEach(el => {
+        el.addEventListener('click', (e) => {
+            const feature = el.dataset.feature;
+            const data = featureData[feature];
+            if (!data) return;
+
+            // Remove highlight from all
+            document.querySelectorAll('.court-feature').forEach(f => f.classList.remove('highlighted'));
+            el.classList.add('highlighted');
+
+            const tooltip = document.getElementById('feature-tooltip');
+            document.getElementById('tooltip-title').textContent = data.title;
+            document.getElementById('tooltip-desc').textContent = data.desc;
+            const comp = document.getElementById('tooltip-comparison');
+            if (data.comparison) {
+                comp.textContent = data.comparison;
+                comp.style.display = 'block';
+            } else {
+                comp.style.display = 'none';
+            }
+            tooltip.classList.add('visible');
+        });
+    });
+
+    // ── Serve Accordion ──
+    function toggleServe(header) {
+        const item = header.parentElement;
+        const wasOpen = item.classList.contains('open');
+
+        // Close all
+        document.querySelectorAll('.serve-item').forEach(s => s.classList.remove('open'));
+
+        // Toggle clicked
+        if (!wasOpen) {
+            item.classList.add('open');
+        }
+    }
+
+    // ── Chase Stepper ──
+    let currentStep = 0;
+    const totalSteps = 5;
+
+    function updateSteps() {
+        document.querySelectorAll('.chase-step').forEach((step, i) => {
+            step.classList.toggle('active', i === currentStep);
+        });
+        document.querySelectorAll('.step-dot').forEach((dot, i) => {
+            dot.classList.remove('active', 'completed');
+            if (i === currentStep) dot.classList.add('active');
+            else if (i < currentStep) dot.classList.add('completed');
+        });
+        document.getElementById('chase-prev').disabled = currentStep === 0;
+        const nextBtn = document.getElementById('chase-next');
+        if (currentStep === totalSteps - 1) {
+            nextBtn.textContent = 'Done';
+            nextBtn.onclick = () => goToStep(0);
+        } else {
+            nextBtn.textContent = 'Next';
+            nextBtn.onclick = nextStep;
+        }
+    }
+
+    function nextStep() {
+        if (currentStep < totalSteps - 1) {
+            currentStep++;
+            updateSteps();
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 0) {
+            currentStep--;
+            updateSteps();
+        }
+    }
+
+    function goToStep(n) {
+        currentStep = n;
+        updateSteps();
+    }
+
+    // ── Nav Active State ──
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('nav a');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === '#' + entry.target.id);
+                });
+            }
+        });
+    }, { rootMargin: '-40% 0px -40% 0px' });
+
+    sections.forEach(section => observer.observe(section));
+</script>
+</body>
+</html>
