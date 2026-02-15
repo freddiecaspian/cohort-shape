@@ -459,6 +459,151 @@
             font-family: 'Space Grotesk', sans-serif;
         }
 
+        /* ── Scoreboard ── */
+        .scoreboard-demo {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px 16px 16px;
+            margin: 30px 0;
+        }
+
+        .scoreboard-demo svg {
+            width: 100%;
+            height: auto;
+            max-width: 600px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .scoreboard-annotations {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .scoreboard-note {
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            border-left: 2px solid var(--gold);
+        }
+
+        .scoreboard-note strong {
+            color: var(--gold);
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        @media (max-width: 500px) {
+            .scoreboard-annotations {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── Match Visual ── */
+        .match-visual {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px 16px 12px;
+            margin: 30px 0;
+        }
+
+        .match-visual svg {
+            width: 100%;
+            height: auto;
+        }
+
+        .match-visual .diagram-caption {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* ── Serve Anatomy ── */
+        .serve-trajectory {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px 16px 12px;
+            margin: 24px 0;
+        }
+
+        .serve-trajectory svg {
+            width: 100%;
+            height: auto;
+        }
+
+        .serve-trajectory .diagram-caption {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .serve-phases {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 24px 0 48px;
+        }
+
+        .serve-phase {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 16px 12px;
+            text-align: center;
+        }
+
+        .serve-phase .phase-figure {
+            width: 80px;
+            height: 100px;
+            margin: 0 auto 10px;
+        }
+
+        .serve-phase .phase-num {
+            display: inline-block;
+            background: var(--gold);
+            color: var(--bg-dark);
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 22px;
+            font-family: 'Space Grotesk', sans-serif;
+            margin-bottom: 4px;
+        }
+
+        .serve-phase h4 {
+            font-size: 13px;
+            color: var(--text-heading);
+            margin-bottom: 4px;
+        }
+
+        .serve-phase p {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        @media (max-width: 600px) {
+            .serve-phases {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         /* ── Rallies ── */
         .winning-targets {
             display: grid;
@@ -821,144 +966,156 @@
 <section id="court">
     <div class="section-label">The Court</div>
     <h2 class="section-title">An Enclosed World</h2>
-    <p class="section-subtitle">The court is roughly 110ft long and 38ft wide. Every surface is in play - walls, sloped roofs, angled buttresses. Tap any feature below to learn what it does.</p>
+    <p class="section-subtitle">The court is roughly 110ft long and 38ft wide. Every surface is in play - walls, sloped roofs, angled buttresses.</p>
 
-    <div class="court-container">
-        <svg id="court-svg" viewBox="0 0 880 420" xmlns="http://www.w3.org/2000/svg">
-            <!-- Court floor -->
-            <rect x="50" y="50" width="780" height="280" fill="#4a3d30" rx="2"/>
-
-            <!-- Floor lines (chase lines) -->
-            <line x1="130" y1="50" x2="130" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
-            <line x1="210" y1="50" x2="210" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
-            <line x1="290" y1="50" x2="290" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
-            <line x1="370" y1="50" x2="370" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
-            <!-- Net position -->
-            <line x1="540" y1="50" x2="540" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
-            <line x1="620" y1="50" x2="620" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
-            <line x1="700" y1="50" x2="700" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
-            <line x1="780" y1="50" x2="780" y2="330" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,6"/>
-
-            <!-- Half-court / service line -->
-            <line x1="620" y1="50" x2="620" y2="330" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
-
-            <!-- Main wall (top - solid) -->
-            <g class="court-feature" data-feature="main-wall">
-                <rect x="50" y="30" width="780" height="20" fill="#2e2419" rx="1"/>
-            </g>
-
-            <!-- Gallery wall (bottom) - background -->
-            <rect x="50" y="330" width="780" height="20" fill="#2e2419" rx="1"/>
-
-            <!-- Penthouse strip (sloped roof - along gallery wall, inside court) -->
-            <g class="court-feature" data-feature="penthouse">
-                <rect x="50" y="295" width="780" height="35" fill="#3e3428" opacity="0.7" rx="1"/>
-                <!-- Penthouse edge line -->
-                <line x1="50" y1="295" x2="830" y2="295" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
-            </g>
-
-            <!-- NET -->
-            <g class="court-feature" data-feature="net">
-                <line x1="440" y1="48" x2="440" y2="332" stroke="#ffffff" stroke-width="3"/>
-                <!-- Net posts -->
-                <circle cx="440" cy="50" r="4" fill="#ffffff"/>
-                <circle cx="440" cy="330" r="4" fill="#ffffff"/>
-            </g>
-
-            <!-- Side labels -->
-            <text x="245" y="185" fill="rgba(255,255,255,0.2)" font-family="Space Grotesk, sans-serif" font-size="16" font-weight="600" text-anchor="middle" letter-spacing="4">SERVICE SIDE</text>
-            <text x="640" y="185" fill="rgba(255,255,255,0.2)" font-family="Space Grotesk, sans-serif" font-size="16" font-weight="600" text-anchor="middle" letter-spacing="4">HAZARD SIDE</text>
-
-            <!-- DEDANS (service end back wall - winning target) -->
-            <g class="court-feature" data-feature="dedans">
-                <rect x="30" y="90" width="20" height="200" fill="#d4a853" rx="2" opacity="0.85"/>
-                <text x="18" y="195" fill="#d4a853" font-family="Space Grotesk, sans-serif" font-size="11" text-anchor="middle" transform="rotate(-90, 18, 195)" letter-spacing="2">DEDANS</text>
-            </g>
-
-            <!-- GRILLE (hazard end back wall - winning target) -->
-            <g class="court-feature" data-feature="grille">
-                <rect x="830" y="220" width="20" height="90" fill="#d4a853" rx="2" opacity="0.85"/>
-                <text x="862" y="268" fill="#d4a853" font-family="Space Grotesk, sans-serif" font-size="11" text-anchor="middle" transform="rotate(90, 862, 268)" letter-spacing="2">GRILLE</text>
-            </g>
-
-            <!-- TAMBOUR (angled buttress on main wall, hazard side near net) -->
-            <g class="court-feature" data-feature="tambour">
-                <polygon points="475,30 520,30 520,50 475,50 490,70 475,70" fill="#5a4a3a" stroke="#6a5a4a" stroke-width="1"/>
-                <polygon points="475,50 490,70 520,50" fill="#5a4a3a" stroke="#6a5a4a" stroke-width="1"/>
-                <text x="497" y="24" fill="rgba(255,255,255,0.5)" font-family="Space Grotesk, sans-serif" font-size="10" text-anchor="middle">TAMBOUR</text>
-            </g>
-
-            <!-- SERVICE SIDE GALLERIES (along bottom wall) -->
-            <!-- Last Gallery -->
-            <g class="court-feature" data-feature="last-gallery-s">
-                <rect x="70" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
-                <text x="105" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">Last Gal.</text>
-            </g>
-            <!-- Second Gallery -->
-            <g class="court-feature" data-feature="second-gallery-s">
-                <rect x="150" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
-                <text x="185" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">2nd Gal.</text>
-            </g>
-            <!-- The Door (Service) -->
-            <g class="court-feature" data-feature="door-s">
-                <rect x="230" y="330" width="50" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
-                <text x="255" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">Door</text>
-            </g>
-            <!-- First Gallery (Service) -->
-            <g class="court-feature" data-feature="first-gallery-s">
-                <rect x="290" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
-                <text x="325" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">1st Gal.</text>
-            </g>
-            <!-- Service Penthouse gap -->
-            <rect x="370" y="330" width="70" height="20" fill="#2e2419" rx="1"/>
-            <text x="405" y="365" fill="rgba(255,255,255,0.25)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">Svc. Pent.</text>
-
-            <!-- HAZARD SIDE GALLERIES -->
-            <!-- Winning Gallery (winning target!) -->
-            <g class="court-feature" data-feature="winning-gallery">
-                <rect x="450" y="330" width="70" height="20" fill="#d4a853" opacity="0.7" stroke="#d4a853" stroke-width="1" rx="1"/>
-                <text x="485" y="365" fill="#d4a853" font-family="Inter, sans-serif" font-size="9" text-anchor="middle" font-weight="600">Win. Gal.</text>
-            </g>
-            <!-- First Gallery (Hazard) -->
-            <g class="court-feature" data-feature="first-gallery-h">
-                <rect x="530" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
-                <text x="565" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">1st Gal.</text>
-            </g>
-            <!-- The Door (Hazard) -->
-            <g class="court-feature" data-feature="door-h">
-                <rect x="610" y="330" width="50" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
-                <text x="635" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">Door</text>
-            </g>
-            <!-- Second Gallery (Hazard) -->
-            <g class="court-feature" data-feature="second-gallery-h">
-                <rect x="670" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
-                <text x="705" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">2nd Gal.</text>
-            </g>
-            <!-- Last Gallery (Hazard) -->
-            <g class="court-feature" data-feature="last-gallery-h">
-                <rect x="750" y="330" width="70" height="20" fill="#3e3428" stroke="rgba(255,255,255,0.15)" stroke-width="1" rx="1"/>
-                <text x="785" y="365" fill="rgba(255,255,255,0.4)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">Last Gal.</text>
-            </g>
-
-            <!-- Service box (dashed) on hazard side -->
-            <g class="court-feature" data-feature="service-box">
-                <rect x="540" y="200" width="180" height="95" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-dasharray="6,4" rx="2"/>
-                <text x="630" y="255" fill="rgba(255,255,255,0.2)" font-family="Inter, sans-serif" font-size="10" text-anchor="middle">Service Box</text>
-            </g>
-
-            <!-- Hazard line -->
-            <line x1="620" y1="50" x2="620" y2="295" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
-            <text x="620" y="290" fill="rgba(255,255,255,0.3)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle">Hazard Line</text>
-
-            <!-- Gallery wall label -->
-            <text x="440" y="400" fill="rgba(255,255,255,0.2)" font-family="Space Grotesk, sans-serif" font-size="11" text-anchor="middle" letter-spacing="3">GALLERY WALL (with penthouse above)</text>
-
-            <!-- Main wall label -->
-            <text x="440" y="22" fill="rgba(255,255,255,0.2)" font-family="Space Grotesk, sans-serif" font-size="11" text-anchor="middle" letter-spacing="3">MAIN WALL</text>
-        </svg>
+    <div style="margin: 0 auto 40px; max-width: 820px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
+        <img src="https://www.irtpa.com/wp-content/uploads/2013/03/court_graphic_large.jpg" alt="Real tennis court diagram showing all features - IRTPA" style="width: 100%; display: block;" loading="lazy"/>
+        <div style="padding: 10px 16px; background: var(--bg-card); font-size: 12px; color: var(--text-muted);">Court diagram courtesy of <a href="https://www.irtpa.com/the-real-tennis-court/" target="_blank" style="color: var(--gold); text-decoration: none;">IRTPA</a>. The tambour (O) and grille (P) sit together at the hazard end corner.</div>
     </div>
 
-    <p class="tap-prompt">Tap any feature on the court to learn more</p>
+    <p style="margin-bottom: 20px; color: var(--text-muted);">Tap any feature on the interactive diagram below to learn more:</p>
+
+    <div class="court-container">
+        <svg id="court-svg" viewBox="0 0 920 500" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="floor-grad" x1="0" y1="0" x2="0.6" y2="0.8">
+                    <stop offset="0%" stop-color="#c4956a"/>
+                    <stop offset="100%" stop-color="#a87d58"/>
+                </linearGradient>
+            </defs>
+
+            <!-- ── COURT FLOOR (isometric parallelogram) ── -->
+            <g class="court-feature" data-feature="main-wall">
+                <polygon points="80,420 680,420 840,210 240,210" fill="url(#floor-grad)"/>
+            </g>
+
+            <!-- ── CHASE LINES on floor (diagonal in isometric) ── -->
+            <line x1="164" y1="388" x2="300" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="224" y1="388" x2="360" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="284" y1="388" x2="420" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="344" y1="388" x2="480" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="464" y1="388" x2="600" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="524" y1="388" x2="660" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="584" y1="388" x2="720" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="644" y1="388" x2="780" y2="210" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+            <!-- Service line (stronger) -->
+            <line x1="492" y1="388" x2="628" y2="210" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+
+            <!-- ── MAIN WALL (back, maroon) ── -->
+            <g class="court-feature" data-feature="main-wall">
+                <polygon points="240,210 840,210 840,85 240,85" fill="#8b3a3a"/>
+                <line x1="240" y1="85" x2="840" y2="85" stroke="#6b2020" stroke-width="2"/>
+                <line x1="240" y1="210" x2="240" y2="85" stroke="#6b2020" stroke-width="1"/>
+            </g>
+
+            <!-- ── SERVICE END WALL (left, with dedans) ── -->
+            <polygon points="80,420 240,210 240,85 80,285" fill="#9b4545"/>
+            <line x1="80" y1="285" x2="240" y2="85" stroke="#7b2525" stroke-width="1.5"/>
+
+            <!-- DEDANS opening (gold, in service end wall) -->
+            <g class="court-feature" data-feature="dedans">
+                <polygon points="104,378 216,198 216,128 104,298" fill="#d4a853" opacity="0.75"/>
+                <!-- Dark interior behind dedans -->
+                <polygon points="106,374 214,200 214,132 106,296" fill="#1a1008" opacity="0.4"/>
+                <text x="148" y="272" fill="#d4a853" font-family="Space Grotesk, sans-serif" font-size="12" font-weight="600" transform="rotate(-33, 148, 272)">DEDANS</text>
+            </g>
+
+            <!-- ── HAZARD END WALL (right) ── -->
+            <polygon points="680,420 840,210 840,85 680,285" fill="#7b2a2a"/>
+            <line x1="680" y1="285" x2="840" y2="85" stroke="#5b1818" stroke-width="1.5"/>
+
+            <!-- GRILLE opening (gold, upper portion near main wall corner) -->
+            <g class="court-feature" data-feature="grille">
+                <polygon points="792,210 832,160 832,118 792,168" fill="#d4a853" opacity="0.8"/>
+                <polygon points="794,206 830,162 830,122 794,166" fill="#1a1008" opacity="0.3"/>
+                <text x="815" y="148" fill="#d4a853" font-family="Space Grotesk, sans-serif" font-size="9" font-weight="600" transform="rotate(33, 815, 148)">GRILLE</text>
+            </g>
+
+            <!-- ── TAMBOUR (projecting from main wall at hazard end, near grille) ── -->
+            <g class="court-feature" data-feature="tambour">
+                <!-- Tambour wall face (on main wall) -->
+                <polygon points="775,210 820,210 820,175 775,175" fill="#6b2828"/>
+                <!-- Tambour angled face projecting into court -->
+                <polygon points="775,210 775,175 758,230 758,195" fill="#7b3535" stroke="#5b1818" stroke-width="0.5"/>
+                <!-- Tambour floor projection (triangle) -->
+                <polygon points="775,210 820,210 758,230" fill="#9a7050" opacity="0.5"/>
+                <text x="790" y="168" fill="rgba(255,255,255,0.5)" font-family="Space Grotesk, sans-serif" font-size="9" text-anchor="middle">TAMBOUR</text>
+            </g>
+
+            <!-- ── PENTHOUSE (sloped roof above galleries) ── -->
+            <g class="court-feature" data-feature="penthouse">
+                <polygon points="80,383 680,383 712,350 112,350" fill="#6a5a4a" opacity="0.85"/>
+                <line x1="112" y1="350" x2="712" y2="350" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+                <!-- Penthouse top edge highlight -->
+                <line x1="80" y1="383" x2="680" y2="383" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            </g>
+
+            <!-- ── GALLERY WALL (front face, maroon, with openings) ── -->
+            <polygon points="80,420 680,420 680,383 80,383" fill="#8b3a3a"/>
+
+            <!-- SERVICE SIDE GALLERIES -->
+            <g class="court-feature" data-feature="last-gallery-s">
+                <rect x="95" y="388" width="58" height="28" fill="#1a1010" rx="1"/>
+                <text x="124" y="432" fill="rgba(255,255,255,0.35)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">Last</text>
+            </g>
+            <g class="court-feature" data-feature="second-gallery-s">
+                <rect x="163" y="388" width="58" height="28" fill="#1a1010" rx="1"/>
+                <text x="192" y="432" fill="rgba(255,255,255,0.35)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">2nd</text>
+            </g>
+            <g class="court-feature" data-feature="door-s">
+                <rect x="231" y="388" width="38" height="28" fill="#1a1010" rx="1"/>
+                <text x="250" y="432" fill="rgba(255,255,255,0.35)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">Door</text>
+            </g>
+            <g class="court-feature" data-feature="first-gallery-s">
+                <rect x="279" y="388" width="58" height="28" fill="#1a1010" rx="1"/>
+                <text x="308" y="432" fill="rgba(255,255,255,0.35)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">1st</text>
+            </g>
+
+            <!-- HAZARD SIDE GALLERIES -->
+            <g class="court-feature" data-feature="winning-gallery">
+                <rect x="405" y="388" width="58" height="28" fill="#d4a853" opacity="0.5" rx="1"/>
+                <text x="434" y="432" fill="#d4a853" font-family="Inter, sans-serif" font-size="8" text-anchor="middle" font-weight="600">Winning</text>
+            </g>
+            <g class="court-feature" data-feature="first-gallery-h">
+                <rect x="473" y="388" width="58" height="28" fill="#1a1010" rx="1"/>
+                <text x="502" y="432" fill="rgba(255,255,255,0.35)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">1st</text>
+            </g>
+            <g class="court-feature" data-feature="door-h">
+                <rect x="541" y="388" width="38" height="28" fill="#1a1010" rx="1"/>
+                <text x="560" y="432" fill="rgba(255,255,255,0.35)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">Door</text>
+            </g>
+            <g class="court-feature" data-feature="second-gallery-h">
+                <rect x="589" y="388" width="58" height="28" fill="#1a1010" rx="1"/>
+                <text x="618" y="432" fill="rgba(255,255,255,0.35)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">2nd</text>
+            </g>
+            <g class="court-feature" data-feature="last-gallery-h">
+                <rect x="657" y="388" width="18" height="28" fill="#1a1010" rx="1"/>
+            </g>
+
+            <!-- ── NET (vertical surface spanning court width) ── -->
+            <g class="court-feature" data-feature="net">
+                <polygon points="398,420 558,210 558,182 398,392" fill="rgba(255,255,255,0.1)" stroke="white" stroke-width="1"/>
+                <line x1="398" y1="392" x2="558" y2="182" stroke="white" stroke-width="2.5"/>
+                <!-- Net posts -->
+                <line x1="398" y1="420" x2="398" y2="390" stroke="white" stroke-width="3"/>
+                <line x1="558" y1="210" x2="558" y2="180" stroke="white" stroke-width="3"/>
+            </g>
+
+            <!-- ── SERVICE BOX (dashed outline on hazard floor) ── -->
+            <g class="court-feature" data-feature="service-box">
+                <polygon points="468,378 612,378 676,294 532,294" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" stroke-dasharray="6,4"/>
+                <text x="568" y="342" fill="rgba(255,255,255,0.12)" font-family="Inter, sans-serif" font-size="9" text-anchor="middle" transform="rotate(-19, 568, 342)">Service Box</text>
+            </g>
+
+            <!-- ── LABELS ── -->
+            <text x="280" y="330" fill="rgba(255,255,255,0.12)" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="600" letter-spacing="3" transform="rotate(-19, 280, 330)">SERVICE SIDE</text>
+            <text x="560" y="320" fill="rgba(255,255,255,0.12)" font-family="Space Grotesk, sans-serif" font-size="14" font-weight="600" letter-spacing="3" transform="rotate(-19, 560, 320)">HAZARD SIDE</text>
+
+            <text x="540" y="76" fill="rgba(255,255,255,0.25)" font-family="Space Grotesk, sans-serif" font-size="11" text-anchor="middle" letter-spacing="3">MAIN WALL</text>
+            <text x="380" y="460" fill="rgba(255,255,255,0.25)" font-family="Space Grotesk, sans-serif" font-size="10" text-anchor="middle" letter-spacing="2">GALLERY WALL (penthouse above, galleries below)</text>
+        </svg>
+    </div>
 
     <div class="feature-tooltip" id="feature-tooltip">
         <h4 id="tooltip-title"></h4>
@@ -992,6 +1149,74 @@
 
     <div class="callout">
         <strong>Key difference:</strong> The server's score is always called first - not the leader's. So "30-15" means the server has 30 and the receiver has 15, even if the receiver is winning the set.
+    </div>
+
+    <h3 style="margin-top:36px; margin-bottom:12px;">Reading the Scoreboard</h3>
+    <p style="margin-bottom:8px; color:var(--text-muted);">Here's how scores appear during a professional match:</p>
+
+    <div class="scoreboard-demo">
+        <svg viewBox="0 0 520 80" xmlns="http://www.w3.org/2000/svg">
+            <!-- Scoreboard background -->
+            <rect x="0" y="8" width="520" height="44" rx="6" fill="#1a3a6e"/>
+
+            <!-- Server name (left) -->
+            <rect x="2" y="10" width="175" height="40" rx="5" fill="#1e4080"/>
+            <text x="14" y="36" fill="white" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="600">CAMDEN RIVIERE</text>
+
+            <!-- Server sets -->
+            <rect x="182" y="10" width="30" height="40" fill="#2a5090"/>
+            <text x="197" y="37" fill="white" font-family="Space Grotesk, sans-serif" font-size="18" font-weight="700" text-anchor="middle">1</text>
+
+            <!-- Server points -->
+            <rect x="216" y="10" width="34" height="40" fill="#2a5090"/>
+            <text x="233" y="37" fill="white" font-family="Space Grotesk, sans-serif" font-size="18" font-weight="700" text-anchor="middle">00</text>
+
+            <!-- Center divider -->
+            <rect x="254" y="10" width="12" height="40" fill="#1a3a6e"/>
+            <line x1="260" y1="14" x2="260" y2="46" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+
+            <!-- Receiver points -->
+            <rect x="270" y="10" width="34" height="40" fill="#2a5090"/>
+            <text x="287" y="37" fill="#d4a853" font-family="Space Grotesk, sans-serif" font-size="18" font-weight="700" text-anchor="middle">30</text>
+
+            <!-- Receiver sets -->
+            <rect x="308" y="10" width="30" height="40" fill="#2a5090"/>
+            <text x="323" y="37" fill="white" font-family="Space Grotesk, sans-serif" font-size="18" font-weight="700" text-anchor="middle">1</text>
+
+            <!-- Receiver name (right) -->
+            <rect x="343" y="10" width="175" height="40" rx="5" fill="#1e4080"/>
+            <text x="355" y="36" fill="white" font-family="Space Grotesk, sans-serif" font-size="13" font-weight="600">JOHN LUMLEY</text>
+
+            <!-- "Better than last" indicator -->
+            <text x="100" y="64" fill="rgba(255,255,255,0.25)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle" letter-spacing="1">BETTER THAN LAST</text>
+
+            <!-- Annotation arrows -->
+            <!-- Server's score label -->
+            <line x1="233" y1="52" x2="233" y2="72" stroke="#d4a853" stroke-width="1"/>
+            <text x="233" y="78" fill="#d4a853" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">Server's pts</text>
+
+            <!-- Receiver's score label -->
+            <line x1="287" y1="52" x2="287" y2="72" stroke="#d4a853" stroke-width="1"/>
+            <text x="287" y="78" fill="#d4a853" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">Receiver's pts</text>
+
+            <!-- Sets labels -->
+            <line x1="197" y1="52" x2="197" y2="66" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+            <text x="197" y="74" fill="rgba(255,255,255,0.35)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">Sets</text>
+
+            <line x1="323" y1="52" x2="323" y2="66" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
+            <text x="323" y="74" fill="rgba(255,255,255,0.35)" font-family="Inter, sans-serif" font-size="8" text-anchor="middle">Sets</text>
+        </svg>
+
+        <div class="scoreboard-annotations">
+            <div class="scoreboard-note">
+                <strong>Server first</strong>
+                The marker calls "Love-30" - the server (Riviere) has 0, the receiver (Lumley) has 30.
+            </div>
+            <div class="scoreboard-note">
+                <strong>Chase indicator</strong>
+                "Better than last" means there's an active chase set near the Last Gallery - a good chase for the player who set it.
+            </div>
+        </div>
     </div>
 
     <h3 style="margin-top:40px; margin-bottom:16px;">Games and Sets</h3>
@@ -1036,6 +1261,151 @@
 
     <div class="callout">
         <strong>Key principle:</strong> Length over power. A deep, awkward bounce is almost always better than a fast, shallow one. "Even a bad railroad is a 25-handicap serve."
+    </div>
+
+    <h3 style="margin-top:40px; margin-bottom:12px;">The Serve Motion</h3>
+    <p style="margin-bottom:16px; color:var(--text-muted);">Unlike lawn tennis, the serve is an <strong style="color:var(--text-heading)">underarm stroke</strong>. The ball is scooped upward to hit the sloped penthouse roof, then drops into the service box on the other side of the net.</p>
+
+    <!-- Ball trajectory cross-section diagram -->
+    <div class="serve-trajectory">
+        <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg">
+            <!-- Court structure -->
+            <rect x="30" y="180" width="640" height="6" fill="#5c4a3a" rx="2"/>
+            <rect x="30" y="30" width="640" height="12" fill="#8b3a3a"/>
+            <polygon points="30,42 670,42 670,54 30,50" fill="#6a5a4a" opacity="0.9"/>
+            <line x1="30" y1="54" x2="670" y2="54" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+            <rect x="30" y="30" width="3" height="156" fill="#9b4545"/>
+            <rect x="667" y="30" width="3" height="156" fill="#7b2a2a"/>
+
+            <!-- Net -->
+            <line x1="335" y1="54" x2="335" y2="180" stroke="white" stroke-width="2"/>
+            <text x="335" y="196" fill="rgba(255,255,255,0.3)" font-size="10" text-anchor="middle" font-family="Space Grotesk, sans-serif" letter-spacing="1">NET</text>
+
+            <!-- Server figure (simplified) -->
+            <circle cx="140" cy="118" r="9" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>
+            <line x1="140" y1="127" x2="140" y2="158" stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>
+            <line x1="140" y1="158" x2="130" y2="179" stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>
+            <line x1="140" y1="158" x2="150" y2="179" stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>
+            <line x1="140" y1="136" x2="158" y2="126" stroke="rgba(255,255,255,0.55)" stroke-width="1.5"/>
+            <line x1="158" y1="126" x2="165" y2="112" stroke="rgba(255,255,255,0.7)" stroke-width="2"/>
+
+            <!-- Ball trajectory -->
+            <path d="M 168,110 C 250,30 370,38 430,48" fill="none" stroke="#d4a853" stroke-width="2.5" stroke-dasharray="6,4"/>
+            <line x1="430" y1="48" x2="565" y2="52" stroke="#d4a853" stroke-width="2.5"/>
+            <path d="M 565,52 Q 575,110 555,178" fill="none" stroke="#d4a853" stroke-width="2.5" stroke-dasharray="6,4"/>
+
+            <!-- Ball markers -->
+            <circle cx="168" cy="110" r="5" fill="#d4a853"/>
+            <circle cx="430" cy="48" r="5" fill="#d4a853"/>
+            <circle cx="565" cy="52" r="5" fill="#d4a853"/>
+            <circle cx="555" cy="178" r="5" fill="#d4a853"/>
+
+            <!-- Numbered labels -->
+            <circle cx="168" cy="96" r="8" fill="#d4a853"/>
+            <text x="168" y="100" fill="#0e0e18" font-size="10" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700">1</text>
+            <circle cx="430" cy="72" r="8" fill="#d4a853"/>
+            <text x="430" y="76" fill="#0e0e18" font-size="10" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700">2</text>
+            <circle cx="565" cy="72" r="8" fill="#d4a853"/>
+            <text x="565" y="76" fill="#0e0e18" font-size="10" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700">3</text>
+            <circle cx="555" cy="164" r="8" fill="#d4a853"/>
+            <text x="555" y="168" fill="#0e0e18" font-size="10" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700">4</text>
+
+            <!-- Service box outline -->
+            <rect x="460" y="155" width="150" height="25" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1" stroke-dasharray="4,3" rx="2"/>
+            <text x="535" y="148" fill="rgba(255,255,255,0.15)" font-size="8" text-anchor="middle" font-family="Inter, sans-serif">SERVICE BOX</text>
+
+            <!-- Side labels -->
+            <text x="170" y="220" fill="rgba(255,255,255,0.2)" font-size="10" text-anchor="middle" font-family="Space Grotesk, sans-serif" letter-spacing="2">SERVICE SIDE</text>
+            <text x="530" y="220" fill="rgba(255,255,255,0.2)" font-size="10" text-anchor="middle" font-family="Space Grotesk, sans-serif" letter-spacing="2">HAZARD SIDE</text>
+
+            <!-- Penthouse label -->
+            <text x="500" y="28" fill="rgba(255,255,255,0.2)" font-size="9" text-anchor="middle" font-family="Inter, sans-serif">PENTHOUSE ROOF</text>
+        </svg>
+        <div class="diagram-caption">Side view: the ball arcs from the server's hand (1), hits the penthouse (2), slides along the slope (3), and drops into the service box (4)</div>
+    </div>
+
+    <!-- 4-phase serve body motion breakdown -->
+    <div class="serve-phases">
+        <div class="serve-phase">
+            <div class="phase-figure">
+                <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="20" r="10" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="50" y1="30" x2="50" y2="68" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="50" y1="68" x2="38" y2="98" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="50" y1="68" x2="62" y2="98" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="50" y1="42" x2="30" y2="56" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <circle cx="28" cy="58" r="4" fill="#d4a853"/>
+                    <line x1="50" y1="42" x2="70" y2="36" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="70" y1="36" x2="72" y2="12" stroke="rgba(255,255,255,0.8)" stroke-width="2.5"/>
+                    <line x1="25" y1="100" x2="75" y2="100" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                </svg>
+            </div>
+            <span class="phase-num">1</span>
+            <h4>Ready</h4>
+            <p>Stand behind the service line. Ball in non-racket hand, racket held upright.</p>
+        </div>
+
+        <div class="serve-phase">
+            <div class="phase-figure">
+                <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="55" cy="28" r="10" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="55" y1="38" x2="45" y2="70" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="45" y1="70" x2="30" y2="98" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="45" y1="70" x2="58" y2="98" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="48" y1="50" x2="32" y2="42" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <circle cx="30" cy="55" r="4" fill="#d4a853" opacity="0.6"/>
+                    <line x1="30" y1="45" x2="30" y2="52" stroke="#d4a853" stroke-width="1" stroke-dasharray="2,2"/>
+                    <line x1="48" y1="50" x2="68" y2="68" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="68" y1="68" x2="76" y2="85" stroke="rgba(255,255,255,0.8)" stroke-width="2.5"/>
+                    <line x1="25" y1="100" x2="75" y2="100" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                </svg>
+            </div>
+            <span class="phase-num">2</span>
+            <h4>Drop & Load</h4>
+            <p>Bend forward, drop the ball in front. Racket swings low behind as the body coils.</p>
+        </div>
+
+        <div class="serve-phase">
+            <div class="phase-figure">
+                <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="48" cy="24" r="10" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="48" y1="34" x2="48" y2="68" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="48" y1="68" x2="34" y2="98" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="48" y1="68" x2="62" y2="98" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="48" y1="44" x2="70" y2="38" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="48" y1="44" x2="28" y2="58" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="28" y1="58" x2="18" y2="42" stroke="rgba(255,255,255,0.8)" stroke-width="2.5"/>
+                    <circle cx="16" cy="38" r="4" fill="#d4a853"/>
+                    <line x1="16" y1="32" x2="14" y2="18" stroke="#d4a853" stroke-width="1.5"/>
+                    <polygon points="14,14 10,22 18,22" fill="#d4a853"/>
+                    <line x1="25" y1="100" x2="75" y2="100" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                </svg>
+            </div>
+            <span class="phase-num">3</span>
+            <h4>The Scoop</h4>
+            <p>Sweep the racket forward and up under the ball. The underarm motion imparts backspin and loft.</p>
+        </div>
+
+        <div class="serve-phase">
+            <div class="phase-figure">
+                <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="20" r="10" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="50" y1="30" x2="50" y2="68" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="50" y1="68" x2="38" y2="98" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="50" y1="68" x2="62" y2="98" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="50" y1="42" x2="68" y2="56" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="50" y1="42" x2="34" y2="24" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                    <line x1="34" y1="24" x2="24" y2="8" stroke="rgba(255,255,255,0.8)" stroke-width="2.5"/>
+                    <circle cx="14" cy="5" r="4" fill="#d4a853"/>
+                    <line x1="20" y1="8" x2="26" y2="12" stroke="#d4a853" stroke-width="0.8" opacity="0.5"/>
+                    <line x1="18" y1="12" x2="24" y2="15" stroke="#d4a853" stroke-width="0.8" opacity="0.5"/>
+                    <line x1="25" y1="100" x2="75" y2="100" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                </svg>
+            </div>
+            <span class="phase-num">4</span>
+            <h4>Follow-through</h4>
+            <p>Racket arm finishes high. Watch the ball arc toward the penthouse. Weight on front foot.</p>
+        </div>
     </div>
 
     <h3 style="margin-top:40px; margin-bottom:8px;">The 9 Serve Types</h3>
@@ -1202,13 +1572,101 @@
         </li>
         <li>
             <span class="check">&#10003;</span>
-            <div><strong>Tambour</strong> - The angled buttress on the main wall. Balls hitting the tambour deflect at unpredictable angles, creating some of the most dramatic moments in the game.</div>
+            <div><strong>Tambour</strong> - The angled buttress at the hazard end of the main wall, right next to the grille. Balls hitting the tambour deflect at unpredictable angles, creating some of the most dramatic moments in the game.</div>
         </li>
         <li>
             <span class="check">&#10003;</span>
             <div><strong>Volley or one bounce</strong> - Same rule as lawn tennis: you can volley or play after one bounce. If the ball bounces twice, it sets a chase (more on that next).</div>
         </li>
     </ul>
+
+    <h3 style="margin-top:40px; margin-bottom:12px;">Rally in Action</h3>
+    <p style="margin-bottom:8px; color:var(--text-muted);">Here's what a typical rally looks like from above - both players using the walls, penthouse, and galleries:</p>
+
+    <div class="match-visual">
+        <svg viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">
+            <!-- Court floor -->
+            <rect x="30" y="30" width="640" height="220" rx="4" fill="#5c4a3a"/>
+
+            <!-- Chase lines -->
+            <line x1="115" y1="30" x2="115" y2="250" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="175" y1="30" x2="175" y2="250" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="235" y1="30" x2="235" y2="250" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="295" y1="30" x2="295" y2="250" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="415" y1="30" x2="415" y2="250" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="475" y1="30" x2="475" y2="250" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="535" y1="30" x2="535" y2="250" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+            <line x1="595" y1="30" x2="595" y2="250" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+            <!-- Main wall (top) -->
+            <rect x="30" y="20" width="640" height="12" fill="#8b3a3a" rx="2"/>
+
+            <!-- Gallery wall (bottom) -->
+            <rect x="30" y="248" width="640" height="12" fill="#8b3a3a" rx="2"/>
+
+            <!-- Penthouse strip -->
+            <rect x="30" y="240" width="640" height="10" fill="#6a5a4a" opacity="0.6"/>
+
+            <!-- Galleries (bottom edge) -->
+            <rect x="85" y="248" width="40" height="10" fill="#1a1010" rx="1"/>
+            <rect x="135" y="248" width="40" height="10" fill="#1a1010" rx="1"/>
+            <rect x="195" y="248" width="25" height="10" fill="#1a1010" rx="1"/>
+            <rect x="230" y="248" width="40" height="10" fill="#1a1010" rx="1"/>
+            <rect x="388" y="248" width="40" height="10" fill="#d4a853" opacity="0.4" rx="1"/>
+            <rect x="438" y="248" width="40" height="10" fill="#1a1010" rx="1"/>
+            <rect x="498" y="248" width="25" height="10" fill="#1a1010" rx="1"/>
+            <rect x="533" y="248" width="40" height="10" fill="#1a1010" rx="1"/>
+
+            <!-- Net -->
+            <line x1="350" y1="30" x2="350" y2="250" stroke="white" stroke-width="2.5"/>
+
+            <!-- Dedans (service end) -->
+            <rect x="30" y="70" width="10" height="130" fill="#d4a853" opacity="0.5" rx="1"/>
+
+            <!-- Grille (hazard end, near main wall) -->
+            <rect x="660" y="32" width="10" height="55" fill="#d4a853" opacity="0.5" rx="1"/>
+
+            <!-- Tambour (hazard end, angled projection) -->
+            <polygon points="660,30 660,60 648,65 648,35" fill="#7b3535" stroke="#5b1818" stroke-width="0.5"/>
+
+            <!-- Service box -->
+            <rect x="400" y="100" width="190" height="120" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,3" rx="2"/>
+
+            <!-- Player A (server, service side) -->
+            <circle cx="220" cy="160" r="14" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+            <text x="220" y="165" fill="white" font-size="11" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="600">A</text>
+
+            <!-- Player B (receiver, hazard side) -->
+            <circle cx="500" cy="130" r="14" fill="rgba(212,168,83,0.15)" stroke="#d4a853" stroke-width="1.5"/>
+            <text x="500" y="135" fill="#d4a853" font-size="11" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="600">B</text>
+
+            <!-- Rally ball path -->
+            <!-- Shot 1: B hits to main wall -->
+            <circle cx="500" cy="100" r="4" fill="#d4a853" opacity="0.4"/>
+            <path d="M 500,100 L 460,34" fill="none" stroke="#d4a853" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+
+            <!-- Shot 2: off main wall toward service side -->
+            <path d="M 460,34 L 250,80" fill="none" stroke="#d4a853" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5"/>
+
+            <!-- Shot 3: A returns cross-court -->
+            <path d="M 250,80 Q 350,200 520,190" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+            <!-- Current ball position -->
+            <circle cx="520" cy="190" r="6" fill="#d4a853">
+                <animate attributeName="opacity" values="1;0.5;1" dur="1.5s" repeatCount="indefinite"/>
+            </circle>
+
+            <!-- Labels -->
+            <text x="190" y="18" fill="rgba(255,255,255,0.2)" font-size="10" text-anchor="middle" font-family="Space Grotesk, sans-serif" letter-spacing="2">SERVICE SIDE</text>
+            <text x="510" y="18" fill="rgba(255,255,255,0.2)" font-size="10" text-anchor="middle" font-family="Space Grotesk, sans-serif" letter-spacing="2">HAZARD SIDE</text>
+
+            <!-- Feature labels (small) -->
+            <text x="36" y="140" fill="rgba(212,168,83,0.4)" font-size="8" font-family="Inter, sans-serif" transform="rotate(-90, 36, 140)">DEDANS</text>
+            <text x="662" y="57" fill="rgba(212,168,83,0.4)" font-size="7" font-family="Inter, sans-serif" transform="rotate(-90, 662, 57)">GRILLE</text>
+            <text x="408" y="268" fill="rgba(212,168,83,0.4)" font-size="7" font-family="Inter, sans-serif">W.GAL</text>
+        </svg>
+        <div class="diagram-caption">Bird's-eye view of a rally. Player B hits off the main wall (gold path), Player A returns cross-court (white path). The ball, walls, and openings are all in play.</div>
+    </div>
 
     <h3 style="margin-top:48px; margin-bottom:16px;">Three Winning Targets</h3>
     <p style="margin-bottom:20px;">Hit the ball into any of these and you win the point outright - no questions asked:</p>
@@ -1376,7 +1834,7 @@
         </div>
         <div class="glossary-item">
             <h4>Tambour</h4>
-            <p>Angled buttress on the main wall, hazard side near the net. Creates unpredictable deflections.</p>
+            <p>Angled buttress at the hazard end of the main wall, next to the grille. Creates unpredictable deflections.</p>
         </div>
         <div class="glossary-item">
             <h4>Winning Gallery</h4>
@@ -1493,8 +1951,8 @@
         },
         'tambour': {
             title: 'Tambour',
-            desc: 'An angled buttress projecting from the main wall into the court, located on the hazard side near the net. When the ball hits the tambour, it deflects at unpredictable angles, creating chaotic situations. Good players use the tambour as a weapon; it is one of the most exciting features of the court.',
-            comparison: 'No equivalent in any other racket sport. Imagine a wall that kicks the ball sideways at crazy angles.'
+            desc: 'An angled buttress projecting from the main wall into the court at the hazard end, right next to the grille. Balls struck towards the grille threaten to hit either the tambour or the grille, forcing the receiver to judge which to defend. When the ball hits the tambour, it deflects at unpredictable angles.',
+            comparison: 'No equivalent in any other racket sport. Imagine an angled wall that kicks the ball sideways at wild angles - right next to a winning target.'
         },
         'service-box': {
             title: 'Service Box',
