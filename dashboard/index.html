@@ -6,18 +6,32 @@
 <title>AI Classroom Listener — Professor Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
+:root {
+  --bg: #0a0a0a; --card: #111; --border: #1a1a1a; --border2: #222;
+  --text: #e6e6e6; --muted: #555; --gold: #d4a843;
+  --silent: #1a1a1a; --shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  background: #0a0a0a; color: #e0e0e0; font-family: 'DM Sans', sans-serif;
+  background: radial-gradient(1200px 600px at 70% -10%, rgba(212,168,67,0.06), transparent 60%),
+              radial-gradient(900px 600px at 10% 10%, rgba(255,255,255,0.03), transparent 60%),
+              var(--bg);
+  color: var(--text); font-family: 'DM Sans', sans-serif;
   min-height: 100vh; overflow-x: hidden;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Header */
 .dash-header {
   position: sticky; top: 0; z-index: 50;
   background: rgba(10,10,10,0.95); backdrop-filter: blur(12px);
-  border-bottom: 1px solid #1a1a1a;
+  border-bottom: 1px solid var(--border);
   padding: 16px 32px; display: flex; align-items: center; gap: 24px;
+  flex-wrap: wrap;
 }
 .logo {
   font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500;
@@ -27,7 +41,7 @@ body {
 .section-pills { display: flex; gap: 4px; margin-left: 16px; }
 .section-pill {
   font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.08em;
-  padding: 4px 10px; border-radius: 3px; background: #111; border: 1px solid #1a1a1a;
+  padding: 4px 10px; border-radius: 999px; background: #111; border: 1px solid #1a1a1a;
   color: #333; cursor: default; text-transform: uppercase;
 }
 .section-pill.active { color: #d4a843; border-color: #d4a843; background: rgba(212,168,67,0.08); cursor: pointer; }
@@ -41,15 +55,33 @@ body {
 .tab-btn:hover { color: #888; }
 .tab-btn.active { color: #d4a843; border-color: #222; background: #111; }
 
+/* Course selector */
+.course-bar {
+  display: flex; gap: 6px; padding: 10px 32px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,10,10,0.85); backdrop-filter: blur(8px);
+  overflow-x: auto; flex-wrap: wrap;
+}
+.course-pill {
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 5px 14px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--border);
+  color: #333; cursor: default; white-space: nowrap; transition: all 0.2s;
+}
+.course-pill.active {
+  color: var(--gold); border-color: var(--gold);
+  background: rgba(212,168,67,0.08); cursor: pointer;
+}
+
 /* Tab content */
 .tab-content { display: none; padding: 24px 32px 48px; }
-.tab-content.active { display: block; }
+.tab-content.active { display: block; animation: fadeIn 200ms ease; }
 
 /* Session picker */
 .session-picker { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
 .session-pill {
   font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.04em;
-  padding: 8px 16px; border-radius: 4px; background: #111; border: 1px solid #1a1a1a;
+  padding: 8px 16px; border-radius: 999px; background: #111; border: 1px solid #1a1a1a;
   color: #555; cursor: pointer; transition: all 0.2s;
 }
 .session-pill:hover { color: #888; border-color: #333; }
@@ -94,7 +126,7 @@ body {
   font-family: 'JetBrains Mono', monospace; font-size: 8px; color: #333;
   cursor: pointer; transition: all 0.2s; position: relative;
 }
-.heatmap-seat:hover { border-color: #444; z-index: 2; }
+.heatmap-seat:hover { border-color: #444; z-index: 2; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
 .heatmap-seat.gold { background: rgba(212,168,67,0.25); border-color: rgba(212,168,67,0.4); color: #d4a843; }
 .heatmap-seat.warm { background: rgba(212,168,67,0.12); border-color: rgba(212,168,67,0.2); color: #886a2a; }
 .heatmap-seat.dim { background: rgba(212,168,67,0.05); border-color: rgba(212,168,67,0.1); color: #554420; }
@@ -180,7 +212,7 @@ body {
 }
 .sort-btn {
   font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.06em;
-  text-transform: uppercase; padding: 5px 12px; border-radius: 3px;
+  text-transform: uppercase; padding: 5px 12px; border-radius: 999px;
   background: #111; border: 1px solid #1a1a1a; color: #555; cursor: pointer;
   transition: all 0.2s;
 }
@@ -289,7 +321,7 @@ body {
 .card-trait {
   font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.06em;
   text-transform: uppercase; color: #888; background: rgba(212,168,67,0.08);
-  border: 1px solid rgba(212,168,67,0.15); padding: 3px 10px; border-radius: 3px;
+  border: 1px solid rgba(212,168,67,0.15); padding: 3px 10px; border-radius: 999px;
 }
 .card-sparkline { margin-bottom: 20px; }
 .card-sparkline-title {
@@ -316,6 +348,36 @@ body {
   font-family: 'JetBrains Mono', monospace; font-size: 8px; color: #555;
   letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px;
 }
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .dash-header { padding: 12px 16px; gap: 12px; }
+  .course-bar { padding: 8px 16px; }
+  .tab-content { padding: 16px; }
+  .lb-name { width: 140px; }
+  .ov-col.name { width: 150px; }
+  .heatmap-seat { width: 36px; height: 28px; font-size: 7px; }
+}
+@media (max-width: 720px) {
+  .dash-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .section-pills { margin-left: 0; }
+  .tab-nav { margin-left: 0; width: 100%; }
+  .tab-btn { flex: 1; text-align: center; }
+  .course-bar { padding: 8px 12px; gap: 4px; }
+  .course-pill { font-size: 8px; padding: 4px 10px; }
+  .tab-content { padding: 12px; }
+  .session-title { font-size: 18px; }
+  .session-meta { flex-wrap: wrap; }
+  .heatmap-seat { width: 28px; height: 24px; font-size: 6px; }
+  .heatmap-row { gap: 2px; }
+  .heatmap-row-label { width: 30px; font-size: 7px; }
+  .lb-name { width: 100px; font-size: 12px; }
+  .ov-col.name { width: 120px; }
+  #profile-card { padding: 20px; }
+  .card-photo { width: 56px; height: 56px; }
+  .card-name { font-size: 17px; }
+  .card-stats { flex-wrap: wrap; gap: 16px; }
+}
 </style>
 </head>
 <body>
@@ -335,6 +397,16 @@ body {
     <button class="tab-btn" data-tab="section">Section</button>
     <button class="tab-btn" data-tab="trends">Trends</button>
   </div>
+</div>
+
+<!-- Course selector -->
+<div class="course-bar">
+  <div class="course-pill">Financial Accounting</div>
+  <div class="course-pill">Financial Markets &amp; Valuation</div>
+  <div class="course-pill">Intro to Strategy</div>
+  <div class="course-pill active">Organisational Behaviour</div>
+  <div class="course-pill">Prices &amp; Markets</div>
+  <div class="course-pill">Uncertainty, Data &amp; Judgment</div>
 </div>
 
 <!-- Tab 1: Sessions -->
