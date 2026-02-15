@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timelapse v3 — Bar Chart Race</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0a0a0a;
+  color: #e0e0e0;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+#header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 20px 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  z-index: 10;
+}
+
+#header h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #d4a843;
+}
+
+#session-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #555;
+  letter-spacing: 0.05em;
+}
+#session-display span { color: #888; font-weight: 500; }
+
+/* Big session number watermark */
+#session-watermark {
+  position: fixed;
+  right: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 180px;
+  font-weight: 700;
+  color: rgba(212, 168, 67, 0.06);
+  z-index: 0;
+  pointer-events: none;
+  line-height: 1;
+  transition: opacity 0.4s;
+}
+
+/* Race container */
+#race {
+  flex: 1;
+  padding: 60px 36px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.race-row {
+  display: flex;
+  align-items: center;
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: top 0.8s cubic-bezier(0.22, 1, 0.36, 1), height 0.4s ease, opacity 0.4s ease;
+  position: absolute;
+  left: 36px;
+  right: 36px;
+}
+
+.race-row.visible {
+  height: 36px;
+  opacity: 1;
+}
+
+.race-rank {
+  width: 28px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #555;
+  text-align: right;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.race-rank.top { color: #d4a843; }
+
+.race-name {
+  width: 180px;
+  font-size: 13px;
+  font-weight: 400;
+  color: #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  margin-right: 12px;
+  transition: color 0.4s;
+}
+
+.race-name.highlight { color: #e8e8e8; font-weight: 500; }
+.race-name.gold { color: #d4a843; font-weight: 600; }
+
+.race-bar-container {
+  flex: 1;
+  height: 22px;
+  position: relative;
+  margin-right: 12px;
+}
+
+.race-bar {
+  height: 100%;
+  border-radius: 0 3px 3px 0;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1), background 0.8s ease, box-shadow 0.8s ease;
+  position: relative;
+  min-width: 2px;
+}
+
+.race-bar.glow {
+  box-shadow: 0 0 12px rgba(212, 168, 67, 0.3);
+}
+
+.race-bar-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 0 3px 3px 0;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1), background 0.8s ease;
+}
+
+.race-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #666;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: right;
+  transition: color 0.4s;
+}
+
+.race-value.highlight { color: #d4a843; }
+
+/* Archetype tag */
+.race-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #444;
+  margin-left: 8px;
+  flex-shrink: 0;
+  width: 100px;
+  transition: color 0.4s, opacity 0.4s;
+  opacity: 0;
+}
+
+.race-tag.visible { opacity: 1; }
+.race-tag.gold { color: #d4a843; }
+
+/* Cycling insight */
+#insight {
+  position: fixed;
+  bottom: 70px;
+  left: 36px;
+  right: 36px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #666;
+  z-index: 10;
+  transition: opacity 0.5s;
+  line-height: 1.6;
+}
+#insight .hl { color: #d4a843; font-weight: 500; }
+#insight .ghost { color: #555; }
+
+/* Timeline */
+#timeline {
+  height: 42px;
+  padding: 0 36px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+#timeline-track {
+  width: 100%;
+  height: 1px;
+  background: #1a1a1a;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.session-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #333;
+  position: relative;
+  transition: background 0.4s, box-shadow 0.4s, width 0.3s, height 0.3s;
+  z-index: 2;
+}
+.session-dot.active { background: #888; }
+.session-dot.current { background: #d4a843; box-shadow: 0 0 8px rgba(212, 168, 67, 0.4); width: 5px; height: 5px; }
+
+.session-dot .session-num {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: #333;
+  transition: color 0.4s;
+}
+.session-dot.active .session-num,
+.session-dot.current .session-num { color: #666; }
+
+#timeline-progress {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #444, #d4a843);
+  transform: translateY(-50%);
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
+}
+
+/* End tagline */
+#tagline {
+  position: fixed;
+  bottom: 110px;
+  left: 0; right: 0;
+  text-align: center;
+  z-index: 20;
+  pointer-events: none;
+}
+
+#tagline-main {
+  font-size: 22px;
+  font-weight: 300;
+  color: #e8e8e8;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+#tagline-main.visible { opacity: 1; transform: translateY(0); }
+
+#tagline-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #555;
+  letter-spacing: 0.08em;
+  margin-top: 10px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+#tagline-sub.visible { opacity: 1; }
+
+/* Replay */
+#replay-btn {
+  position: fixed;
+  bottom: 12px;
+  right: 36px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: #444;
+  background: none;
+  border: 1px solid #222;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.6s, color 0.3s, border-color 0.3s;
+  letter-spacing: 0.06em;
+}
+#replay-btn:hover { color: #888; border-color: #444; }
+#replay-btn.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h1>Timelapse</h1>
+  <div id="session-display">SESSION <span id="session-num">--</span></div>
+</div>
+
+<div id="session-watermark">--</div>
+
+<div id="race"></div>
+
+<div id="insight"></div>
+
+<div id="tagline">
+  <div id="tagline-main">Every other tool takes a photograph. We make a timelapse.</div>
+  <div id="tagline-sub">48 students · 14 sessions · 165 transcripts · One microphone</div>
+</div>
+
+<div id="timeline">
+  <div id="timeline-track">
+    <div id="timeline-progress"></div>
+  </div>
+</div>
+
+<button id="replay-btn">&#8635; REPLAY</button>
+
+<script>
+const SESSIONS = 14;
+const VISIBLE_BARS = 15;
+
+const students = [
+  { name: 'Chris Johnson', arch: 'All-Rounder', files: 16, high: 17, total: 24, isNumberOne: true },
+  { name: 'Andrew Bauer', arch: 'All-Rounder', files: 16, high: 22, total: 30 },
+  { name: 'Nick Colbourne', arch: 'All-Rounder', files: 14, high: 12, total: 16 },
+  { name: 'Francisco Wenceslau', arch: 'All-Rounder', files: 14, high: 10, total: 17 },
+  { name: 'Felix Bestehorn', arch: 'All-Rounder', files: 14, high: 10, total: 17 },
+  { name: 'Guillermo Krauch', arch: '100% Hit Rate', files: 7, high: 7, total: 8 },
+  { name: 'Eva Domazet', arch: 'High Hit Rate', files: 9, high: 7, total: 11 },
+  { name: 'Jessica Rea', arch: 'Steady', files: 9, high: 7, total: 12 },
+  { name: 'Rafael Fernandez', arch: 'Steady', files: 9, high: 5, total: 10 },
+  { name: 'Katie Holmes', arch: 'Steady', files: 7, high: 5, total: 8 },
+  { name: 'Justin Uffelman', arch: 'Steady', files: 5, high: 5, total: 6 },
+  { name: 'Michelle Baaklini', arch: 'Moderate', files: 7, high: 2, total: 4 },
+  { name: 'Thomas De Luca', arch: 'Late Bloomer', files: 4, high: 3, total: 6 },
+  { name: 'Gonzalo Salazar', arch: 'Late Bloomer', files: 4, high: 4, total: 5 },
+  { name: 'Sander Goudriaan', arch: '100% Hit Rate', files: 3, high: 3, total: 3 },
+  { name: 'Lars Ballhausen', arch: 'High Hit Rate', files: 3, high: 2, total: 3 },
+  { name: 'Vernes Rasidkadic', arch: 'High Hit Rate', files: 2, high: 2, total: 2 },
+  { name: 'Karim Hafez', arch: 'Group Strong', files: 6, high: 1, total: 1 },
+  { name: 'Fatima Dashe', arch: 'Moderate', files: 4, high: 3, total: 4 },
+  { name: 'Xenia Postnikova', arch: 'Moderate', files: 2, high: 2, total: 2 },
+  { name: 'Claire Maybank', arch: 'One-Shot Wonder', files: 1, high: 1, total: 1 },
+  { name: 'Tanya Saharya', arch: 'Moderate', files: 2, high: 1, total: 2 },
+  { name: 'Wagner De Oliveira', arch: 'Moderate', files: 3, high: 1, total: 2 },
+  { name: 'Alan Schilis', arch: 'Moderate', files: 3, high: 1, total: 2 },
+  { name: 'Habib Iravani', arch: 'Loud but Shallow', files: 4, high: 0, total: 0 },
+];
+
+// Generate cumulative score per session
+function generateScores(student) {
+  const scores = [];
+  let cumulative = 0;
+  const hitRate = student.total > 0 ? student.high / student.total : 0;
+  const maxPerSession = student.total / Math.max(1, student.files);
+
+  for (let s = 0; s < SESSIONS; s++) {
+    const t = (s + 1) / SESSIONS;
+    let sessionScore = 0;
+
+    if (student.arch === 'One-Shot Wonder') {
+      sessionScore = s === 7 ? 3 : 0;
+    } else if (student.arch === 'Late Bloomer') {
+      const inflect = 0.55;
+      if (t < inflect) {
+        sessionScore = maxPerSession * 0.15 * Math.random();
+      } else {
+        sessionScore = maxPerSession * (0.6 + 0.4 * Math.pow((t - inflect) / (1 - inflect), 0.6)) * (0.7 + 0.3 * Math.random());
+      }
+    } else if (student.arch === 'Loud but Shallow') {
+      sessionScore = maxPerSession * 0.8 * (0.5 + 0.5 * Math.random());
+    } else {
+      const growth = Math.pow(t, 0.4 + Math.random() * 0.3);
+      sessionScore = maxPerSession * growth * (0.6 + 0.4 * Math.random());
+    }
+
+    // Weight by hit rate for quality score
+    const qualityScore = sessionScore * (0.3 + 0.7 * hitRate);
+    cumulative += qualityScore;
+    scores.push(Math.round(cumulative * 10) / 10);
+  }
+  return scores;
+}
+
+// Build data
+const data = students.map(s => ({
+  ...s,
+  scores: generateScores(s)
+}));
+
+// Color based on hit rate
+function getBarColor(student, intensity) {
+  const hitRate = student.total > 0 ? student.high / student.total : 0;
+  const t = Math.min(1, hitRate);
+  const r = Math.round(90 + t * 122);
+  const g = Math.round(90 + t * 78);
+  const b = Math.round(95 - t * 28);
+  return `rgb(${r},${g},${b})`;
+}
+
+function getOuterColor() {
+  return 'rgba(60, 60, 65, 0.5)';
+}
+
+// Cycling insights per session
+const insights = [
+  '<span class="hl">Session 1</span> — First contributions. The race begins.',
+  'Andrew Bauer leads early with volume. <span class="hl">Chris Johnson</span> close behind.',
+  '<span class="hl">Guillermo Krauch</span> enters: 7 contributions, <span class="hl">7 validated. 100% hit rate.</span>',
+  'The All-Rounders begin to separate from the pack.',
+  '<span class="hl">Eva Domazet</span>: professor turned her point into a key teaching moment.',
+  'Mid-term. The top 5 now hold <span class="hl">64% of validated contributions</span>.',
+  '<span class="hl">Nick Colbourne</span> asked one question about ARM pricing. It became the structure of the entire lecture.',
+  '<span class="hl">Claire Maybank</span> makes one contribution. Professor references it <span class="hl">3 times</span> in the same session.',
+  'Late bloomers <span class="hl">Thomas De Luca</span> and <span class="hl">Gonzalo Salazar</span> start their climb.',
+  '<span class="hl">Sander Goudriaan</span>: 3 contributions. 3 validations. <span class="hl">"The logic is exactly what Sanders is talking about"</span>',
+  'The quiet middle — consistent contributors carving their lane.',
+  '<span class="hl">Chris Johnson</span> pulls clear at #1. The system sees what the notebook missed.',
+  'Final sessions. The trajectories are locked in.',
+  '<span class="hl">Chris Johnson: #1.</span> Identified by the system. <span class="hl">Confirmed by professors.</span>',
+];
+
+// Create DOM
+const raceContainer = document.getElementById('race');
+const rows = [];
+
+data.forEach((student, i) => {
+  const row = document.createElement('div');
+  row.className = 'race-row';
+  row.id = `row-${i}`;
+  row.innerHTML = `
+    <div class="race-rank" id="rank-${i}"></div>
+    <div class="race-name" id="name-${i}">${student.name}</div>
+    <div class="race-bar-container">
+      <div class="race-bar" id="bar-${i}" style="background: ${getOuterColor()}">
+        <div class="race-bar-inner" id="bar-inner-${i}"></div>
+      </div>
+    </div>
+    <div class="race-value" id="val-${i}">0</div>
+    <div class="race-tag" id="tag-${i}">${student.arch}</div>
+  `;
+  raceContainer.appendChild(row);
+  rows.push(row);
+});
+
+// Timeline
+const timelineTrack = document.getElementById('timeline-track');
+for (let s = 1; s <= SESSIONS; s++) {
+  const dot = document.createElement('div');
+  dot.className = 'session-dot';
+  dot.id = `dot-${s}`;
+  dot.innerHTML = `<span class="session-num">${s}</span>`;
+  timelineTrack.appendChild(dot);
+}
+
+// Get max score for scaling
+function getMaxScore(session) {
+  return Math.max(...data.map(d => d.scores[session]));
+}
+
+// Sort and rank
+function getRanked(session) {
+  return data
+    .map((d, i) => ({ ...d, idx: i, score: d.scores[session] }))
+    .sort((a, b) => b.score - a.score);
+}
+
+// Update
+const ROW_HEIGHT = 38;
+const TOP_OFFSET = 60;
+
+function updateSession(session) {
+  const ranked = getRanked(session);
+  const maxScore = getMaxScore(session);
+
+  // Update watermark
+  document.getElementById('session-watermark').textContent = (session + 1).toString().padStart(2, '0');
+  document.getElementById('session-num').textContent = (session + 1).toString().padStart(2, '0');
+
+  // Timeline
+  const progress = ((session + 1) / SESSIONS) * 100;
+  document.getElementById('timeline-progress').style.width = progress + '%';
+  for (let s = 1; s <= SESSIONS; s++) {
+    const dot = document.getElementById(`dot-${s}`);
+    dot.className = 'session-dot';
+    if (s <= session + 1) dot.classList.add('active');
+    if (s === session + 1) dot.classList.add('current');
+  }
+
+  // Insight
+  const insightEl = document.getElementById('insight');
+  insightEl.style.opacity = '0';
+  setTimeout(() => {
+    insightEl.innerHTML = insights[session] || '';
+    insightEl.style.opacity = '1';
+  }, 300);
+
+  ranked.forEach((student, rank) => {
+    const i = student.idx;
+    const row = document.getElementById(`row-${i}`);
+    const isVisible = rank < VISIBLE_BARS;
+
+    if (isVisible) {
+      row.classList.add('visible');
+      row.style.top = (TOP_OFFSET + rank * ROW_HEIGHT) + 'px';
+    } else {
+      row.classList.remove('visible');
+    }
+
+    // Rank number
+    const rankEl = document.getElementById(`rank-${i}`);
+    rankEl.textContent = rank + 1;
+    rankEl.className = 'race-rank' + (rank < 3 ? ' top' : '');
+
+    // Name styling
+    const nameEl = document.getElementById(`name-${i}`);
+    nameEl.className = 'race-name';
+    if (student.isNumberOne && session >= 10) nameEl.classList.add('gold');
+    else if (rank < 5) nameEl.classList.add('highlight');
+
+    // Bar width
+    const barWidth = maxScore > 0 ? (student.score / maxScore) * 100 : 0;
+    const bar = document.getElementById(`bar-${i}`);
+    bar.style.width = barWidth + '%';
+
+    // Inner bar (quality portion)
+    const hitRate = student.total > 0 ? student.high / student.total : 0;
+    const innerBar = document.getElementById(`bar-inner-${i}`);
+    innerBar.style.width = (hitRate * 100) + '%';
+    innerBar.style.background = getBarColor(student, 1);
+
+    // Glow for #1
+    bar.className = 'race-bar';
+    if (rank === 0 && session >= 8) bar.classList.add('glow');
+
+    // Value
+    const valEl = document.getElementById(`val-${i}`);
+    valEl.textContent = Math.round(student.score);
+    valEl.className = 'race-value' + (rank < 3 ? ' highlight' : '');
+
+    // Tag
+    const tagEl = document.getElementById(`tag-${i}`);
+    tagEl.className = 'race-tag';
+    if (isVisible && session >= 4) tagEl.classList.add('visible');
+    if (rank === 0) tagEl.classList.add('gold');
+  });
+}
+
+// Animation
+function runAnimation() {
+  // Reset
+  document.getElementById('tagline-main').classList.remove('visible');
+  document.getElementById('tagline-sub').classList.remove('visible');
+  document.getElementById('replay-btn').classList.remove('visible');
+  document.getElementById('timeline-progress').style.width = '0%';
+  document.getElementById('insight').innerHTML = '';
+
+  rows.forEach(r => {
+    r.classList.remove('visible');
+  });
+
+  for (let s = 1; s <= SESSIONS; s++) {
+    document.getElementById(`dot-${s}`).className = 'session-dot';
+  }
+
+  // Regenerate scores for variety on replay
+  data.forEach(d => {
+    d.scores = generateScores(d);
+  });
+
+  let session = 0;
+  function next() {
+    updateSession(session);
+    session++;
+    if (session >= SESSIONS) {
+      setTimeout(() => {
+        document.getElementById('insight').style.opacity = '0';
+        setTimeout(() => {
+          document.getElementById('tagline-main').classList.add('visible');
+        }, 600);
+        setTimeout(() => {
+          document.getElementById('tagline-sub').classList.add('visible');
+        }, 1800);
+        setTimeout(() => {
+          document.getElementById('replay-btn').classList.add('visible');
+        }, 3000);
+      }, 1500);
+    } else {
+      const delay = session < 3 ? 800 : session < 7 ? 1100 : 1300;
+      setTimeout(next, delay);
+    }
+  }
+
+  setTimeout(next, 600);
+}
+
+document.getElementById('replay-btn').addEventListener('click', runAnimation);
+
+// Start
+setTimeout(runAnimation, 500);
+</script>
+</body>
+</html>
