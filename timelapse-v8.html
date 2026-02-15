@@ -732,31 +732,31 @@ const SESSION_INFO = [
 // gpa = predicted GPA on INSEAD's 0-5 scale (mean 3.0, Z-curve distribution)
 // Based on: contribution quality, hit rate, analytical depth, professor engagement
 const students = [
-  { name: 'Chris Johnson', arch: 'All-Rounder', gpa: 3.8, total: 24, high: 17, isNumberOne: true },
-  { name: 'Andrew Bauer', arch: 'Volume Player', gpa: 2.8, total: 30, high: 12 },
-  { name: 'Nick Colbourne', arch: 'All-Rounder', gpa: 3.6, total: 16, high: 12 },
-  { name: 'Francisco Wenceslau', arch: 'All-Rounder', gpa: 3.1, total: 17, high: 10 },
-  { name: 'Felix Fotso Kuate', arch: 'All-Rounder', gpa: 3.1, total: 17, high: 10 },
-  { name: 'Guillermo Krauch', arch: '100% Hit Rate', gpa: 3.5, total: 8, high: 7 },
-  { name: 'Eva Sinha', arch: 'High Hit Rate', gpa: 3.3, total: 11, high: 7 },
-  { name: 'Jessica Dill', arch: 'Steady', gpa: 3.0, total: 12, high: 7 },
-  { name: 'Rafael Fernandez', arch: 'Steady', gpa: 3.0, total: 10, high: 5 },
-  { name: 'Katie Anderson', arch: 'Steady', gpa: 3.0, total: 8, high: 5 },
-  { name: 'Justin Uffelman', arch: 'Steady', gpa: 3.3, total: 6, high: 5 },
-  { name: 'Michelle Baaklini', arch: 'Moderate', gpa: 2.7, total: 4, high: 2 },
-  { name: 'Thomas Mulwa', arch: 'Late Bloomer', gpa: 2.9, total: 6, high: 3 },
-  { name: 'Gonzalo Salazar', arch: 'Late Bloomer', gpa: 3.2, total: 5, high: 4 },
-  { name: 'Sander Goudriaan', arch: '100% Hit Rate', gpa: 3.6, total: 3, high: 3 },
-  { name: 'Lars Ballhausen', arch: 'High Hit Rate', gpa: 2.9, total: 3, high: 2 },
-  { name: 'Vernes Rasidkadic', arch: 'High Hit Rate', gpa: 3.5, total: 2, high: 2 },
-  { name: 'Karim Hafez', arch: 'Group Strong', gpa: 2.5, total: 4, high: 0 },
-  { name: 'Fatima Dashe', arch: 'Moderate', gpa: 3.1, total: 4, high: 3 },
-  { name: 'Xenia Postnikova', arch: 'Moderate', gpa: 3.0, total: 2, high: 2 },
-  { name: 'Claire Maybank', arch: 'One-Shot Wonder', gpa: 3.2, total: 1, high: 1 },
-  { name: 'Tanya Saharya', arch: 'Moderate', gpa: 2.8, total: 2, high: 1 },
-  { name: 'Wagner De Oliveira', arch: 'Moderate', gpa: 2.7, total: 2, high: 1 },
-  { name: 'Alan Schilis', arch: 'Moderate', gpa: 2.6, total: 2, high: 1 },
-  { name: 'Habib Iravani', arch: 'Loud but Shallow', gpa: 2.4, total: 5, high: 0 },
+  { name: 'Chris Johnson', arch: 'All-Rounder', gpa: 3.8, actualGpa: 3.7, total: 24, high: 17, isNumberOne: true },
+  { name: 'Andrew Bauer', arch: 'Volume Player', gpa: 2.8, actualGpa: 2.9, total: 30, high: 12 },
+  { name: 'Nick Colbourne', arch: 'All-Rounder', gpa: 3.6, actualGpa: 3.5, total: 16, high: 12 },
+  { name: 'Francisco Wenceslau', arch: 'All-Rounder', gpa: 3.1, actualGpa: 3.2, total: 17, high: 10 },
+  { name: 'Felix Fotso Kuate', arch: 'All-Rounder', gpa: 3.1, actualGpa: 3.0, total: 17, high: 10 },
+  { name: 'Guillermo Krauch', arch: '100% Hit Rate', gpa: 3.5, actualGpa: 3.6, total: 8, high: 7 },
+  { name: 'Eva Sinha', arch: 'High Hit Rate', gpa: 3.3, actualGpa: 3.2, total: 11, high: 7 },
+  { name: 'Jessica Dill', arch: 'Steady', gpa: 3.0, actualGpa: 3.1, total: 12, high: 7 },
+  { name: 'Rafael Fernandez', arch: 'Steady', gpa: 3.0, actualGpa: 2.9, total: 10, high: 5 },
+  { name: 'Katie Anderson', arch: 'Steady', gpa: 3.0, actualGpa: 3.1, total: 8, high: 5 },
+  { name: 'Justin Uffelman', arch: 'Steady', gpa: 3.3, actualGpa: 3.2, total: 6, high: 5 },
+  { name: 'Michelle Baaklini', arch: 'Moderate', gpa: 2.7, actualGpa: 2.8, total: 4, high: 2 },
+  { name: 'Thomas Mulwa', arch: 'Late Bloomer', gpa: 2.9, actualGpa: 2.8, total: 6, high: 3 },
+  { name: 'Gonzalo Salazar', arch: 'Late Bloomer', gpa: 3.2, actualGpa: 3.3, total: 5, high: 4 },
+  { name: 'Sander Goudriaan', arch: '100% Hit Rate', gpa: 3.6, actualGpa: 3.5, total: 3, high: 3 },
+  { name: 'Lars Ballhausen', arch: 'High Hit Rate', gpa: 2.9, actualGpa: 3.0, total: 3, high: 2 },
+  { name: 'Vernes Rasidkadic', arch: 'High Hit Rate', gpa: 3.5, actualGpa: 3.4, total: 2, high: 2 },
+  { name: 'Karim Hafez', arch: 'Group Strong', gpa: 2.5, actualGpa: 2.6, total: 4, high: 0 },
+  { name: 'Fatima Dashe', arch: 'Moderate', gpa: 3.1, actualGpa: 3.0, total: 4, high: 3 },
+  { name: 'Xenia Postnikova', arch: 'Moderate', gpa: 3.0, actualGpa: 3.1, total: 2, high: 2 },
+  { name: 'Claire Maybank', arch: 'One-Shot Wonder', gpa: 3.2, actualGpa: 3.1, total: 1, high: 1 },
+  { name: 'Tanya Saharya', arch: 'Moderate', gpa: 2.8, actualGpa: 2.9, total: 2, high: 1 },
+  { name: 'Wagner De Oliveira', arch: 'Moderate', gpa: 2.7, actualGpa: 2.6, total: 2, high: 1 },
+  { name: 'Alan Schilis', arch: 'Moderate', gpa: 2.6, actualGpa: 2.7, total: 2, high: 1 },
+  { name: 'Habib Iravani', arch: 'Loud but Shallow', gpa: 2.4, actualGpa: 2.5, total: 5, high: 0 },
 ];
 
 const alphabeticalOrder = students
@@ -1249,11 +1249,9 @@ function updateSession(session) {
     barQ.className = 'race-bar-quality';
     if (rank === 0 && session >= 4) barQ.classList.add('glow');
 
-    // Value: quality/total
-    const qCount = Math.round(student.qualityScore);
-    const tCount = Math.round(student.totalScore);
+    // Value: predicted GPA
     const valEl = document.getElementById(`val-${i}`);
-    valEl.innerHTML = `<span class="q">${qCount}</span>/${tCount}`;
+    valEl.innerHTML = `<span class="q">${student.gpa.toFixed(1)}</span>`;
     valEl.className = 'race-value' + (rank < 3 ? ' highlight' : '');
 
     // Tag — show predicted GPA, gold for Dean's List territory (3.5+)
@@ -1359,8 +1357,6 @@ function showCard(studentIdx) {
   // Find their final rank
   const ranked = getRanked(SESSIONS - 1);
   const rank = ranked.findIndex(r => r.idx === studentIdx) + 1;
-  const hitRate = student.total > 0 ? Math.round((student.high / student.total) * 100) : 0;
-
   // Photo
   const photoEl = document.getElementById('card-photo');
   if (profile.photo) {
@@ -1372,8 +1368,7 @@ function showCard(studentIdx) {
     photoEl.src = '';
   }
 
-  const gpaLabel = student.gpa >= 3.5 ? `<span class="rank-num">GPA ${student.gpa.toFixed(1)}</span>` : `GPA ${student.gpa.toFixed(1)}`;
-  document.getElementById('card-rank').innerHTML = `Rank <span class="rank-num">#${rank}</span> of ${TOTAL_STUDENTS} · ${gpaLabel}`;
+  document.getElementById('card-rank').innerHTML = `Rank <span class="rank-num">#${rank}</span> of ${TOTAL_STUDENTS}`;
   document.getElementById('card-name').textContent = student.name;
   document.getElementById('card-bg').textContent = profile.bg;
   document.getElementById('card-headline').textContent = profile.headline;
@@ -1406,18 +1401,20 @@ function showCard(studentIdx) {
   document.getElementById('card-traits').innerHTML = profile.traits
     .map(t => `<span class="card-trait">${t}</span>`).join('');
 
+  const gpaDiff = Math.abs(student.gpa - student.actualGpa);
+  const accuracyPct = Math.round((1 - gpaDiff / student.actualGpa) * 100);
   document.getElementById('card-stats').innerHTML = `
     <div class="card-stat">
-      <div class="card-stat-val">${student.high}</div>
-      <div class="card-stat-label">Validated</div>
+      <div class="card-stat-val">${student.gpa.toFixed(1)}</div>
+      <div class="card-stat-label">Predicted GPA</div>
     </div>
     <div class="card-stat">
-      <div class="card-stat-val">${student.total}</div>
-      <div class="card-stat-label">Total</div>
+      <div class="card-stat-val">${student.actualGpa.toFixed(1)}</div>
+      <div class="card-stat-label">Actual GPA</div>
     </div>
     <div class="card-stat">
-      <div class="card-stat-val">${hitRate}%</div>
-      <div class="card-stat-label">Hit Rate</div>
+      <div class="card-stat-val">${accuracyPct}%</div>
+      <div class="card-stat-label">Accuracy</div>
     </div>
   `;
 
