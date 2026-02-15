@@ -77,6 +77,42 @@ body {
 .tab-content { display: none; padding: 24px 32px 48px; }
 .tab-content.active { display: block; animation: fadeIn 200ms ease; }
 
+/* Session sub-tabs */
+.session-subtabs {
+  display: flex; gap: 2px; margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+.session-subtab {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.06em;
+  text-transform: uppercase; padding: 8px 16px; background: none;
+  border: none; border-bottom: 2px solid transparent;
+  color: #555; cursor: pointer; transition: all 0.2s;
+}
+.session-subtab:hover { color: #888; }
+.session-subtab.active { color: #d4a843; border-bottom-color: #d4a843; }
+.session-subpanel { display: none; }
+.session-subpanel.active { display: block; animation: fadeIn 200ms ease; }
+
+/* Prose content (lecture / transcript) */
+.prose {
+  background: var(--card); border: 1px solid var(--border); border-radius: 6px;
+  padding: 28px 32px; line-height: 1.8; font-size: 14px; color: #aaa;
+  font-weight: 300; max-height: 70vh; overflow-y: auto;
+}
+.prose h2 { font-size: 16px; font-weight: 600; color: #d4a843; margin: 24px 0 10px; }
+.prose h3 { font-size: 14px; font-weight: 600; color: #ccc; margin: 20px 0 8px; }
+.prose strong { color: #ccc; font-weight: 500; }
+.prose em { color: #999; }
+.prose ul, .prose ol { padding-left: 20px; margin: 8px 0; }
+.prose li { margin-bottom: 4px; }
+.prose blockquote {
+  border-left: 2px solid #d4a843; padding-left: 14px; margin: 12px 0;
+  color: #888; font-style: italic;
+}
+.prose hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.prose p { margin: 8px 0; }
+
 /* Session picker */
 .session-picker { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
 .session-pill {
@@ -419,18 +455,35 @@ body {
 <div class="tab-content active" id="tab-sessions">
   <div class="session-picker" id="session-picker"></div>
   <div class="session-header" id="session-header"></div>
-  <div class="session-summary" id="session-summary"></div>
-  <div class="heatmap-section">
-    <div class="heatmap-label">Seating Plan — Participation Heatmap</div>
-    <div class="heatmap" id="heatmap"></div>
+
+  <div class="session-subtabs">
+    <button class="session-subtab active" data-sub="dashboard">Dashboard</button>
+    <button class="session-subtab" data-sub="lecture">Lecture Notes</button>
+    <button class="session-subtab" data-sub="transcript">Transcript</button>
   </div>
-  <div class="leaderboard" id="session-leaderboard">
-    <div class="lb-title">Session Leaderboard — <span style="color:#d4a843">validated</span> / total contributions</div>
-    <div id="lb-rows"></div>
+
+  <div class="session-subpanel active" id="sub-dashboard">
+    <div class="session-summary" id="session-summary"></div>
+    <div class="heatmap-section">
+      <div class="heatmap-label">Seating Plan — Participation Heatmap</div>
+      <div class="heatmap" id="heatmap"></div>
+    </div>
+    <div class="leaderboard" id="session-leaderboard">
+      <div class="lb-title">Session Leaderboard — <span style="color:#d4a843">validated</span> / total contributions</div>
+      <div id="lb-rows"></div>
+    </div>
+    <div class="moments-section">
+      <div class="lb-title">Key Moments</div>
+      <div id="moments"></div>
+    </div>
   </div>
-  <div class="moments-section">
-    <div class="lb-title">Key Moments</div>
-    <div id="moments"></div>
+
+  <div class="session-subpanel" id="sub-lecture">
+    <div class="prose" id="lecture-content"></div>
+  </div>
+
+  <div class="session-subpanel" id="sub-transcript">
+    <div class="prose" id="transcript-content"></div>
   </div>
 </div>
 
@@ -525,6 +578,38 @@ const SESSIONS = [
       { student:'Chris Johnson', quote:'Final contribution connecting personality research to consulting team dynamics.', response:'Cemented his position as the section\'s #1 contributor across all dimensions.', tag:'Consistent excellence' },
       { student:'Eliel Rosenkranz', quote:'"The market is not ready to pay for it."', response:'Professor acknowledged the honest, grounded perspective.', tag:'Market reality check' }
     ]
+  }
+];
+
+// Session content — lecture notes + transcripts per session
+const SESSION_CONTENT = [
+  { // S01 Negotiation
+    lecture: `<h2>Ego and Mindset</h2><ul><li><strong>Take your ego out of negotiations</strong> - your ego is your worst enemy, not your counterpart</li><li>People protect their ego by setting pessimistic expectations</li><li>We tend to underestimate what's negotiable because we don't feel powerful</li><li>Ask for what you want, but in a humble way - it's not about <em>what</em> you ask, but <em>how</em></li></ul><h2>BATNA - Best Alternative to Negotiated Agreement</h2><ul><li>Before negotiating, establish your rules based on what's critical for you</li><li>Your BATNA is your Plan B - what you'll do if no agreement is reached</li><li>If you can get a better deal elsewhere, that sets your minimum threshold</li><li>One way to negotiate is not to negotiate at all, but to create better alternatives first</li></ul><h2>Perception vs Reality</h2><ul><li><strong>Negotiation is a game of perceptions</strong> - there is no objective reality</li><li>Your assumptions drive outcomes more than the actual situation</li><li>You may not be able to change the situation, but you can change how others perceive it</li></ul><h2>Information Gathering - Open-Ended Questions</h2><ul><li>Ask as many open-ended questions as possible - this is your primary tool</li><li>Start broad, then narrow down over time</li><li>Even if you don't get answers, asking conveys that you understand there may be hidden information</li><li>Don't ask two questions in a row</li></ul><h2>Answering Sensitive Questions</h2><ul><li>Don't lie, but don't tell the whole truth</li><li><strong>Answer vaguely</strong> - "I make enough to have an apartment in Paris"</li><li><strong>Use comparison points</strong> - "My variable income is higher than my fixed income"</li><li><strong>Ask a question back</strong> - "What do you need the money for?"</li><li>Never give ranges - it projects low self-confidence</li></ul><h2>Timing and Sequencing</h2><ul><li><strong>Timing is critical</strong> - convey you have time even if you don't</li><li>Early phases should be cooperative and accommodating</li><li>Reserve tougher moves and threats for the end</li><li>If you get angry early, you seem like a weirdo; angry at the end seems like a reaction</li></ul><h2>Making Threats</h2><ul><li><strong>Positive threats</strong> work better than negative threats</li><li><strong>Implicit threats</strong> work better than explicit threats</li><li>"I would love to stay" (implies: I might leave) - wife got 11% raise vs 3-4% with explicit threat</li></ul><h2>Multi-Party Negotiations</h2><ul><li>You need both private and group meetings</li><li>Meet everyone privately - people are not talkative in group settings</li><li>Buyers can collude before official negotiations start</li></ul>`,
+    transcript: `<h2>Session Transcript - AI Processed Summary</h2><p>This session explored advanced negotiation strategies, focusing on practical and psychological principles underlying the negotiation process. The group examined how assumptions, communication methods, information asymmetry, and the management of perceptions impact negotiation outcomes.</p><h3>Ego Management in Negotiation</h3><ul><li>Participants observed that self-protection and ego influence people's tendency to understate expectations, leading to suboptimal demands</li><li>Key takeaway: detachment from ego is essential; negotiators should ask assertively but humbly</li></ul><h3>BATNA and Parameters</h3><ul><li>Importance of identifying "what is critical for you" and setting rules based on minimum requirements</li><li>If a preferable alternative exists outside the negotiation, this sets a firm threshold</li></ul><h3>Pricing Variation Drivers</h3><ul><li>External: humanitarian vs profit motives, differing volumes, exogenous pressures</li><li>Internal: information asymmetry, collusive strategies, strategic pre-negotiation behaviour</li></ul><h3>Key Decisions</h3><ol><li><strong>Adopt humility and assertiveness</strong> - clear articulation of needs should underpin requests</li><li><strong>Prioritise open-ended questions</strong> - consistently use structured questions to gather information</li><li><strong>Manage disclosure carefully</strong> - neither evasive nor excessively transparent</li><li><strong>Escalate assertiveness with timing</strong> - collaborative early, assertive later</li></ol><h3>Strategic Takeaways</h3><ul><li>Perception, more than objective reality, drives negotiation outcomes</li><li>Sequencing - cautious at the outset, assertive at closure - is vital for trust</li><li>Conscious management of assumptions can transform outcomes</li></ul>`
+  },
+  { // S03 Group Decision-Making
+    lecture: null,
+    transcript: `<h2>Session Transcript - AI Processed Summary</h2><p>This session explored group decision-making dynamics using empirical research and the film '12 Angry Men' as reference. The purpose was to identify effective leadership and facilitation approaches for fostering high-quality decisions, inclusion, psychological safety, and optimal handling of conflict.</p><h3>Shared Information and Unique Insights</h3><ul><li>Groups tend to conform to common opinions; individuals suppress unique information to avoid exclusion</li><li>Leaders should focus on extracting and validating unique information</li><li>Techniques: allow everyone to speak, avoid premature voting, use ranking to stimulate discussion</li></ul><h3>Types and Management of Conflict</h3><ul><li><strong>Task conflict:</strong> Can enhance information-sharing when properly managed</li><li><strong>Relationship conflict:</strong> Typically reduces information-sharing and decision quality</li><li><strong>Process conflict:</strong> Most damaging if not addressed early; discuss process beforehand</li></ul><h3>Procedural Justice</h3><ul><li>Clear, fair, transparent processes increase buy-in and acceptance of outcomes, even adverse ones</li><li>Leaders should clarify decision criteria and rationale before discussing substance</li></ul><h3>Behavioural Techniques from '12 Angry Men'</h3><ul><li>Set and clarify the process before substantive debate</li><li>Use "foot in the door" method - small requests to open discussion</li><li>Frame debates in terms of process and criteria, not just outcomes</li><li>Present concrete evidence, not just abstract arguments</li><li>Anonymous/private votes encourage honest dissent</li></ul>`
+  },
+  { // S05 Leading Diverse Teams
+    lecture: `<h2>Part 1: The Big Five Personality Framework</h2><p>The Big Five (OCEAN) - the world's most scientifically validated personality questionnaire:</p><ul><li><strong>Openness:</strong> tendency to find novel experiences attractive. High = curious, creative; Low = practical, traditional</li><li><strong>Conscientiousness:</strong> desire for structured, organised life. High = detail-oriented; Low = spontaneous</li><li><strong>Extraversion:</strong> where people draw energy. Extraverts gain energy from others; introverts recharge alone</li><li><strong>Agreeableness:</strong> prioritising getting along vs being competitive. High = collaborative; Low = tough decisions</li><li><strong>Neuroticism:</strong> sensitivity to stress. High = strong reactions; Low = calm under pressure</li></ul><h2>Part 2: Apollo 13 Crisis Leadership</h2><ul><li><strong>Process before content:</strong> Kranz's first intervention addressed how the team would work together, not what solutions to pursue</li><li><strong>Goal setting and reframing:</strong> "Failure is not an option" wasn't rhetoric but continuous goal reframing</li><li><strong>Leaders are authoritarian on goals but flexible on process</strong></li><li><strong>Data-driven:</strong> "Trust but verify" - even under pressure, demanded data verification</li><li><strong>Outward looking:</strong> Called in "every engineer who designed every switch, every circuit"</li><li><strong>Listening AND deciding:</strong> Listened to everybody but made it clear he was making the decisions</li></ul><h2>Part 3: Motivation Losses</h2><ul><li><strong>Social loafing:</strong> as group size increases, individual effort decreases</li><li><strong>Anonymity kills cooperation</strong> - Dunbar's number (~150) is the cognitive limit for direct relationships</li><li>Define roles and responsibilities in advance - "who's doing what by when"</li></ul><h2>Part 4: Remote Teams</h2><ul><li>Never handle difficult conversations over email</li><li>Spend roughly 20% of project time on process discussion</li><li>Voice communication transmits ~70% of emotional cues</li><li>The critical divide is voice vs non-voice, not in-person vs remote</li></ul><h2>Part 5: The Culture Map (Erin Meyer)</h2><p>Eight dimensions: Communicating, Evaluating, Leading, Deciding, Trusting, Disagreeing, Scheduling, Persuading. Cultural positions are relative - the same culture may appear "high context" to an American but "low context" to a Japanese observer.</p>`,
+    transcript: `<h2>Session Transcript - AI Processed Summary</h2><p>This session explored crisis leadership through the Apollo 13 case study, examining how Gene Kranz managed multiple teams under extreme pressure while maintaining goal clarity.</p><h3>Key Discussion Points</h3><ul><li>Goal reframing: When Lovell said "I'd like to go home" - this became the new superordinate goal</li><li>The distinction between being authoritarian on goals but flexible on process</li><li>Data verification even under time pressure - "no guessing"</li><li>Breaking complex problems into sub-goals with clear individual ownership</li><li>The difference between Kranz (positional authority) and Fonda in 12 Angry Men (influence without power)</li></ul><blockquote>Student contribution: "He's giving them work to distract them from the fact they might die." - Professor built the next lecture segment around this insight.</blockquote>`
+  },
+  { // S07 Power & Politics
+    lecture: null,
+    transcript: `<h2>Session Transcript - AI Processing</h2><p style="color:#666;font-style:italic">Transcript for Power & Politics session is being processed. Voice fingerprinting in progress - matching speaker segments to student profiles.</p><p style="color:#444;font-size:12px">Estimated completion: 24-48 hours after session recording upload.</p>`
+  },
+  { // S09 Motivation
+    lecture: null,
+    transcript: `<h2>Session Transcript - AI Processing</h2><p style="color:#666;font-style:italic">Transcript for Motivation session is being processed. Voice fingerprinting in progress - matching speaker segments to student profiles.</p><p style="color:#444;font-size:12px">Estimated completion: 24-48 hours after session recording upload.</p>`
+  },
+  { // S11 Feedback
+    lecture: `<h2>The Burke-Stanley Role Play</h2><p>Feedback role play in a London management consulting firm. Stanley must deliver a performance evaluation to Burke - technically strong but issues with teamwork and following process. Key decision: Burke will not receive an early promotion.</p><blockquote>"The first page of my notes is blank. Stanley did not allow Burke to say anything." - Prof. Sinaceur</blockquote><h2>Structuring the Feedback Meeting</h2><ol><li><strong>Write down what you must communicate</strong> - identify 2-3 things you absolutely must convey</li><li><strong>Clarify the process first</strong> - opening should cover the goal and the process</li><li><strong>Invite the recipient's view before sharing yours</strong> - "Overall, what do you think of your performance this year?"</li></ol><h2>The Feedback Sandwich</h2><ul><li>Positive (with examples) → Negative (with examples) → Positive</li><li>"If people get negative feedback only, they cannot learn. If people get positive feedback only, they cannot learn either."</li><li>Start positive because of overconfidence - most people rate themselves higher than their managers do</li></ul><h2>Behaviours, Not Identity</h2><ul><li>"Don't say 'you are.' Say 'you did.'"</li><li>Every feedback point must be backed by a concrete, specific example</li><li>In adversarial situations: state facts, let the other person draw inferences</li></ul><h2>Illusion of Transparency</h2><ul><li>We think people understand us better than they actually do</li><li>Stanley thinks Burke understood much more than Burke actually did</li><li>You need to be clearer than you think - repeat, give more examples</li></ul><h2>Timing</h2><ul><li>"The speed of reaction is better than the intensity of the reaction"</li><li>Don't give very negative feedback on Friday eve - give it Tuesday/Wednesday</li><li>Silence communicates acceptance - a mild response immediately is better than a perfect explosion after 10 rounds</li></ul>`,
+    transcript: `<h2>Session Transcript - AI Processed Summary</h2><p>This session focused on structuring effective feedback conversations, using the Burke-Stanley role play as the primary teaching vehicle. Multiple pairs performed the role play, with the professor debriefing each one.</p><h3>Key Observations</h3><ul><li>First pair: substantively strong but structurally flawed - Stanley dominated the conversation without letting Burke speak</li><li>Second pair (Eva as Stanley): improved with more opening, inviting Burke's perspective early</li><li>The professor distinguished between "no promotion" (normal) vs "delay" (negative framing)</li></ul><h3>Core Principles</h3><ul><li>Don't negotiate during feedback meetings - the decision has already been made in 80-90% of cases</li><li>Don't make decisions in the heat of emotion - digest first</li><li>Use conditional promises, not full promises</li></ul><blockquote>"What were the most meaningful interactions in my life? They were feedback interactions." - Prof. Sinaceur</blockquote>`
+  },
+  { // S13 Leadership
+    lecture: `<h2>Case 1: Medical Emergency - Lebanon COVID Crisis</h2><p>You are the Chairperson of the Emergency Department at a leading private university hospital in Lebanon, January 2021 - peak COVID. 60 patients for 30 beds. Management pressures you to turn away patients.</p><h3>The Pressure Campaign</h3><ul><li>Management never commits anything to writing - entire push is verbal and deniable</li><li>"Why don't you turn patients away?" - framed as solving everything</li><li>Gender bias: protagonist called "toxic" and "a toxic woman"</li><li>Management tries working with your Medical Director behind your back</li></ul><h3>The Political Response</h3><ul><li><strong>Coalition building:</strong> Called a meeting with all medical staff - got unanimous support</li><li><strong>Fait accompli:</strong> "If the Board issues an official statement to divert patients, we will comply" - nobody dared take it to the Board</li><li><strong>Throwing responsibility back:</strong> Forced management to own their decision in writing - which they never did</li></ul><h2>Case 2: Factory Sabotage - South Africa</h2><p>Recently acquired factory with pre-Apartheid management culture. Fire set at 4 locations by 8-12 coordinated people. Local management's only solution: patrol with shotguns.</p><h3>Key Actions</h3><ul><li><strong>Closed the factory</strong> - the master move. They cannot blackmail you anymore</li><li><strong>Be the pilot, not the hero</strong> - stay one level removed from direct conflict</li><li><strong>Justice is blind:</strong> sanction everyone who broke rules, regardless of faction</li><li>Eventually fired: 100% of local management, 70% of middle management, 20% of workers</li></ul><h2>OB1 Course Summary - Seven Situations</h2><p>Negotiation → Influence → Teamwork → Conflict & Politics → Motivation → Feedback → Leadership. The meta-skill is diagnosing which type of situation you face, because the tools differ for each.</p>`,
+    transcript: `<h2>Session Transcript - AI Processed Summary</h2><p>Final substantive OB1 class. Two extended real-life crisis cases with group discussion, bringing together every prior module.</p><h3>Lebanon Hospital Case Discussion</h3><ul><li>Secret ballot: entire class voted for a "middle path" - triage at the door</li><li>"It's not an emotional choice or a business choice - it's a practical, objective process"</li><li>Students flagged the lack of written documentation as the real toxic element</li></ul><h3>South Africa Factory Case Discussion</h3><ul><li>Students mapped stakeholders - identified that "nobody is on the Company's side"</li><li>Discussion on when to fire local management - "you need them now but cannot keep them"</li><li>Closing the factory emerged as the decisive strategic move</li></ul><blockquote>"A leader is a person who takes responsibility for defining what the problem is." - Prof. Sinaceur</blockquote>`
   }
 ];
 
@@ -654,6 +739,18 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 // ============================================================
+// SESSION SUB-TAB SWITCHING
+// ============================================================
+document.querySelectorAll('.session-subtab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.session-subtab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.session-subpanel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('sub-' + btn.dataset.sub).classList.add('active');
+  });
+});
+
+// ============================================================
 // SESSION VIEW
 // ============================================================
 let currentSession = 0;
@@ -701,6 +798,23 @@ function renderSession() {
 
   // Key moments
   renderMoments(currentSession);
+
+  // Reset sub-tabs to Dashboard
+  document.querySelectorAll('.session-subtab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.session-subpanel').forEach(p => p.classList.remove('active'));
+  document.querySelector('.session-subtab[data-sub="dashboard"]').classList.add('active');
+  document.getElementById('sub-dashboard').classList.add('active');
+
+  // Populate lecture & transcript content
+  const content = SESSION_CONTENT[currentSession];
+  const lecEl = document.getElementById('lecture-content');
+  const transEl = document.getElementById('transcript-content');
+  lecEl.innerHTML = content.lecture
+    ? content.lecture
+    : '<p style="color:#555;font-style:italic;">Lecture notes not yet processed for this session.</p>';
+  transEl.innerHTML = content.transcript
+    ? content.transcript
+    : '<p style="color:#555;font-style:italic;">Transcript not yet processed for this session.</p>';
 }
 
 function renderHeatmap(si) {
