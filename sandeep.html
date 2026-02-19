@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INSEAD 26D - Important Announcement</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .container {
+    text-align: center;
+    max-width: 500px;
+    width: 100%;
+    padding: 20px;
+  }
+  .gif-wrap {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(255, 0, 0, 0.3);
+    margin-bottom: 24px;
+  }
+  .gif-wrap img {
+    width: 100%;
+    display: block;
+  }
+  .subtitle {
+    color: #fff;
+    font-size: 14px;
+    opacity: 0;
+    animation: fadeIn 1s ease-in 6s forwards;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  @keyframes fadeIn {
+    to { opacity: 0.6; }
+  }
+  /* Confetti burst */
+  .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    top: -10px;
+    animation: fall linear forwards;
+    opacity: 0;
+  }
+  @keyframes fall {
+    0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="gif-wrap">
+    <img src="sandeep-rickroll.gif" alt="Important Announcement">
+  </div>
+  <p class="subtitle">You have been officially Sandeep'd</p>
+</div>
+<script>
+// Confetti after a delay
+setTimeout(() => {
+  const colors = ['#ff0000','#ff6600','#ffff00','#00ff00','#0066ff','#ff00ff'];
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.width = (Math.random() * 8 + 4) + 'px';
+    c.style.height = (Math.random() * 8 + 4) + 'px';
+    c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+    c.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    c.style.animationDelay = (Math.random() * 2) + 's';
+    document.body.appendChild(c);
+  }
+}, 5000);
+</script>
+</body>
+</html>
