@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Gospel According to Katie Exton</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a0a;
+            color: #f5f0eb;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(114,47,55,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 7vw, 5.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 span {
+            color: #8b3a4a;
+        }
+
+        .hero .subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            font-weight: 300;
+            color: #999;
+            max-width: 600px;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+        }
+
+        .hero .scroll-hint {
+            font-size: 0.8rem;
+            color: #555;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* Sections */
+        .section {
+            padding: 6rem 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            color: #8b3a4a;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(139,58,74,0.3);
+        }
+
+        /* Quote cards */
+        .quote {
+            margin-bottom: 3rem;
+            padding-left: 1.5rem;
+            border-left: 2px solid rgba(139,58,74,0.4);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .quote.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .quote p {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            font-style: italic;
+            line-height: 1.6;
+            color: #e8e0d8;
+            margin-bottom: 0.75rem;
+        }
+
+        .quote .context {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 300;
+        }
+
+        .quote .context .date {
+            color: #8b3a4a;
+            font-weight: 500;
+        }
+
+        /* Featured quote - big splash */
+        .featured {
+            padding: 8rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .featured::before {
+            content: '\201C';
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Playfair Display', serif;
+            font-size: 12rem;
+            color: rgba(139,58,74,0.12);
+            line-height: 1;
+        }
+
+        .featured blockquote {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.5rem, 4vw, 2.8rem);
+            font-style: italic;
+            line-height: 1.4;
+            max-width: 800px;
+            margin: 0 auto;
+            color: #f5f0eb;
+        }
+
+        .featured .context {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Divider */
+        .divider {
+            text-align: center;
+            padding: 3rem 0;
+            color: rgba(139,58,74,0.4);
+            font-size: 1.5rem;
+            letter-spacing: 1em;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #444;
+            font-size: 0.8rem;
+            border-top: 1px solid rgba(139,58,74,0.15);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .footer p { margin-bottom: 0.5rem; }
+
+        .footer .wine-glass {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            .section { padding: 4rem 1.5rem; }
+            .featured { padding: 5rem 1.5rem; }
+            .quote { padding-left: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="hero">
+    <h1>The Gospel<br>According to<br><span>Katie Exton</span></h1>
+    <p class="subtitle">
+        Sommelier. Mother. Professional opinion-haver.<br>
+        6 years of WhatsApp wisdom, distilled.
+    </p>
+    <p class="scroll-hint">scroll down</p>
+</div>
+
+<!-- ========== ON WINE ========== -->
+<div class="section">
+    <h2 class="section-title">On Wine</h2>
+
+    <div class="quote">
+        <p>"Shit, bum, farmyard — these just aren't nice flavours."</p>
+        <div class="context">On natural wine &middot; <span class="date">Jan 2023</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"I've spent most of my career being criticised for being 'conservative and old school' but I don't give a shit, because I know what I like."</p>
+        <div class="context">On her wine philosophy &middot; <span class="date">Jan 2023</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Vintage reserve. 2 of the biggest bullshit marketing wine words I've heard."</p>
+        <div class="context">On English sparkling wine labelling &middot; <span class="date">Apr 2020</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"In my opinion it's about a 68% waste of time drinking nice wine out of crap glasses."</p>
+        <div class="context">The precision of that percentage &middot; <span class="date">Apr 2020</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"I am infamous with friends for phrases like 'Riesling Sunday', 'breakfast wine' and 'great first bottle'. Things I think are normal and apparently they do not."</p>
+        <div class="context">Katie being Katie &middot; <span class="date">Jan 2026</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"I def lie to ppl about how much I've drunk though."</p>
+        <div class="context">38 weeks pregnant &middot; <span class="date">Jan 2023</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Natural wine is so perfectly summed up by that one scene in Succession."</p>
+        <div class="context"><span class="date">Jan 2023</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Can we please agree no sending wine pics until I can drink."</p>
+        <div class="context">During pregnancy &middot; <span class="date">Dec 2022</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"On Sunday the baby is full term, so I figure I can't really fuck it up at that point."</p>
+        <div class="context">On drinking while pregnant &middot; <span class="date">Jan 2023</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Knowing about a wine makes you enjoy it so much more."</p>
+        <div class="context"><span class="date">May 2023</span></div>
+    </div>
+</div>
+
+<!-- ========== FEATURED SPLASH ========== -->
+<div class="featured">
+    <blockquote>"There was a competition on the trip for best student and I won it, even though I was often the most hungover. So I won a magnum from every Grand Marque. Made my 30th party pretty fun."</blockquote>
+    <div class="context">On winning the Champagne Academy award &middot; <span class="date" style="color:#8b3a4a">Jan 2023</span></div>
+</div>
+
+<!-- ========== ON FOOD ========== -->
+<div class="section">
+    <h2 class="section-title">On Food & Restaurants</h2>
+
+    <div class="quote">
+        <p>"I mean I just don't like cheffy food. Noma was to me just not that tasty and I really am not interested in making my food some cultural discovery. I just want to enjoy the food and company. I do want to try a fermented reindeer bollock."</p>
+        <div class="context">The full range in one message &middot; <span class="date">Dec 2022</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Some bloody berry that they described as tasting a bit like blackberry, so I said — well why not use a blackberry then? And he just went erghh I don't know."</p>
+        <div class="context">At Ikoyi &middot; <span class="date">Dec 2022</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Gordon Ramsay built an empire on food that lacks any real personality."</p>
+        <div class="context"><span class="date">Feb 2023</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"'Concept' is such an annoying word for a restaurant."</p>
+        <div class="context"><span class="date">Jul 2023</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Fucking weird foraged super expensive waste of time mushrooms and leaves."</p>
+        <div class="context">On trendy restaurant ingredients &middot; <span class="date">Feb 2023</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"A lawyer dick asked me if we'd missed the roast potatoes off his veal. There aren't any potatoes on the dish. My response was, 'nope. Also don't you think roast potatoes a bit of a Sunday thing.'"</p>
+        <div class="context">Last week of December energy &middot; <span class="date">Dec 2022</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Why have you made each plate look like a buffet?!"</p>
+        <div class="context">On Freddie's plating during Lorne at Home &middot; <span class="date">Jun 2020</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Dry oloroso or amontillado with jamon is prob my most fav thing ever to eat."</p>
+        <div class="context"><span class="date">Apr 2023</span></div>
+    </div>
+</div>
+
+<div class="divider">...</div>
+
+<!-- ========== FEATURED: Birth Quote ========== -->
+<div class="featured">
+    <blockquote>"No I gave birth this afternoon."</blockquote>
+    <div class="context">Freddie had asked if she was free at Lorne for a glass of wine. Their favourite exchange. &middot; <span class="date" style="color:#8b3a4a">2024</span></div>
+</div>
+
+<!-- ========== ON MOTHERHOOD ========== -->
+<div class="section">
+    <h2 class="section-title">On Motherhood</h2>
+
+    <div class="quote">
+        <p>"Not too bothered about her looks, just want her to not be a total tool."</p>
+        <div class="context">On Martha &middot; <span class="date">Apr 2020</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Sadly not a hit. She's just eaten the peas off it. So not gonna bother ever again. Ungrateful turd."</p>
+        <div class="context">After cooking an Instagram-worthy meal for Martha &middot; <span class="date">Apr 2020</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"I said to her, now I'm pinning all hopes on your sister. She just laughed at me."</p>
+        <div class="context">After Martha sang one song at the nursery concert then gave up &middot; <span class="date">Dec 2022</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Martha coming over saying mummy they have yr fav drink here, wine."</p>
+        <div class="context">At a 4-year-old's birthday party &middot; <span class="date">Apr 2023</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"She told me her breath hurt her legs so she needs medicine."</p>
+        <div class="context">Evie's case for Calpol &middot; <span class="date">Feb 2026</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Am sick in my mouth just thinking of being hungover and looking after the two girls. I can barely do it normally."</p>
+        <div class="context"><span class="date">May 2023</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Went to a day rave yesterday. Pretty good idea for parents. Rave 12-5, then in bed by 10, so no hangover."</p>
+        <div class="context">Parenting innovation &middot; <span class="date">Apr 2023</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"It's a lot of parents saying shit like — what's the character on the cake? My child doesn't watch TV so we're so out of the loop."</p>
+        <div class="context">Kids' birthday party anthropology &middot; <span class="date">Apr 2023</span></div>
+    </div>
+</div>
+
+<!-- ========== FEATURED: sommelier ========== -->
+<div class="featured">
+    <blockquote>"Next time, take my suggestion. You're lucky to have a personal sommelier on speed dial."</blockquote>
+    <div class="context">After Freddie ordered a wine she didn't recommend and regretted it &middot; <span class="date" style="color:#8b3a4a">Mar 2023</span></div>
+</div>
+
+<!-- ========== ON LIFE ========== -->
+<div class="section">
+    <h2 class="section-title">On Life, The World & Everything</h2>
+
+    <div class="quote">
+        <p>"I made my mum cry at dinner in a restaurant I worked in and when all my outraged colleagues asked what awful thing I said to my mum. I told them, I said I don't think Tony Blair (excluding Iraq nonsense) was a bad PM."</p>
+        <div class="context"><span class="date">Jul 2022</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Just as the world is on the brink of total meltdown. I love the Beckham crisis."</p>
+        <div class="context"><span class="date">Jan 2026</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"I would say working for an AI company and speaking 6 languages does not give evidence of being fun."</p>
+        <div class="context">On whether Freddie's new crush is actually interesting &middot; <span class="date">Feb 2026</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Does she like wine."</p>
+        <div class="context">The only question that matters &middot; <span class="date">Feb 2026</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Valentines. Fuck."</p>
+        <div class="context"><span class="date">Feb 2026</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"I really don't get thrillseeking in actual danger environments."</p>
+        <div class="context">On Freddie skiing off Mont Blanc &middot; <span class="date">Feb 2026</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Fred in a crevasse isn't ideal."</p>
+        <div class="context">The understatement &middot; <span class="date">Feb 2026</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Don't be lame, just come now."</p>
+        <div class="context"><span class="date">Aug 2020</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"I mean it's a very boring story but I'm a mum who runs a restaurant on my own. Yeah I've had ups and downs but that's just life. It's not a fucking mega drama."</p>
+        <div class="context">On chef culture and media narrative &middot; <span class="date">Oct 2022</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"4th time I've opened the same restaurant! Worst restauranteur ever."</p>
+        <div class="context">On reopening Lorne after another lockdown &middot; <span class="date">Dec 2020</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"Had another dream about Evan Martin. Needs to stop."</p>
+        <div class="context"><span class="date">Feb 2026</span></div>
+    </div>
+
+    <div class="quote">
+        <p>"I was just thinking this year may be the only of our lives where I drink better than you?"</p>
+        <div class="context">On Freddie being a student in Fontainebleau &middot; <span class="date">Jan 2026</span></div>
+    </div>
+</div>
+
+<!-- ========== FINAL FEATURED ========== -->
+<div class="featured">
+    <blockquote>"The people at Lorne are probably the grittiest ppl you know."</blockquote>
+    <div class="context"><span class="date" style="color:#8b3a4a">Jan 2023</span></div>
+</div>
+
+<!-- ========== FOOTER ========== -->
+<div class="footer">
+    <span class="wine-glass">🍷</span>
+    <p>Curated from 33,447 lines of WhatsApp chat</p>
+    <p>December 2019 — February 2026</p>
+    <p style="margin-top: 1rem; color: #333;">Made with love and a personal sommelier on speed dial</p>
+</div>
+
+<script>
+    // Scroll reveal
+    const quotes = document.querySelectorAll('.quote');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    quotes.forEach(q => observer.observe(q));
+</script>
+
+</body>
+</html>
